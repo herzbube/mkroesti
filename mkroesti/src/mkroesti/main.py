@@ -1,6 +1,7 @@
 # PSL
 import sys
 from optparse import OptionParser
+import getpass
 
 # mkroesti
 from mkroesti import factory
@@ -77,10 +78,22 @@ def main():
         listAlgorithms()
         return
     else:
-        # Use read() to read until EOF is reached (e.g. Ctrl+D is pressed).
-	# read() returns data as string.
-        # Note: Don't use input() or raw_input() because these are line oriented
-        input = sys.stdin.read()
+        # Get the input from stdin if it is not attached to a TTY (e.g. because
+        # a pipe has been set up, or a file has been redirected to stdin). read()
+        # will read until EOF is reached, it is therefore possible to process
+        # input with, for instance, multiple lines. read() returns data as
+        # string.
+        # Note 2: Don't use input() or raw_input() because these are line
+        # oriented
+        if not sys.stdin.isatty():
+            input = sys.stdin.read()
+        else:
+            # Get a single line of input (newline is stripped)
+            prompt = "Enter text to hash: "
+            if options.echo:
+                input = raw_input(prompt)
+            else:
+                input = getpass.getpass(prompt)
 
     # Create algorithm objects
     algorithms = list()

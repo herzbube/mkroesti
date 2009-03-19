@@ -181,7 +181,6 @@ LICENSE
 TODO
 ----
 * TODOs in the code
-* implement echo mode
 * try to improve handling of large inputs
 * find out why adler32 and crc32 checksums (provided by zlib module) are not correct
   * adler32 for "foo": expected = 45018202 (hex, i.e. dec = 1157726722), actual = 42074437 (dec)
