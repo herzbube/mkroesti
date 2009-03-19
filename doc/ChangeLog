@@ -1,7 +1,11 @@
-Mon Dec 01 2008   "Patrick Näf" <herzbube@herzbube.ch>
+Mon Dec 08 2008   "Patrick Näf" <mkroesti@herzbube.ch>
+- marked up the MANUAL file using reStructured text
+- wrote section "How to generate documentation" in README
+
+Mon Dec 01 2008   "Patrick Näf" <mkroesti@herzbube.ch>
 - rewrote README and TODO documents
 - added DESIGN document
 
-Sun Nov 30 2008   "Patrick Näf" <herzbube@herzbube.ch>
+Sun Nov 30 2008   "Patrick Näf" <mkroesti@herzbube.ch>
 - added COPYING (full text of GPLv3)
 - added copyright notice at the top of each source file

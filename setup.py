@@ -86,7 +86,7 @@ setup(
       version="0.1",
       url="http://www.herzbube.ch/mkroesti",
       author="Patrick Näf",
-      author_email="herzbube@herzbube.ch",
+      author_email="mkroesti@herzbube.ch",
       description="Extensible hash generator",
       long_description=
 """

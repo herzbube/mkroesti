@@ -107,7 +107,15 @@ Run mkroesti on the command line, from within an SVN working copy:
 
 How to generate the documentation
 ---------------------------------
-TODO
+The MANUAL file is marked up using reStructured text. I am using pandoc to
+generate a man page and a HTML page like this:
+
+  cat MANUAL | pandoc -s -f rst -t man mkroesti.1
+  cat MANUAL | pandoc -s -f rst -t html MANUAL.html
+
+To view the man page on screen (using the ISO Latin-1 charachter set):
+
+  cat mkroesti.1 | groff -mandoc -Tlatin1 | less
 
 
 Dependencies
@@ -122,7 +130,7 @@ The Python Standard Library
     - presence of the following depends on the version of the underlying
       OpenSSL: ripemd-160, sha-0, md2, md4
 - provides a couple of encoding (i.e. not cryptographic) modules 
-  - "base64" module: provides base64
+  - "base64" module: provides base16, base32, base64
 - provides the "crypt" module with access to the system's crypt() function
 
 The module "smbpasswd" [2]
@@ -168,7 +176,7 @@ mkroesti is Python 2.5
 
 Limitations
 -----------
-Not all hash algorithms advertised in the man page are actually provided.
+Not all hash algorithms advertised on the man page are actually provided.
 
 mkroesti is not good at handling large files, because it tries to read its
 entire input into memory.

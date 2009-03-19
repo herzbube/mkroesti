@@ -1,151 +1,245 @@
+.. This document is UTF-8 encoded and marked up using reStructured text.
+
 NAME
-  mkroesti - generate different kinds of hashes
+====
+
+**mkroesti** - generate different kinds of hashes
+
 
 SYNOPSIS
-  mkroesti [-e] [-a LIST] [-d]
-  mkroesti -b [-a LIST] [-d] input
-  mkroesti -f FILE [-a LIST] [-d]
-  mkroesti -l
-  mkroesti -V
-  mkroesti -h
+========
+
+| **mkroesti** [**-e**] [**-a** *LIST*] [**-d**]
+| **mkroesti** **-b** [**-a** *LIST*] [**-d**] *input*
+| **mkroesti** **-f** *FILE* [**-a** *LIST*] [**-d**]
+| **mkroesti** **-l**
+| **mkroesti** **-V**
+| **mkroesti** **-h**
+
 
 DESCRIPTION
-  The mkroesti command takes an input and generates different kinds of hashes from that input. Without special instructions, mkroesti takes its input either from standard input or asks for it interactively. Unless echo mode is enabled (-e), mkroesti does not display input typed by the user, assuming that the user enters a secret password.
+===========
 
-  Additional sources for the input are: a file (-f) or the command line (-b). Note that the latter option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
+The **mkroesti** command takes an input and generates different kinds of hashes from that input. Without special instructions, **mkroesti** takes its input either from standard input or asks for it interactively. Unless echo mode is enabled (**--echo**), **mkroesti** does not display input typed by the user, assuming that the user enters a secret password.
 
-  The user may specify one or more algorithms that should be used to generate hashes. If no specific algorithm is selected, mkroesti generates hashes for all algorithms that it knows about.
+Additional sources for the input are: a file (**--file**) or the command line (**--batch**). Note that the latter option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
+
+The user may specify one or more algorithms that should be used to generate hashes. If no specific algorithm is selected, **mkroesti** generates hashes for all algorithms that it knows about.
+
 
 OPTIONS
-  -a LIST, --algorithms LIST
-    Comma separated list of algorithms for which to generate hashes. See ALGORITHMS below.
+=======
 
-  -b, --batch
-     Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
+-a LIST, --algorithms LIST
+  Comma separated list of algorithms and/or aliases for which to generate hashes. See **ALGORITHMS** and **ALIASES** below.
 
-  -d, --duplicate-hashes
-     Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
+-b, --batch
+  Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
 
-  -e, --echo
-     Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen.
+-d, --duplicate-hashes
+  Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
 
-  -f FILE, --file FILE
-     Read the input from FILE.
+-e, --echo
+  Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen.
 
-  -l, --list
-     List supported algorithms, which ones are available, and which implementation sources exist for them.
+-f FILE, --file FILE
+  Read the input from **FILE**.
 
-  -V, --version
-     Print the version number.
+-l, --list
+  List supported algorithms, which ones are available, and which implementation sources exist for them.
 
-  -h, --help
-     Show a short usage summary.       
+-V, --version
+  Print the version number.
+
+-h, --help
+  Show a short usage summary.       
+
 
 ALGORITHMS
-  mkroesti defines the following keywords to identify distinct hash algorithms:
+==========
 
-  base64
-  adler32
-  crc32
-  crc32b
-  crypt-system      local crypt()
-  crypt-md5         md5-based crypt (hash starts with $1$)
-  crypt-apr1        md5-based crypt, Apache variant (hash starts with $apr1$)
-  crypt-blowfish    blowfish-based crypt (hash starts with $2a$)
-  md2
-  md4
-  md5
-  sha-0             original, superseded by sha-1
-  sha-1
-  sha-224
-  sha-256
-  sha-384
-  sha-512
-  ripemd            original, superseded by ripemd-160
-  ripemd-128
-  ripemd-160
-  ripemd-256
-  ripemd-320
-  haval-128-[345]   3, 4 or 5 rounds
-  haval-160-[345]
-  haval-192-[345]
-  haval-224-[345]
-  haval-256-[345]
-  whirlpool
-  tiger-128
-  tiger-160
-  tiger-192
-  tiger2
-  snefru
-  gost
-  windows-lm
-  windows-nt
-  mysql-password    MySQL's PASSWORD() function
+**mkroesti** defines the following keywords to identify distinct hash algorithms:
 
-  mkroesti defines the following aliases to refer to sets of hash algorithms
+base16
+  .. empty definition
+base32
+  .. empty definition
+base64
+  .. empty definition
+adler32
+  .. empty definition
+crc32
+  .. empty definition
+crc32b
+  .. empty definition
+crypt-system
+  local crypt()
+crypt-md5
+  md5-based crypt (hash starts with **$1$**)
+crypt-apr1
+  md5-based crypt, Apache variant (hash starts with **$apr1$**)
+crypt-blowfish
+  blowfish-based crypt (hash starts with **$2a$**)
+md2
+  .. empty definition
+md4
+  .. empty definition
+md5
+  .. empty definition
+sha-0
+  original, superseded by **sha-1**
+sha-1
+  .. empty definition
+sha-224
+  .. empty definition
+sha-256
+  .. empty definition
+sha-384
+  .. empty definition
+sha-512
+  .. empty definition
+ripemd
+  original, superseded by **ripemd-160**
+ripemd-128
+  .. empty definition
+ripemd-160
+  .. empty definition
+ripemd-256
+  .. empty definition
+ripemd-320
+  .. empty definition
+haval-128-[345]
+  3, 4 or 5 rounds
+haval-160-[345]
+  .. empty definition
+haval-192-[345]
+  .. empty definition
+haval-224-[345]
+  .. empty definition
+haval-256-[345]
+  .. empty definition
+whirlpool
+  .. empty definition
+tiger-128
+  .. empty definition
+tiger-160
+  .. empty definition
+tiger-192
+  .. empty definition
+tiger2
+  .. empty definition
+snefru
+  .. empty definition
+gost
+  .. empty definition
+windows-lm
+  .. empty definition
+windows-nt
+  .. empty definition
+mysql-password
+  MySQL's PASSWORD() function
 
-  all
-  chksum
-  crypt
-  sha
-  ripemd
-  haval
-  tiger
-  snefru
+
+ALIASES
+=======
+
+**mkroesti** defines the following aliases to refer to sets of hash algorithms:
+
+all
+  .. empty definition
+chksum
+  .. empty definition
+crypt
+  .. empty definition
+sha
+  .. empty definition
+ripemd
+  .. empty definition
+haval
+  .. empty definition
+tiger
+  .. empty definition
+snefru
+  .. empty definition
+
 
 EXAMPLES
+========
 
-  (1) Prompt the user to interactively provide the input, not echoing the input on the screen. Hashes for all algorithms are generated.
+(1) Prompt the user to interactively provide the input, not echoing the input on the screen. Hashes for all algorithms are generated.
 
-    mkroesti 
+  **mkroesti** 
 
-  (2) Take the input from file foo and generate hashes for the algorithms md5, sha-1 and haval-128 (4 rounds variant)
 
-    mkroesti -f foo -a md5,sha-1,haval-128-4
+(2) Take the input from file *foo* and generate hashes for the algorithms **md5**, **sha-1** and **haval-128** (4 rounds variant)
 
-  (3) Take the input from standard input and generate a single hash using the local crypt() system function
+  **mkroesti** **-f** *foo* **-a** **md5**,**sha-1**,**haval-128-4**
 
-    cat foo | mkroesti -a crypt-system
 
-  (4) Use the string "secret" as input and generate hashes for all algorithms of the SHA and RIPEMD family.
+(3) Take the input from standard input and generate a single hash using the local crypt() system function
 
-    mkroesti -b -a sha,ripemd secret
+  **cat** foo | **mkroesti** **-a** **crypt-system**
+
+
+(4) Use the string *secret* as input and generate hashes for all algorithms of the SHA and RIPEMD family.
+
+  **mkroesti** **-b** **-a** **sha**,**ripemd** *secret*
+
 
 EXIT CODES
+==========
 
-  0  success
-  1  runtime error
-  2  error during parsing of command line arguments
+| 0  success
+| 1  runtime error
+| 2  error during parsing of command line arguments
+
 
 BUGS
+====
 
-  mkroesti is not good at handling large files, because it tries to read its entire input into memory.
+**mkroesti** is not good at handling large files, because it tries to read its entire input into memory.
 
-  mkroesti does nothing at all about string encodings; if in doubt assume the worst.
+**mkroesti** does nothing at all about string encodings; if in doubt assume the worst.
 
-  If you find any other bugs, please report them to <mkroesti@herzbube.ch>.
+If you find any other bugs, please report them to <**mkroesti**@herzbube.ch>.
+
 
 DEPENDENCIES
+============
 
-  mkroesti depends on the following Python modules:
+**mkroesti** depends on the following Python modules:
 
-    base64
-    hashlib
-    crypt
-    random
-    string
-    smbpasswd (see http://barryp.org/software/py-smbpasswd/)
-    mhash (see http://labix.org/python-mhash)
-    bcrypt (see http://www.mindrot.org/projects/py-bcrypt/)
+base64
+  From the Python Standard Library
+hashlib
+  From the Python Standard Library
+crypt
+  From the Python Standard Library
+random
+  From the Python Standard Library
+string
+  From the Python Standard Library
+smbpasswd
+  See http://barryp.org/software/py-smbpasswd/
+mhash
+  See http://labix.org/python-mhash
+bcrypt
+  See http://www.mindrot.org/projects/py-bcrypt/
+
 
 SEE ALSO
+========
 
-  -
+-
+
 
 AUTHOR
+======
 
-  Patrick Näf (herzbube@herzbube.ch)
+Patrick Näf (herzbube@herzbube.ch)
+
 
 LICENSE
+=======
 
-  GPLv3
+GPLv3
