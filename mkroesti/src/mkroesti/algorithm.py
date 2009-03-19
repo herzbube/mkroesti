@@ -28,6 +28,7 @@ import zlib
 
 import smbpasswd
 import mhash
+import bcrypt
 
 from mkroesti.errorhandling import MKRoestiError
 
@@ -194,18 +195,28 @@ class SHA512Algorithm(AbstractAlgorithm):
         return algorithm.hexdigest()
 
 
-class OpenSSLAlgorithm(AbstractAlgorithm):
-    """Generic class that provides access to OpenSSL algorithms by name.
+class CryptBlowfishAlgorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "crypt-blowfish")
+
+    def getHash(self, input):
+        salt = bcrypt.gensalt()   # default value for log_rounds parameter = 12
+        return bcrypt.hashpw(input, salt)
+
+
+class HashlibOpenSSLAlgorithm(AbstractAlgorithm):
+    """Generic class that uses the hashlib module to provide access to OpenSSL
+    algorithms by name.
 
     Use the supportsAlgorithm() method to check whether you can create an
-    instance of OpenSSLAlgorithm using the given name.
+    instance of HashlibOpenSSLAlgorithm using the given name.
     """
     
     def __init__(self, name):
         AbstractAlgorithm.__init__(self, name)
 
     def getHash(self, input):
-        opensslAlgorithmName = OpenSSLAlgorithm.mapAlgorithmName(self.getName())
+        opensslAlgorithmName = HashlibOpenSSLAlgorithm.mapAlgorithmName(self.getName())
         algorithm = hashlib.new(opensslAlgorithmName)
         algorithm.update(input)
         return algorithm.hexdigest()
@@ -224,7 +235,7 @@ class OpenSSLAlgorithm(AbstractAlgorithm):
 
     @staticmethod
     def supportsAlgorithm(name):
-       if OpenSSLAlgorithm.mapAlgorithmName(name) is not None:
+       if HashlibOpenSSLAlgorithm.mapAlgorithmName(name) is not None:
            return True
        else:
           return False
@@ -337,12 +348,18 @@ class CryptAlgorithm(AbstractAlgorithm):
 
     def getHash(self, input):
         # As described in the docs of the crypt module:
-	#   salt is usually a random two-character string which will be used
-	#   to perturb the DES algorithm in one of 4096 ways. The characters
-	#   in salt must be in the set [./a-zA-Z0-9].
+        #   salt is usually a random two-character string which will be used
+        #   to perturb the DES algorithm in one of 4096 ways. The characters
+        #   in salt must be in the set [./a-zA-Z0-9].
         # The following implementation of generating the salt is taken verbatim
-	# (with the exception of fixing a typo) from this mailing list post:
-	#   http://mail.python.org/pipermail/python-list/2004-March/252058.html
+        # (with the exception of fixing a typo) from this mailing list post:
+        #   http://mail.python.org/pipermail/python-list/2004-March/252058.html
+        # os.urandom() would be better than randint() because it is explicitly
+        # suitable for cryptographic use, but as the mailing list post points
+        # out:
+        #   [...] we don't need cryptographically strong random numbers. No
+        #   attack on crypt() depends on guessing the salt, the salt is in
+        #   the output anyway.
 	salt = CryptAlgorithm.salt_chars[randint(0, 63)] + CryptAlgorithm.salt_chars[randint(0, 63)]
         return crypt.crypt(input, salt)
 
@@ -363,8 +380,6 @@ class AlgorithmFactory:
         returnList = list()
         for algorithmName in algorithmNames:
             if "all" == algorithmName:
-                returnList.append("crypt")
-                returnList.append("apr1")
                 returnList.append("md2")
                 returnList.append("md4")
                 returnList.append("md5")
@@ -374,6 +389,7 @@ class AlgorithmFactory:
                 returnList.append("windows-nt")
                 returnList.append("mysql-password")
                 returnList.extend(AlgorithmFactory.resolveAliases(["chksum"]))
+                returnList.extend(AlgorithmFactory.resolveAliases(["crypt"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["sha"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["ripemd"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["haval"]))
@@ -428,6 +444,11 @@ class AlgorithmFactory:
                 returnList.append("adler32")
                 returnList.append("crc32")
                 returnList.append("crc32b")
+            elif "crypt" == algorithmName:
+                returnList.append("crypt")
+                returnList.append("crypt-md5")
+                returnList.append("crypt-apr1")
+                returnList.append("crypt-blowfish")
             else:
                 returnList.append(algorithmName)
         return returnList
@@ -479,8 +500,8 @@ class AlgorithmFactory:
                 SHA384Algorithm()
             elif "sha-512" == algorithmName:
                 SHA512Algorithm()
-            elif OpenSSLAlgorithm.supportsAlgorithm(algorithmName):
-                OpenSSLAlgorithm(algorithmName)
+            elif HashlibOpenSSLAlgorithm.supportsAlgorithm(algorithmName):
+                HashlibOpenSSLAlgorithm(algorithmName)
             elif MHashAlgorithm.supportsAlgorithm(algorithmName):
                 MHashAlgorithm(algorithmName)
             elif "windows-lm" == algorithmName:
@@ -489,6 +510,8 @@ class AlgorithmFactory:
                 WindowsNTAlgorithm()
             elif "crypt" == algorithmName:
                 CryptAlgorithm()
+            elif "crypt-blowfish" == algorithmName:
+                CryptBlowfishAlgorithm()
             else:
                 # TODO: Check for not-yet-implemented algorithms.
                 raise MKRoestiError("Unknown algorithm " + algorithmName)
