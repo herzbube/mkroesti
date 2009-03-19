@@ -1,2 +1,3 @@
-Thu Nov 23 2006   "Patrick Näf" <herzbube@herzbube.ch>
-- bla
+Sun Nov 30 2008   "Patrick Näf" <herzbube@herzbube.ch>
+- added COPYING (full text of GPLv3)
+- added copyright notice at the top of each source file

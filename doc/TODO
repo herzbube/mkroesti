@@ -1,15 +1,12 @@
 * prepare project for going public
-  * add GPL
-    * COPYING file
-    * file header
   * write ReleaseSteps
-  * start filling in ChangeLog
   * write INSTALL
   * improve README
     * add section "How to extend mkroesti" to README
     * add section "How to test" to README
     * add section "How to generate documentation" to README
     * add section "Dependencies" to README
+    * add contact information (recommended by GPL Howto)
   * fix MANUAL so that a proper man page can be generated from it
   * add a nice "long description" to setup.py
   * determine and document what is the minimum required version of Python for mkroesti
