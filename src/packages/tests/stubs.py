@@ -25,7 +25,7 @@ class AlgorithmStub(algorithm.AbstractAlgorithm):
         elif ALGORITHM_NAME_2 == algorithmName:
             ALGORITHM_RESULT_2
         else:
-            return AbstractAlgorithm.getHash(self, input)
+            return algorithm.AbstractAlgorithm.getHash(self, input)
 
 
 class ProviderStub(provider.DictAbstractProvider):
@@ -41,7 +41,7 @@ class ProviderStub(provider.DictAbstractProvider):
         elif ALGORITHM_NAME_2 == algorithmName:
             ALGORITHM_SOURCE_2
         else:
-            return DictAbstractProvider.getAlgorithmSource(self, algorithmName)
+            return provider.DictAbstractProvider.getAlgorithmSource(self, algorithmName)
 
     def createAlgorithm(self, algorithmName):
         return AlgorithmStub(algorithmName, self)

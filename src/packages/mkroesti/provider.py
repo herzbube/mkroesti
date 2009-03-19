@@ -28,7 +28,7 @@ and create an instance as illustrated in the following example:
 from mkroesti.registry import ProviderRegistry
 from mkroesti import algorithm
 from mkroesti.errorhandling import MKRoestiError
-from mkroesti.names import *
+from mkroesti.names import * #@UnusedWildImport
 
 
 class ProviderInterface:
@@ -136,17 +136,13 @@ class AbstractProvider(ProviderInterface):
     algorithm names, and optionally a list of known alias names.
     """
 
-    def __init__(self, algorithmNames):
-        """Initializes this provider with a list of names of known algorithms and no known aliases."""
-        self.__init__(algorithmNames, list())
-
-    def __init__(self, algorithmNames, aliasNames):
+    def __init__(self, algorithmNames, aliasNames = None):
         """Initialize with a list of names of known algorithms, and a list of names of known aliases."""
-	if algorithmNames is not None:
+        if algorithmNames is not None:
             self.algorithmNames = algorithmNames
         else:
             self.algorithmNames = list()
-	if aliasNames is not None:
+        if aliasNames is not None:
             self.aliasNames = aliasNames
         else:
             self.aliasNames = list()
@@ -170,7 +166,7 @@ class AbstractProvider(ProviderInterface):
         """
         availableAlgorithmNames = list()
         for algorithmName in self.getAlgorithmNames():
-            (isAvailable, reason) = self.isAlgorithmAvailable(algorithmName)
+            (isAvailable, reason) = self.isAlgorithmAvailable(algorithmName) #@UnusedVariable
             if isAvailable:
                 availableAlgorithmNames.append(algorithmName)
         return availableAlgorithmNames

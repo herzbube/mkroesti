@@ -43,7 +43,7 @@ except ImportError:
 
 # mkroesti
 from mkroesti.errorhandling import MKRoestiError
-from mkroesti.names import *
+from mkroesti.names import * #@UnusedWildImport
 
 
 class AlgorithmInterface:
@@ -115,14 +115,14 @@ class HashlibAlgorithms(AbstractAlgorithm):
     def mapAlgorithmName(algorithmName):
         """Maps an algorithm name defined by mkroesti into a name known by OpenSSL."""
         if ALGORITHM_RIPEMD_160 == algorithmName:
-           return "rmd160"
+            return "rmd160"
         elif ALGORITHM_SHA_0 == algorithmName:
-           return "sha"
+            return "sha"
         elif ALGORITHM_MD2 == algorithmName or \
              ALGORITHM_MD4 == algorithmName:
-           return algorithmName
+            return algorithmName
         else:
-           return None
+            return None
 
 
 class Base64Algorithms(AbstractAlgorithm):
@@ -187,7 +187,7 @@ class CryptAlgorithm(AbstractAlgorithm):
         #   [...] we don't need cryptographically strong random numbers. No
         #   attack on crypt() depends on guessing the salt, the salt is in
         #   the output anyway.
-	salt = CryptAlgorithm.salt_chars[randint(0, 63)] + CryptAlgorithm.salt_chars[randint(0, 63)]
+        salt = CryptAlgorithm.salt_chars[randint(0, 63)] + CryptAlgorithm.salt_chars[randint(0, 63)]
         return crypt.crypt(input, salt)
 
 
@@ -243,7 +243,7 @@ class MHashAlgorithms(AbstractAlgorithm):
 
     def getHash(self, input):
         mhashAlgorithmName = MHashAlgorithms.mapAlgorithmName(self.getName())
-	if mhashAlgorithmName is None:
+        if mhashAlgorithmName is None:
             return AbstractAlgorithm.getHash(self, input)
         algorithm = mhash.MHASH(mhashAlgorithmName)
         algorithm.update(input)
@@ -253,59 +253,58 @@ class MHashAlgorithms(AbstractAlgorithm):
     def mapAlgorithmName(algorithmName):
         """Maps an algorithm name defined by mkroesti into a name known by mhash."""
         if ALGORITHM_SHA_1 == algorithmName:
-           return mhash.MHASH_SHA1
+            return mhash.MHASH_SHA1
         elif ALGORITHM_SHA_224 == algorithmName:
-           return mhash.MHASH_SHA224
+            return mhash.MHASH_SHA224 #@IndentOk
         elif ALGORITHM_SHA_256 == algorithmName:
-           return mhash.MHASH_SHA256
+            return mhash.MHASH_SHA256
         elif ALGORITHM_SHA_384 == algorithmName:
-           return mhash.MHASH_SHA384
+            return mhash.MHASH_SHA384
         elif ALGORITHM_SHA_512 == algorithmName:
-           return mhash.MHASH_SHA512
+            return mhash.MHASH_SHA512
         elif ALGORITHM_RIPEMD_128 == algorithmName:
-           return mhash.MHASH_RIPEMD128
+            return mhash.MHASH_RIPEMD128
         elif ALGORITHM_RIPEMD_160 == algorithmName:
-           return mhash.MHASH_RIPEMD160
+            return mhash.MHASH_RIPEMD160
         elif ALGORITHM_RIPEMD_256 == algorithmName:
-           return mhash.MHASH_RIPEMD256
+            return mhash.MHASH_RIPEMD256
         elif ALGORITHM_RIPEMD_320 == algorithmName:
-           return mhash.MHASH_RIPEMD320
+            return mhash.MHASH_RIPEMD320
         elif ALGORITHM_HAVAL_128_3 == algorithmName:
-           return mhash.MHASH_HAVAL128
+            return mhash.MHASH_HAVAL128
         elif ALGORITHM_HAVAL_160_3 == algorithmName:
-           return mhash.MHASH_HAVAL160
+            return mhash.MHASH_HAVAL160
         elif ALGORITHM_HAVAL_192_3 == algorithmName:
-           return mhash.MHASH_HAVAL192
+            return mhash.MHASH_HAVAL192
         elif ALGORITHM_HAVAL_224_3 == algorithmName:
-           return mhash.MHASH_HAVAL224
+            return mhash.MHASH_HAVAL224
         elif ALGORITHM_HAVAL_256_3 == algorithmName:
-           return mhash.MHASH_HAVAL256
+            return mhash.MHASH_HAVAL256
         elif ALGORITHM_SNEFRU_128 == algorithmName:
-           return mhash.MHASH_SNEFRU128
+            return mhash.MHASH_SNEFRU128
         elif ALGORITHM_SNEFRU_256 == algorithmName:
-           return mhash.MHASH_SNEFRU256
+            return mhash.MHASH_SNEFRU256
         elif ALGORITHM_TIGER_128 == algorithmName:
-           return mhash.MHASH_TIGER128
+            return mhash.MHASH_TIGER128
         elif ALGORITHM_TIGER_160 == algorithmName:
-           return mhash.MHASH_TIGER160
+            return mhash.MHASH_TIGER160
         elif ALGORITHM_TIGER_192 == algorithmName:
-           return mhash.MHASH_TIGER
+            return mhash.MHASH_TIGER
         elif ALGORITHM_WHIRLPOOL == algorithmName:
-           return mhash.MHASH_WHIRLPOOL
+            return mhash.MHASH_WHIRLPOOL
         elif ALGORITHM_GOST == algorithmName:
-           return mhash.MHASH_GOST
+            return mhash.MHASH_GOST
         elif ALGORITHM_ADLER32 == algorithmName:
-           return mhash.MHASH_ADLER32
+            return mhash.MHASH_ADLER32
         elif ALGORITHM_CRC32 == algorithmName:
-           return mhash.MHASH_CRC32
+            return mhash.MHASH_CRC32
         elif ALGORITHM_CRC32B == algorithmName:
-           return mhash.MHASH_CRC32B
+            return mhash.MHASH_CRC32B
         elif ALGORITHM_MD2 == algorithmName:
-           return mhash.MHASH_MD2
+            return mhash.MHASH_MD2
         elif ALGORITHM_MD4 == algorithmName:
-           return mhash.MHASH_MD4
+            return mhash.MHASH_MD4
         elif ALGORITHM_MD5 == algorithmName:
-           return mhash.MHASH_MD5
+            return mhash.MHASH_MD5
         else:
-           return None
-
+            return None

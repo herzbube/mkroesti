@@ -5,7 +5,6 @@
 
 # mkroesti
 from mkroesti.registry import ProviderRegistry
-from mkroesti.errorhandling import MKRoestiError
 
 
 class AlgorithmFactory:
@@ -52,7 +51,7 @@ class AlgorithmFactory:
             providers = ProviderRegistry.getInstance().getProviders(algorithmName)
             algorithmsCreated = 0
             for provider in providers:
-                (isAvailable, reason) = provider.isAlgorithmAvailable(algorithmName)
+                (isAvailable, reason) = provider.isAlgorithmAvailable(algorithmName) #@UnusedVariable
                 if not isAvailable:
                     continue
                 if algorithmsCreated > 0 and not duplicateHashes:

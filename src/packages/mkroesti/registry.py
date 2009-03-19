@@ -4,7 +4,8 @@
 
 
 # mkroesti
-from mkroesti.names import *
+from mkroesti.errorhandling import MKRoestiError
+from mkroesti.names import * #@UnusedWildImport
 
 
 class ProviderRegistry:
@@ -91,11 +92,11 @@ class ProviderRegistry:
 
     def isAlgorithmKnown(self, algorithmName):
         """Returns True if the named algorithm is known to any registered provider."""
-        return (algorithmName in getAlgorithms())
+        return (algorithmName in self.getAlgorithmNames())
 
     def isAlgorithmAvailable(self, algorithmName):
         """Returns True if the named algorithm is available from any registered provider."""
-        return (algorithmName in getAvailableAlgorithmNames())
+        return (algorithmName in self.getAvailableAlgorithmNames())
 
     def getAliasNames(self):
         """Returns a list of all names of aliases known to registered providers."""

@@ -72,7 +72,7 @@ def main():
                 input = file.read()   # read() returns data as string
             finally:
                 file.close()
-        except IOError, (errno, strerror):
+        except IOError, (errno, strerror): #@UnusedVariable
             raise MKRoestiError(strerror)
     elif options.list:
         # --list implies --duplicate-hashes
@@ -102,7 +102,7 @@ def main():
     algorithms = list()
     for name in options.algorithms.split(","):
         # TODO we should first resolve everything in options.algorithms
-	# and then make sure that no algorithm name appears twice
+        # and then make sure that no algorithm name appears twice
         algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name, options.duplicateHashes))
 
     # Create hashes
