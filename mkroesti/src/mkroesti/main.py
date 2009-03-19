@@ -1,7 +1,11 @@
+# PSL
 import sys
 from optparse import OptionParser
-from mkroesti import algorithm
-from mkroesti import errorhandling
+
+# mkroesti
+from mkroesti import factory
+from mkroesti.errorhandling import MKRoestiError
+import mkroesti.provider
 
 
 def main():
@@ -11,6 +15,7 @@ def main():
     %prog [-e] [-a LIST]
     %prog -b [-a LIST] input
     %prog -f file [-a LIST]
+    %prog -l
     %prog -h"""
 
     parser = OptionParser(usage=usage, version=version)
@@ -28,6 +33,9 @@ def main():
     parser.add_option("-f", "--file",
                       action="store", dest="file", metavar="FILE",
                       help="Read the input from FILE")
+    parser.add_option("-l", "--list",
+                      action="store_true", dest="list", default=False,
+                      help="List supported algorithms, which ones are available, and which implementation sources exist for them")
 
     # Process options
     # Note: The order in which arguments are checked is important!
@@ -38,6 +46,8 @@ def main():
             parser.error("batch mode cannot be combined with echo mode")
         elif options.file:
             parser.error("batch mode cannot be combined with reading input from file")
+        elif options.list:
+            parser.error("batch mode cannot be combined with list mode")
         elif len(args) == 0:
             parser.error("missing input for batch processing")
         elif len(args) > 1:
@@ -46,6 +56,8 @@ def main():
     elif options.file is not None:
         if options.echo:
             parser.error("echo mode cannot be combined with reading from file")
+        elif options.list:
+            parser.error("batch mode cannot be combined with list mode")
         try:
             file = open(options.file, "r")
             try:
@@ -53,20 +65,27 @@ def main():
             finally:
                 file.close()
         except IOError, (errno, strerror):
-            raise errorhandling.MKRoestiError(strerror)
+            raise MKRoestiError(strerror)
+    elif options.list:
+        pass
     else:
         # Use read() to read until EOF is reached (e.g. Ctrl+D is pressed)
         # Note: Don't use input() or raw_input() because these are line oriented
         input = sys.stdin.read()
 
+    # Create algorithm objects
+    algorithms = list()
+    for name in options.algorithms.split(","):
+        # TODO we should make first resolve everything in options.algorithms
+	# and then make sure that no algorithm name appears twice
+        algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name))
+
     # Create hashes
-    registry = algorithm.AlgorithmRegistry.getInstance()
-    algorithmNames = algorithm.AlgorithmFactory.createAlgorithms(options.algorithms.split(","))
-    algorithmCount = len(algorithmNames)
-    for algorithmName in algorithmNames:
-        hash = registry.getAlgorithm(algorithmName).getHash(input)
+    algorithmCount = len(algorithms)
+    for algorithm in algorithms:
+        hash = algorithm.getHash(input)
         if algorithmCount == 1:
             print hash
         else:
-            print algorithmName + ": " + hash
+            print algorithm.getName() + ": " + str(hash)
 
