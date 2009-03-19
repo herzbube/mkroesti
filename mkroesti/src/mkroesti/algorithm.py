@@ -20,7 +20,10 @@ refer to algorithms by name.
 
 
 import base64
+import crypt
 import hashlib
+from random import randint
+import string
 
 import smbpasswd
 
@@ -191,6 +194,40 @@ class OpenSSLAlgorithm(AbstractAlgorithm):
           return False
 
 
+class WindowsLMAlgorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "windows-lm")
+
+    def getHash(self, input):
+        return smbpasswd.lmhash(input)
+
+
+class WindowsNTAlgorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "windows-nt")
+
+    def getHash(self, input):
+        return smbpasswd.nthash(input)
+
+
+class CryptAlgorithm(AbstractAlgorithm):
+    salt_chars = './' + string.ascii_letters + string.digits
+
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "crypt")
+
+    def getHash(self, input):
+        # As described in the docs of the crypt module:
+	#   salt is usually a random two-character string which will be used
+	#   to perturb the DES algorithm in one of 4096 ways. The characters
+	#   in salt must be in the set [./a-zA-Z0-9].
+        # The following implementation of generating the salt is taken verbatim
+	# (with the exception of fixing a typo) from this mailing list post:
+	#   http://mail.python.org/pipermail/python-list/2004-March/252058.html
+	salt = CryptAlgorithm.salt_chars[randint(0, 63)] + CryptAlgorithm.salt_chars[randint(0, 63)]
+        return crypt.crypt(input, salt)
+
+
 class AlgorithmFactory:
     """Factory class that instantiates algorithm classes."""
 
@@ -299,6 +336,12 @@ class AlgorithmFactory:
                 SHA512Algorithm()
             elif OpenSSLAlgorithm.supportsAlgorithm(algorithmName):
                 OpenSSLAlgorithm(algorithmName)
+            elif "windows-lm" == algorithmName:
+                WindowsLMAlgorithm()
+            elif "windows-nt" == algorithmName:
+                WindowsNTAlgorithm()
+            elif "crypt" == algorithmName:
+                CryptAlgorithm()
             else:
                 # TODO: Check for not-yet-implemented algorithms.
                 raise MKRoestiError("Unknown algorithm " + algorithmName)
