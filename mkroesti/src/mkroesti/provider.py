@@ -313,6 +313,12 @@ class WindowsHashProvider(DictAbstractProvider):
         namesDictionary = { ALIAS_CHKSUM : [ALGORITHM_WINDOWS_LM, ALGORITHM_WINDOWS_NT] }
         DictAbstractProvider.__init__(self, namesDictionary)
 
+    def isAlgorithmAvailable(self, algorithmName):
+        (isAvailable, moduleName) = algorithm.WindowsHashAlgorithms.isAvailable()
+        if not isAvailable:
+            return (False, moduleName + " module not found")
+        return (True, None)
+
     def getAlgorithmSource(self, algorithmName):
         return "smbpasswd"
 
@@ -341,6 +347,12 @@ class MHashProvider(DictAbstractProvider):
 	        ALGORITHM_TIGER_192]
             }
         DictAbstractProvider.__init__(self, namesDictionary)
+
+    def isAlgorithmAvailable(self, algorithmName):
+        (isAvailable, moduleName) = algorithm.MHashAlgorithms.isAvailable()
+        if not isAvailable:
+            return (False, moduleName + " module not found")
+        return (True, None)
 
     def getAlgorithmSource(self, algorithmName):
         return "mhash"
