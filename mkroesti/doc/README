@@ -28,6 +28,11 @@ Project description
     * MANUAL
     * ...
 
+* Using mkroesti from a SVN working copy
+  cd src/scripts
+  PYTHONPATH=../packages ./mkroesti --batch foo
+
+
 Research
 --------
 * the Python Standard Library

@@ -6,6 +6,7 @@ from optparse import OptionParser
 import getpass
 
 # mkroesti
+import mkroesti   # import stuff from __init__.py (e.g. mkroesti.version)
 from mkroesti import factory
 from mkroesti import provider   # very important! creates provider instances!!!
 from mkroesti import registry
@@ -14,7 +15,7 @@ from mkroesti.errorhandling import MKRoestiError
 
 def main():
     # Setup the option parser
-    version = "%prog 0.1"
+    version = "%prog " + mkroesti.version
     usage = """
     %prog [-e] [-a LIST] [-d]
     %prog -b [-a LIST] [-d] input

@@ -33,7 +33,7 @@ details.
       package_dir = {"": "src/packages"},
       packages = ["mkroesti"],
       # Listing scripts
-      scripts = ["src/scripts/mkroesti.py"],
+      scripts = ["src/scripts/mkroesti"],
       # Listing other stuff
 #      data_files = [("man page directory, ["man page file"])]
      )

@@ -2,9 +2,10 @@ Perform the following steps to make a release
 - update the ChangeLog (should have been done continuously, anyway)
 - replace the "Changes in this release" section of the README with a collection
   of the most important entries from the ChangeLog
-- bump the version number and the copyright year
+- bump the version number (and the copyright year, where applicable)
   - in the README file
   - in setup.py
+  - in mkroesti/__init__.py
 - perform tests
 - source control
   - commit all changes
