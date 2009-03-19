@@ -1,4 +1,3 @@
-
 Project description
 -------------------
 * Why mkroesti
@@ -11,7 +10,6 @@ Project description
   * python-smbpasswd
   * libcrypt-smbhash-perl
   * hashalot
-
 
 * Why "Rösti"?
   * Hash = Hash browns = Rösti
@@ -136,7 +134,7 @@ EXAMPLES
 EXIT CODES
 
   0  success
-  1  failure
+  2  error during parsing of command line arguments
 
 BUGS
 
