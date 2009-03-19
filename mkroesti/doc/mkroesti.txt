@@ -95,8 +95,11 @@ ALGORITHMS
   mkroesti defines the following keywords to identify distinct hash algorithms:
 
   base64
+  adler32
+  crc32
+  crc32b
   crypt        use local crypt()
-  *apr1         apr1 algorithm (Apache variant of the BSD algorithm)
+  apr1         apr1 algorithm (Apache variant of the BSD algorithm)
   md2
   md4
   md5
@@ -106,32 +109,36 @@ ALGORITHMS
   sha-256
   sha-384
   sha-512
-  *ripemd       original, superseded by ripemd-160
-  *ripemd-128
+  ripemd       original, superseded by ripemd-160
+  ripemd-128
   ripemd-160
-  *ripemd-256
-  *ripemd-320
-  *haval-128-[345]   3, 4 or 5 rounds
-  *haval-160-[345]
-  *haval-192-[345]
-  *haval-224-[345]
-  *haval-256-[345]
-  *whirlpool
-  *tiger-128
-  *tiger-160
-  *tiger-192
-  *tiger2
+  ripemd-256
+  ripemd-320
+  haval-128-[345]   3, 4 or 5 rounds
+  haval-160-[345]
+  haval-192-[345]
+  haval-224-[345]
+  haval-256-[345]
+  whirlpool
+  tiger-128
+  tiger-160
+  tiger-192
+  tiger2
+  snefru
+  gost
   windows-lm
   windows-nt
-  *mysql-password       MySQL's PASSWORD() function
+  mysql-password       MySQL's PASSWORD() function
 
   mkroesti defines the following aliases to refer to sets of hash algorithms
 
   all
+  chksum
   sha
   ripemd
   haval
   tiger
+  snefru
 
 EXAMPLES
 
@@ -173,6 +180,7 @@ DEPENDENCIES
     random
     string
     smbpasswd (see http://barryp.org/software/py-smbpasswd/)
+    mhash (see http://labix.org/python-mhash)
 
 SEE ALSO
 
@@ -209,14 +217,80 @@ General program flow:
 
 TODO
 ----
-* implement missing hashes
-* a couple of TODOs in the code
-* add a command line option to list the supported hashes
+* TODOs in the code
+* add support for "algorithm sources"
+  * determine which sources are available
+  * if an algorithm is available through several sources, automatically select one
+  * gracefully handle that an algorithm is not available at all
+  * add a command line option to list supported hashes, which ones are available, and which sources provide them
+* add support for "digest length"
+  * algorithms should be selectable by digest length
+  * for instance, there should be an alias "digest-160" that generates all hashes with a digest length of 160 bit
 * try to improve handling of large inputs
-* add base16, base32 encodings (provided by base64 module)
-* add adler32 and crc32 checksums (provided by zlib module)
-* cf. "man dgst": openssl supports "mdc2" digest; what is this?
-* cf. "man dgst": openssl supports "dss1" digest (for signing/verifying using the DSA algorithm), but this also requires "a source of random numbers"
-* gracefully handle the situation that an algorithm is not available, e.g. if a python module is not available, or OpenSSL does not provide the digest
+* find out why adler32 and crc32 checksums (provided by zlib module) are not correct
+  * adler32 for "foo": expected = 45018202 (hex, i.e. dec = 1157726722), actual = 42074437 (dec)
+  * crc32 for "foo": expected = A5C4FE49 (hex, i.e. dec = 2781150793), actual = -1938594527 (dec)
+  * see issue 1202: http://bugs.python.org/issue1202
+    * as per standard, the result should always be an unsigned number
+    * python 2.x implementation always returns a signed number
+* implement missing hashes
+  * apr1
+  * ripemd ("ripemd" currently is an alias)
+  * haval-*-[45]
+    * http://www.theserverpages.com/php/manual/en/ref.mhash.php
+  * tiger2
+  * mysql-passwd
+* add even more hashes
+  * HAS-160
+  * MDC-2 (probably provided by hashlib)
+  * N-Hash
+  * RadioGatún
+  * HAS-V
+  * MASH-1, MASH-2
+  * hashemall.com has "3 passes" and "4 passes" variants of tiger-128/160/192; mkroesti currently provides the "3 passes" variant only
 * implement handling of encoding, or throw the issue out & add a comment under "BUGS"
 * add test suite
+
+RESEARCH
+--------
+What is available
+* the Python Standard Library
+  * provides a couple of modules under the heading "Cryptographic Services" [1]
+    * from these I use only the "hashlib" module because it provides all the algorithms of the other modules, and more
+      * always present in hashlib: md5, sha-1, sha-224, sha-256, sha-384, sha-512
+      * presence depends on the version of the underlying OpenSSL: ripemd-160, sha-0, md2, md4
+  * provides a couple of encoding modules
+    * "base64" module: provides base64
+  * provides the "crypt" module with access to the system's crypt() function
+* the module "smbpasswd" [2]; Debian package "python-smbpasswd"; the module provides these algorithms
+  * windows-lm, windows-nt
+* the module "m2crypto" (MeTooCrypto) [3] is a wrapper for OpenSSL; Debian package "python-m2crypto"
+  * investigate
+* the module "python-mcrypt" [4] is a wrapper for the mcrypt library
+  * how to get the python module
+    * download
+    * unpack tar ball
+    * install dependencies (python-dev, libmcrypt-dev)
+    * ./setup.py build
+    * ./setup.py install
+  * what does the library/python module provide?
+* the module "python-mhash" [5] is a wrapper for the mcrypt library
+  * how to get the python module
+    * download
+    * unpack tar ball
+    * install dependencies (python-dev, libmhash-dev)
+    * ./setup.py build
+    * ./setup.py install
+  * the library/python module provides the following algorithms
+    * haval-128, haval-160, haval-192, haval-224, haval-256 (3 rounds variant)
+    * ripemd-128, ripemd-256, ripemd-320
+    * tiger-128, tiger-160, tiger-192
+    * whirlpool
+    * snefru-128, snefru-256
+    * gost
+
+[1] http://www.python.org/doc/current/library/crypto.html
+[2] http://barryp.org/software/py-smbpasswd/
+[3] http://chandlerproject.org/Projects/MeTooCrypto
+[4] http://labix.org/python-mcrypt
+[5] http://labix.org/python-mhash
