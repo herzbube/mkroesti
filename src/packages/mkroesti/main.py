@@ -18,10 +18,22 @@ def main(args = None):
 
     args is the list of command line arguments that should be used (default is
     sys.argv[1:]). This is mainly intended for testing purposes.
+
+    Writes output to sys.stdout.
+
+    Does not return a value. If no error has been raised, a command line program
+    should now return with exit code 0.
+
+    Potentially raises all errors defined in mkroesti.errorhandling.
+
+    As a special case, if the command line argument "-h" or "--version" is
+    specified, sys.exit(0) is called, which raises SystemExit.
     """
 
     # Adds providers with registry; must do this early because processing some
     # of the options relies on providers already being present.
+    # TODO: Define a mechanism that allows third-party providers to be
+    # registered.
     provider.registerProviders()
 
     # Create and set up the option parser
