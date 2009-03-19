@@ -1,3 +1,24 @@
+* add test suite
+* prepare project for going public
+  * add -V/--version option; encode version in __init__.py
+  * create repository for mkroesti
+  * add GPL
+    * COPYING file
+    * file header
+  * write ReleaseSteps
+  * start filling in ChangeLog
+  * write INSTALL
+  * improve README
+    * add section "How to extend mkroesti" to README
+    * add section "How to test" to README
+    * add section "How to generate documentation" to README
+    * add section "Dependencies" to README
+  * fix MANUAL so that a proper man page can be generated from it
+  * add a nice "long description" to setup.py
+  * determine and document what is the minimum required version of Python for mkroesti
+* go public
+  * create a web page
+  * register with PyPI?
 * TODOs in the code
 * try to improve handling of large inputs
 * find out why adler32 and crc32 checksums (provided by zlib module) are not correct
@@ -22,21 +43,3 @@
   * HAS-V
   * MASH-1, MASH-2
   * hashemall.com has "3 passes" and "4 passes" variants of tiger-128/160/192; mkroesti currently provides the "3 passes" variant only
-* add test suite
-* add GPL
-  * COPYING file
-  * file header
-* write ReleaseSteps
-* start filling in ChangeLog
-* write INSTALL
-* add section "How to extend mkroesti" to README
-* add section "How to test" to README
-* add section "How to generate documentation" to README
-* add section "Dependencies" to README
-* fix MANUAL so that a proper man page can be generated from it
-* create a web page
-* add a nice "long description" to setup.py
-* rename script mkroesti.py to mkroesti
-* create repository for mkroesti
-* register with PyPI?
-* add -V/--version option; encode version in __init__.py

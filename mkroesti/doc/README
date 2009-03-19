@@ -6,10 +6,9 @@ Project description
   * Since there is no real justification left to realize the project, I settled for "this is a learning project"
 
 * Why "mkroesti"?
-  * Another convoluted pun made up by a programmer with a weird sense of humor
-  * mkroesti = make roesti
+  * Another convoluted pun made up by a programmer with a weird sense of humor. This is an attempt at decryption :-)
   * "roesti" is transcribed from "Rösti", which contains the German umlaut "ö" (&ouml; as an HTML entity reference)
-  * Hash = Hash browns = Rösti
+  * Rösti is a potato dish from Switzerland. I associate Rösti with the English translation "hash browns", therefore, "make hashes" for me is "make rösti" :-)
   * so it all boils down to saying "make hashes"
   * See these Wikipedia references:
     http://en.wikipedia.org/wiki/R%C3%B6sti
@@ -28,10 +27,12 @@ Project description
     * MANUAL
     * ...
 
-* Using mkroesti from a SVN working copy
+* Using mkroesti from an SVN working copy
   cd src/scripts
   PYTHONPATH=../packages ./mkroesti --batch foo
 
+* Running tests from an SVN working copy
+  python setup.py test
 
 Research
 --------
