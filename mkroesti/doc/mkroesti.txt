@@ -5,12 +5,6 @@ Project description
   * In time I found utilities that do everything mkroesti is intended to do, and probably better
   * Since there is no real justification left to realize the project, I settled for "this is a learning project"
 
-* Other tools
-  * Online hash generators
-  * python-smbpasswd
-  * libcrypt-smbhash-perl
-  * hashalot
-
 * Why "Rösti"?
   * Hash = Hash browns = Rösti
     http://en.wikipedia.org/wiki/R%C3%B6sti
@@ -29,31 +23,6 @@ Project description
     * man page / HTML
     * README
     * ...
-
-* Additional hash algorithms
-  * python-bcrypt
-
-
-Design
-------
-* factory that creates algorithm instances based on the name(s) specified on the cmdline
-* how do we handle aliases?
-  * option 1: factory resolves aliases to the real algorithm names and creates the necessary instances
-    * pro
-      * alias to algorithm mapping is kept in one place
-      * complexity of algorithm class is low
-    * con
-      * algorithm names appear in several places
-      * factory class complexity is slightly higher
-  * option 2: each algorithm knows which aliases it belongs to
-    * pro
-      * algorithm names are kept in one place
-      * factory class complexity is low
-    * con
-      * alias names appear in several places
-      * complexity of algorithm class is higher
-      * it might also be necessary to extend the aliasing concept into the registry
-   * as long as the aliasing concept does not require more than creating multiple instances, option 1 is better
 
 
 Specification/Manual
@@ -98,8 +67,10 @@ ALGORITHMS
   adler32
   crc32
   crc32b
-  crypt        use local crypt()
-  apr1         apr1 algorithm (Apache variant of the BSD algorithm)
+  crypt            local crypt()
+  crypt-md5        md5-based crypt (hash starts with $1$)
+  crypt-apr1       md5-based crypt, Apache variant (hash starts with $apr1$)
+  crypt-blowfish   blowfish-based crypt (hash starts with $2a$)
   md2
   md4
   md5
@@ -134,6 +105,7 @@ ALGORITHMS
 
   all
   chksum
+  crypt
   sha
   ripemd
   haval
@@ -181,6 +153,7 @@ DEPENDENCIES
     string
     smbpasswd (see http://barryp.org/software/py-smbpasswd/)
     mhash (see http://labix.org/python-mhash)
+    bcrypt (see http://www.mindrot.org/projects/py-bcrypt/)
 
 SEE ALSO
 
@@ -234,7 +207,8 @@ TODO
     * as per standard, the result should always be an unsigned number
     * python 2.x implementation always returns a signed number
 * implement missing hashes
-  * apr1
+  * crypt-apr1
+  * crypt-md5
   * ripemd ("ripemd" currently is an alias)
   * haval-*-[45]
     * http://www.theserverpages.com/php/manual/en/ref.mhash.php
@@ -251,30 +225,21 @@ TODO
 * implement handling of encoding, or throw the issue out & add a comment under "BUGS"
 * add test suite
 
-RESEARCH
+Research
 --------
-What is available
 * the Python Standard Library
   * provides a couple of modules under the heading "Cryptographic Services" [1]
     * from these I use only the "hashlib" module because it provides all the algorithms of the other modules, and more
       * always present in hashlib: md5, sha-1, sha-224, sha-256, sha-384, sha-512
-      * presence depends on the version of the underlying OpenSSL: ripemd-160, sha-0, md2, md4
+      * presence of the following depends on the version of the underlying OpenSSL: ripemd-160, sha-0, md2, md4
   * provides a couple of encoding modules
     * "base64" module: provides base64
   * provides the "crypt" module with access to the system's crypt() function
 * the module "smbpasswd" [2]; Debian package "python-smbpasswd"; the module provides these algorithms
   * windows-lm, windows-nt
-* the module "m2crypto" (MeTooCrypto) [3] is a wrapper for OpenSSL; Debian package "python-m2crypto"
+* the module "m2crypto" (MeTooCrypto) [3]; Debian package "python-m2crypto"; is a wrapper for OpenSSL
   * investigate
-* the module "python-mcrypt" [4] is a wrapper for the mcrypt library
-  * how to get the python module
-    * download
-    * unpack tar ball
-    * install dependencies (python-dev, libmcrypt-dev)
-    * ./setup.py build
-    * ./setup.py install
-  * what does the library/python module provide?
-* the module "python-mhash" [5] is a wrapper for the mcrypt library
+* the module "mhash" [4]; manually built package "python-mhash"; is a wrapper for the mhash library
   * how to get the python module
     * download
     * unpack tar ball
@@ -288,9 +253,45 @@ What is available
     * whirlpool
     * snefru-128, snefru-256
     * gost
+* the module "mcrypt" [5]; manually built package "python-mcrypt"; is a wrapper for the mcrypt library
+  * how to get the python module
+    * download
+    * unpack tar ball
+    * install dependencies (python-dev, libmcrypt-dev)
+    * ./setup.py build
+    * ./setup.py install
+  * what does the library/python module provide?
+* the module "bcrypt" [5]; Debian package "python-bcrypt"; the module provides this algorithm
+  * crypt-blowfish
+* details about the Apache-specific md5 algorithm can be found here [7]; the page mentions that OpenSSL knows the algorithm, therefore I try to use a python wrapper for OpenSSL to get at the algorithm
 
 [1] http://www.python.org/doc/current/library/crypto.html
 [2] http://barryp.org/software/py-smbpasswd/
 [3] http://chandlerproject.org/Projects/MeTooCrypto
-[4] http://labix.org/python-mcrypt
-[5] http://labix.org/python-mhash
+[4] http://labix.org/python-mhash
+[5] http://labix.org/python-mcrypt
+[6] http://www.mindrot.org/projects/py-bcrypt/
+[7] http://httpd.apache.org/docs/trunk/misc/password_encryptions.html
+
+Design
+------
+* factory that creates algorithm instances based on the name(s) specified on the cmdline
+* how do we handle aliases?
+  * option 1: factory resolves aliases to the real algorithm names and creates the necessary instances
+    * pro
+      * alias to algorithm mapping is kept in one place
+      * complexity of algorithm class is low
+    * con
+      * algorithm names appear in several places
+      * factory class complexity is slightly higher
+  * option 2: each algorithm knows which aliases it belongs to
+    * pro
+      * algorithm names are kept in one place
+      * factory class complexity is low
+    * con
+      * alias names appear in several places
+      * complexity of algorithm class is higher
+      * it might also be necessary to extend the aliasing concept into the registry
+   * as long as the aliasing concept does not require more than creating multiple instances, option 1 is better
+
+
