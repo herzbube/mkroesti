@@ -24,8 +24,10 @@ import crypt
 import hashlib
 from random import randint
 import string
+import zlib
 
 import smbpasswd
+import mhash
 
 from mkroesti.errorhandling import MKRoestiError
 
@@ -96,12 +98,46 @@ class AbstractAlgorithm(AlgorithmInterface):
         return self.name
 
 
+class Base16Algorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "base16")
+
+    def getHash(self, input):
+        return base64.b16encode(input)
+
+
+class Base32Algorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "base32")
+
+    def getHash(self, input):
+        return base64.b32encode(input)
+
+
 class Base64Algorithm(AbstractAlgorithm):
     def __init__(self):
         AbstractAlgorithm.__init__(self, "base64")
 
     def getHash(self, input):
         return base64.b64encode(input)
+
+
+class Adler32Algorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "adler32")
+
+    def getHash(self, input):
+        # TODO should return an unsigned hex value
+        return zlib.adler32(input)
+
+
+class CRC32Algorithm(AbstractAlgorithm):
+    def __init__(self):
+        AbstractAlgorithm.__init__(self, "crc32")
+
+    def getHash(self, input):
+        # TODO should return an unsigned hex value
+        return zlib.crc32(input)
 
 
 class MD5Algorithm(AbstractAlgorithm):
@@ -194,6 +230,89 @@ class OpenSSLAlgorithm(AbstractAlgorithm):
           return False
 
 
+class MHashAlgorithm(AbstractAlgorithm):
+    """Generic class that provides access to mhash algorithms by name.
+
+    Use the supportsAlgorithm() method to check whether you can create an
+    instance of MHashAlgorithm using the given name.
+    """
+    
+    def __init__(self, name):
+        AbstractAlgorithm.__init__(self, name)
+
+    def getHash(self, input):
+        mhashAlgorithmName = MHashAlgorithm.mapAlgorithmName(self.getName())
+        algorithm = mhash.MHASH(mhashAlgorithmName)
+        algorithm.update(input)
+        return algorithm.hexdigest()
+
+    @staticmethod
+    def mapAlgorithmName(mkroestiName):
+        if "sha-1" == mkroestiName:
+           return mhash.MHASH_SHA1
+        elif "sha-224" == mkroestiName:
+           return mhash.MHASH_SHA224
+        elif "sha-256" == mkroestiName:
+           return mhash.MHASH_SHA256
+        elif "sha-384" == mkroestiName:
+           return mhash.MHASH_SHA384
+        elif "sha-512" == mkroestiName:
+           return mhash.MHASH_SHA512
+        elif "ripemd-128" == mkroestiName:
+           return mhash.MHASH_RIPEMD128
+        elif "ripemd-160" == mkroestiName:
+           return mhash.MHASH_RIPEMD160
+        elif "ripemd-256" == mkroestiName:
+           return mhash.MHASH_RIPEMD256
+        elif "ripemd-320" == mkroestiName:
+           return mhash.MHASH_RIPEMD320
+        elif "haval-128-3" == mkroestiName:
+           return mhash.MHASH_HAVAL128
+        elif "haval-160-3" == mkroestiName:
+           return mhash.MHASH_HAVAL160
+        elif "haval-192-3" == mkroestiName:
+           return mhash.MHASH_HAVAL192
+        elif "haval-224-3" == mkroestiName:
+           return mhash.MHASH_HAVAL224
+        elif "haval-256-3" == mkroestiName:
+           return mhash.MHASH_HAVAL256
+        elif "snefru-128" == mkroestiName:
+           return mhash.MHASH_SNEFRU128
+        elif "snefru-256" == mkroestiName:
+           return mhash.MHASH_SNEFRU256
+        elif "tiger-128" == mkroestiName:
+           return mhash.MHASH_TIGER128
+        elif "tiger-160" == mkroestiName:
+           return mhash.MHASH_TIGER160
+        elif "tiger-192" == mkroestiName:
+           return mhash.MHASH_TIGER
+        elif "whirlpool" == mkroestiName:
+           return mhash.MHASH_WHIRLPOOL
+        elif "gost" == mkroestiName:
+           return mhash.MHASH_GOST
+        elif "adler32" == mkroestiName:
+           return mhash.MHASH_ADLER32
+        elif "crc32" == mkroestiName:
+           return mhash.MHASH_CRC32
+        elif "crc32b" == mkroestiName:
+           return mhash.MHASH_CRC32B
+        elif "md2" == mkroestiName:
+           return mhash.MHASH_MD2
+        elif "md4" == mkroestiName:
+           return mhash.MHASH_MD4
+        elif "md5" == mkroestiName:
+           return mhash.MHASH_MD5
+        else:
+           return None
+
+    @staticmethod
+    def supportsAlgorithm(name):
+       if MHashAlgorithm.mapAlgorithmName(name) is not None:
+           return True
+       else:
+          return False
+
+
 class WindowsLMAlgorithm(AbstractAlgorithm):
     def __init__(self):
         AbstractAlgorithm.__init__(self, "windows-lm")
@@ -244,7 +363,6 @@ class AlgorithmFactory:
         returnList = list()
         for algorithmName in algorithmNames:
             if "all" == algorithmName:
-                returnList.append("base64")
                 returnList.append("crypt")
                 returnList.append("apr1")
                 returnList.append("md2")
@@ -254,10 +372,12 @@ class AlgorithmFactory:
                 returnList.append("windows-lm")
                 returnList.append("windows-nt")
                 returnList.append("mysql-password")
+                returnList.extend(AlgorithmFactory.resolveAliases(["chksum"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["sha"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["ripemd"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["haval"]))
                 returnList.extend(AlgorithmFactory.resolveAliases(["tiger"]))
+                returnList.extend(AlgorithmFactory.resolveAliases(["snefru"]))
             elif "sha" == algorithmName:
                 returnList.append("sha-0")
                 returnList.append("sha-1")
@@ -288,10 +408,23 @@ class AlgorithmFactory:
                 returnList.append("haval-256-4")
                 returnList.append("haval-256-5")
             elif "tiger" == algorithmName:
+                # TODO actually "tiger" should refer to tiger-192; we should
+                # provide a different alias for referring to "all tiger algos",
+                # for instance "tiger-all"
                 returnList.append("tiger-128")
                 returnList.append("tiger-160")
                 returnList.append("tiger-192")
                 returnList.append("tiger2")
+            elif "snefru" == algorithmName:
+                returnList.append("snefru-128")
+                returnList.append("snefru-256")
+            elif "chksum" == algorithmName:
+                returnList.append("base16")
+                returnList.append("base32")
+                returnList.append("base64")
+                returnList.append("adler32")
+                returnList.append("crc32")
+                returnList.append("crc32b")
             else:
                 returnList.append(algorithmName)
         return returnList
@@ -320,8 +453,17 @@ class AlgorithmFactory:
         # complains about algorithms registering multiple times, which might
         # confuse the user.
         for algorithmName in algorithmNames:
-            if "base64" == algorithmName:
+            if "base16" == algorithmName:
+                Base16Algorithm()
+            elif "base32" == algorithmName:
+                Base32Algorithm()
+            elif "base64" == algorithmName:
                 Base64Algorithm()
+# TODO disabled zlib variant because it returns strange/incorrect results
+#            elif "adler32" == algorithmName:
+#                Adler32Algorithm()
+#            elif "crc32" == algorithmName:
+#                CRC32Algorithm()
             elif "md5" == algorithmName:
                 MD5Algorithm()
             elif "sha-1" == algorithmName:
@@ -336,6 +478,8 @@ class AlgorithmFactory:
                 SHA512Algorithm()
             elif OpenSSLAlgorithm.supportsAlgorithm(algorithmName):
                 OpenSSLAlgorithm(algorithmName)
+            elif MHashAlgorithm.supportsAlgorithm(algorithmName):
+                MHashAlgorithm(algorithmName)
             elif "windows-lm" == algorithmName:
                 WindowsLMAlgorithm()
             elif "windows-nt" == algorithmName:
