@@ -1,0 +1,65 @@
+Purpose of this document
+------------------------
+This document contains some design notes for mkroesti.
+
+
+Design notes
+------------
+* Algorithms
+  * Attributes
+    * name
+    * provider
+  * Operations
+    * get name
+    * get provider
+    * hash a given input and return the result as a string; the string's form depends on what is usually expected from the algorithm (e.g. hex digest, signed number, prefixed hash, etc.)
+  * Instances
+    * are created by mkroesti.factory.AlgorithmFactory, which delegates creation to the appropriate provider
+    * must implement mkroesti.algorithm.AlgorithmInterface
+
+* Providers
+  * Attributes
+    * names of provided algorithms; names must be unique, i.e. a single provider can provide only uniquely named algorithms
+    * names of provided aliases; names must be unique, i.e. a single provider can provide only uniquely named aliases
+    * mapping of algorithm names and descriptions of implementation sources of these algorithms
+    * mapping of algorithm names and aliases that the algorithm names belong to
+  * Operations
+    * get names of provided algorithms
+    * is an algorithm with a given name provided?
+    * is an algorithm with a given name available?
+    * return string description of the implementation source for an algorithm with a given name (e.g. "Python Standard Library module hashlib")
+    * create and return algorithm object for a given algorithm name
+    * get names of provided aliases
+    * get names of algorithms that a given alias resolves to
+  * Instances
+    * are usually created right after the class declaration; each provider class should be instantiated exactly once
+    * must implement mkroesti.provider.ProviderInterface
+    * must register with mkroesti.registry.ProviderRegistry; this can be accomplished by subclassing mkroesti.provider.ProviderBase (which in turn subclasses mkroesti.provider.ProviderInterface)
+
+* Registry
+  * Attributes
+    * list of providers
+  * Operations
+    * register provider
+    * does an algorithm with a given name exist?
+    * is an algorithm with a given name available?
+    * return the providers that the algorithm with a given name is available from
+    * does an alias with a given name exist?
+    * return the names of algorithms that a given alias resolves to
+  * Instances
+    * there is exactly one instance
+    * implements the Singleton design pattern
+
+* Factory
+  * Attributes
+    * should all available algorithm objects be created for a given algorithm name, or only one?
+  * Operations
+    * create and return list of algorithm objects for a given alias or algorithm name
+  * Instances
+    * there is exactly one instance
+    * implements the Singleton design pattern
+  * Handling of aliases
+    * when a create request comes in, it must first be established whether the given name is an alias or an algorithm name
+    * to this end, the factory assumes that the name is an alias and tries to resolve the alias using mkroesti.registry.ProviderRegistry
+    * if resolution is successful, create requests are spawned in a recursive manner for each of the names obtained by alias resolution
+    * if resolution is not successful, the create request proceeds as normal

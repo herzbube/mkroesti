@@ -1,144 +1,178 @@
-Project description
--------------------
-* Why mkroesti?
-  * At first because I thought it might be useful to me, or someone else
-  * In time I found utilities that do everything mkroesti is intended to do, and probably better
-  * Since there is no real justification left to realize the project, I settled for "this is a learning project"
+Table of Contents
+-----------------
+1. Introduction
+2. Changes in this release
+3. License and source code
+4. Why mkroesti? Why "mkroesti"?
+5. How to extend mkroesti
+6. How to test mkroesti
+7. How to generate the documentation
+8. Dependencies
+9. Platforms
+10. Limitations
 
-* Why "mkroesti"?
-  * Another convoluted pun made up by a programmer with a weird sense of humor. This is an attempt at decryption :-)
-  * "roesti" is transcribed from "Rösti", which contains the German umlaut "ö" (&ouml; as an HTML entity reference)
-  * Rösti is a potato dish from Switzerland. I associate Rösti with the English translation "hash browns", therefore, "make hashes" for me is "make rösti" :-)
-  * so it all boils down to saying "make hashes"
-  * See these Wikipedia references:
-    http://en.wikipedia.org/wiki/R%C3%B6sti
-    http://en.wikipedia.org/wiki/Hash_browns
 
-* Specifications are written in the form of a manual
+Introduction
+------------
+mkroesti is a program written in Python that, given an input, is capable of
+generating different kinds of cryptographic and other hashes from that input.
+mkroesti takes its input either interactively from the user, or from any one of
+the following sources: standard input, the command line, any file. So far,
+mkroesti does not have its own implementation of hash algorithms. Instead, it
+relies on other modules to provide algorithm implementations and acts as a front
+end to those modules. See the section "Dependencies" for details.
 
-* Learning goals
-  * programming in Python
-  * using a Python program as CGI script
-  * hashes & encodings
-    * note: encoding handling thrown out the window
-  * write documentation in XML and use XSLT to transform it into various formats
-    * man page
-    * man page / HTML
-    * MANUAL
-    * ...
+At the moment, mkroesti can only be run as a command line utility. One of the
+next versions will allow mkroesti to be run as a web application.
 
-* Using mkroesti from an SVN working copy
+
+Changes in this release
+-----------------------
+This is the initial release 0.1.
+
+For more details see the ChangeLog document.
+
+
+License and source code
+-----------------------
+mkroesti is licensed under the GNU General Public License (GPLv3). You should
+have received a copy of the license along with the mkroesti module distribution
+(see the file COPYING inside the distribution). If not, see
+<http://www.gnu.org/licenses/>.
+
+The source code for mkroesti can be downloaded from its homepage
+http://www.herzbube.ch/mkroesti. The source files are packaged into a tar ball
+using the Distutils Python module. Alternatively you may also get the source
+code from this subversion respository: http://herzbube.ch/svn/mkroesti/
+
+
+Why mkroesti? Why "mkroesti"?
+-----------------------------
+Why mkroesti (the motivation)? During my effort to integrate Samba with LDAP, I
+found that Samba wants to store a user's password twice in the LDAP directory:
+the NT password hash and the LM password hash. I was looking for information on
+how to generate these two kinds of hashes, but found no readily available tool.
+It occurred to me that it would make a nice little and focused project to create
+a command line tool that would be able to generate a wide array of hashes from a
+given input, including of course NT and LM password hashes. In addition,
+mkroesti is also my "learning python" project.
+
+Why "mkroesti" (the name)? Well, basically it's just another convoluted pun made
+up by a programmer with a weird sense of humor. This is an attempt at
+decryption :-)
+- "roesti" is transcribed from "Rösti", which contains the German umlaut "ö"
+  (&ouml; as an HTML entity reference)
+- Rösti is a potato dish from Switzerland. I associate Rösti with the English
+  translation "hash browns", therefore, "make hashes" for me is "make rösti" :-)
+- so it all boils down to saying "make hashes" 
+- See these Wikipedia references:
+  http://en.wikipedia.org/wiki/R%C3%B6sti
+  http://en.wikipedia.org/wiki/Hash_browns
+
+
+How to extend mkroesti
+----------------------
+TODO
+
+
+How to test mkroesti
+--------------------
+Run unit tests on the command line, from within an SVN working copy:
+  python setup.py test
+
+Run unit tests from within Eclipse ("Python unittest" configuration type):
+- PyDev must be installed for the following to work
+- right-click on the folder that contains your tests and select
+  "Run as... -> Python unittest"
+- configure the resulting run configuration as follows:
+  - name = mkroesti tests
+  - project = mkroesti
+  - main module = ${workspace_loc:mkroesti/src/packages/tests} (or any other folder that contains tests)
+  - on the "Arguments" tab: working directory = ${workspace_loc:mkroesti/src/packages}
+
+Run unit tests from within Eclipse ("Python Run" configuration type using setup.py):
+- PyDev must be installed for the following to work
+- open "Run configurations" dialog
+- double-click "Python Run" to create a new configuration
+- configure the resulting run configuration as follows:
+  - name = mkroesti tests (setup.py)
+  - project = mkroesti
+  - main module = ${workspace_loc:mkroesti/setup.py}
+  - on the "Arguments" tab: program arguments = "test" 
+
+Run mkroesti on the command line, from within an SVN working copy:
   cd src/scripts
   PYTHONPATH=../packages ./mkroesti --batch foo
 
-* Running tests from an SVN working copy
-  python setup.py test
 
-Research
---------
-* the Python Standard Library
-  * provides a couple of modules under the heading "Cryptographic Services" [1]
-    * from these I use only the "hashlib" module because it provides all the algorithms of the other modules, and more
-      * always present in hashlib: md5, sha-1, sha-224, sha-256, sha-384, sha-512
-      * presence of the following depends on the version of the underlying OpenSSL: ripemd-160, sha-0, md2, md4
-  * provides a couple of encoding modules
-    * "base64" module: provides base64
-  * provides the "crypt" module with access to the system's crypt() function
-* the module "smbpasswd" [2]; Debian package "python-smbpasswd"; the module provides these algorithms
-  * windows-lm, windows-nt
-* the module "m2crypto" (MeTooCrypto) [3]; Debian package "python-m2crypto"; is a wrapper for OpenSSL
-  * investigate
-* the module "mhash" [4]; manually built package "python-mhash"; is a wrapper for the mhash library
-  * how to get the python module
-    * download
-    * unpack tar ball
-    * install dependencies (python-dev, libmhash-dev)
-    * ./setup.py build
-    * ./setup.py install
-  * the library/python module provides the following algorithms
-    * haval-128, haval-160, haval-192, haval-224, haval-256 (3 rounds variant)
-    * ripemd-128, ripemd-256, ripemd-320
-    * tiger-128, tiger-160, tiger-192
-    * whirlpool
-    * snefru-128, snefru-256
-    * gost
-* the module "mcrypt" [5]; manually built package "python-mcrypt"; is a wrapper for the mcrypt library
-  * how to get the python module
-    * download
-    * unpack tar ball
-    * install dependencies (python-dev, libmcrypt-dev)
-    * ./setup.py build
-    * ./setup.py install
-  * what does the library/python module provide?
-* the module "bcrypt" [5]; Debian package "python-bcrypt"; the module provides this algorithm
-  * crypt-blowfish
-* details about the Apache-specific md5 algorithm can be found here [7]; the page mentions that OpenSSL knows the algorithm, therefore I try to use a python wrapper for OpenSSL to get at the algorithm
+How to generate the documentation
+---------------------------------
+TODO
+
+
+Dependencies
+------------
+This section documents which modules provide hash algorithms for mkroesti.
+
+The Python Standard Library
+- provides a couple of modules under the heading "Cryptographic Services" [1]
+  - from these mkroesti uses only the "hashlib" module because it provides all
+    the algorithms of the other modules, and more
+    - always present in hashlib: md5, sha-1, sha-224, sha-256, sha-384, sha-512
+    - presence of the following depends on the version of the underlying
+      OpenSSL: ripemd-160, sha-0, md2, md4
+- provides a couple of encoding (i.e. not cryptographic) modules 
+  - "base64" module: provides base64
+- provides the "crypt" module with access to the system's crypt() function
+
+The module "smbpasswd" [2]
+- Debian package "python-smbpasswd"
+- the module provides these algorithms: windows-lm, windows-nt
+
+The module "mhash" [3]
+- there is no Debian package, the package needs to be built manually
+- the module is a wrapper for the mhash library
+- how to get/build the package
+  - download
+  - unpack tar ball
+  - install dependencies (Debian packages python-dev, libmhash-dev)
+  - ./setup.py build
+  - ./setup.py install
+- the library/python module provides the following algorithms:
+  - haval-128, haval-160, haval-192, haval-224, haval-256 (3 rounds variant)
+  - ripemd-128, ripemd-256, ripemd-320
+  - tiger-128, tiger-160, tiger-192
+  - whirlpool
+  - snefru-128, snefru-256
+  - gost
+
+The module "bcrypt" [4]
+- Debian package "python-bcrypt"
+- the module provides this algorithm: crypt-blowfish
 
 [1] http://www.python.org/doc/current/library/crypto.html
 [2] http://barryp.org/software/py-smbpasswd/
-[3] http://chandlerproject.org/Projects/MeTooCrypto
-[4] http://labix.org/python-mhash
-[5] http://labix.org/python-mcrypt
-[6] http://www.mindrot.org/projects/py-bcrypt/
-[7] http://httpd.apache.org/docs/trunk/misc/password_encryptions.html
+[3] http://labix.org/python-mhash
+[4] http://www.mindrot.org/projects/py-bcrypt/
 
-Design
-------
-* Algorithms
-  * Attributes
-    * name
-    * provider
-  * Operations
-    * get name
-    * get provider
-    * hash a given input and return the result as a string; the string's form depends on what is usually expected from the algorithm (e.g. hex digest, signed number, prefixed hash, etc.)
-  * Instances
-    * are created by mkroesti.factory.AlgorithmFactory, which delegates creation to the appropriate provider
-    * must implement mkroesti.algorithm.AlgorithmInterface
 
-* Providers
-  * Attributes
-    * names of provided algorithms; names must be unique, i.e. a single provider can provide only uniquely named algorithms
-    * names of provided aliases; names must be unique, i.e. a single provider can provide only uniquely named aliases
-    * mapping of algorithm names and descriptions of implementation sources of these algorithms
-    * mapping of algorithm names and aliases that the algorithm names belong to
-  * Operations
-    * get names of provided algorithms
-    * is an algorithm with a given name provided?
-    * is an algorithm with a given name available?
-    * return string description of the implementation source for an algorithm with a given name (e.g. "Python Standard Library module hashlib")
-    * create and return algorithm object for a given algorithm name
-    * get names of provided aliases
-    * get names of algorithms that a given alias resolves to
-  * Instances
-    * are usually created right after the class declaration; each provider class should be instantiated exactly once
-    * must implement mkroesti.provider.ProviderInterface
-    * must register with mkroesti.registry.ProviderRegistry; this can be accomplished by subclassing mkroesti.provider.ProviderBase (which in turn subclasses mkroesti.provider.ProviderInterface)
+Python versions
+---------------
+I develop and test mkroesti on my Mac OS X machine, and on a Debian box set up
+for the testing distribution. When I made the first release of mkroesti, these
+machines were using Python version 2.5.1 and 2.5.2, respectively. Since that
+time I did not knowingly add any code that requires a newer Python version. It
+should therefore be safe to assume that the minimum requirement for running
+mkroesti is Python 2.5
 
-* Registry
-  * Attributes
-    * list of providers
-  * Operations
-    * register provider
-    * does an algorithm with a given name exist?
-    * is an algorithm with a given name available?
-    * return the providers that the algorithm with a given name is available from
-    * does an alias with a given name exist?
-    * return the names of algorithms that a given alias resolves to
-  * Instances
-    * there is exactly one instance
-    * implements the Singleton design pattern
 
-* Factory
-  * Attributes
-    * should all available algorithm objects be created for a given algorithm name, or only one?
-  * Operations
-    * create and return list of algorithm objects for a given alias or algorithm name
-  * Instances
-    * there is exactly one instance
-    * implements the Singleton design pattern
-  * Handling of aliases
-    * when a create request comes in, it must first be established whether the given name is an alias or an algorithm name
-    * to this end, the factory assumes that the name is an alias and tries to resolve the alias using mkroesti.registry.ProviderRegistry
-    * if resolution is successful, create requests are spawned in a recursive manner for each of the names obtained by alias resolution
-    * if resolution is not successful, the create request proceeds as normal
+Limitations
+-----------
+Not all hash algorithms advertised in the man page are actually provided.
+
+mkroesti is not good at handling large files, because it tries to read its
+entire input into memory.
+
+mkroesti does nothing at all about string encodings; if in doubt assume the
+worst.
+

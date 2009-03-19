@@ -1,7 +1,7 @@
 Perform the following steps to make a release
 - update the ChangeLog (should have been done continuously, anyway)
 - replace the "Changes in this release" section of the README with a collection
-  of the most important entries from the ChangeLog
+  of the most important entries from the ChangeLog and/or the SVN log
 - bump the version number (and the copyright year, where applicable)
   - in the README file
   - in setup.py

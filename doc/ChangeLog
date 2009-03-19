@@ -1,3 +1,7 @@
+Mon Dec 01 2008   "Patrick Näf" <herzbube@herzbube.ch>
+- rewrote README and TODO documents
+- added DESIGN document
+
 Sun Nov 30 2008   "Patrick Näf" <herzbube@herzbube.ch>
 - added COPYING (full text of GPLv3)
 - added copyright notice at the top of each source file
