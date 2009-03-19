@@ -66,17 +66,11 @@ class MainTest(unittest.TestCase):
         self.assertEqual(self.stdoutReplacement.getStdoutBuffer()[:6], "Usage:")
 
     def testVersion(self):
-        # Asserts that the option --version exits with code 0, and that it
-        # prints a version string to stdout. The version string must end with
-        # the current mkroesti version.
-        try:
-            args = ["--version"]
-            main(args)
-        except SystemExit, (errorInstance):
-            self.assertEqual(errorInstance.code, 0)
-        else:
-            self.fail("SystemExit not raised")
-        # Whatever this test is worth...
+        # Asserts that the version string printed to stdout ends with the
+        # current mkroesti version.
+        args = ["-V"]
+        returnValue = main(args)
+        self.assertEqual(returnValue, None)
         versionLength = len(mkroesti.version)
         strippedMessage = self.stdoutReplacement.getStdoutBuffer().strip()
         self.assertEqual(strippedMessage[-versionLength:], mkroesti.version)

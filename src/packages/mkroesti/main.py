@@ -2,6 +2,7 @@
 
 # PSL
 import sys
+import os
 from optparse import OptionParser
 import getpass
 
@@ -43,6 +44,9 @@ def main(args = None):
     # Note: The order in which arguments are checked is important!
     (options, args) = parser.parse_args(args = args)
     input = None
+    if options.version:
+        print os.path.basename(sys.argv[0]) + " " + mkroesti.version
+        return
     if options.batch:
         if options.echo:
             parser.error("batch mode cannot be combined with echo mode")
@@ -154,33 +158,36 @@ def listAlgorithms():
 
 
 def setupOptionParser():
-    version = "%prog " + mkroesti.version
     usage = """
     %prog [-e] [-a LIST] [-d]
     %prog -b [-a LIST] [-d] input
     %prog -f file [-a LIST] [-d]
     %prog -l
+    %prog -V
     %prog -h"""
 
-    parser = OptionParser(usage = usage, version = version)
+    parser = OptionParser(usage = usage)
     # "dest" is the name that can be used to refer to the option's value when
     # actual argument parsing commences
+    parser.add_option("-V", "--version",
+                      action="store_true", dest="version", default=False,
+                      help="show program's version number and exit")
     parser.add_option("-a", "--algorithms",
                       action="store", dest="algorithms", metavar="ALGORITHMS", default="all",
-                      help="Comma separated list of algorithms for which to generate hashes. See man page for details.")
+                      help="comma separated list of algorithms for which to generate hashes; see man page for details")
     parser.add_option("-b", "--batch",
                       action="store_true", dest="batch", default=False,
-                      help="Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.")
+                      help="use batch mode; i.e., get the input from the command line rather than prompting for it; this option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line")
     parser.add_option("-d", "--duplicate-hashes",
                       action="store_true", dest="duplicateHashes", default=False,
-                      help="Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation")
+                      help="allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation")
     parser.add_option("-e", "--echo",
                       action="store_true", dest="echo", default=False,
-                      help="Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen")
+                      help="enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen")
     parser.add_option("-f", "--file",
                       action="store", dest="file", metavar="FILE",
-                      help="Read the input from FILE")
+                      help="read the input from FILE")
     parser.add_option("-l", "--list",
                       action="store_true", dest="list", default=False,
-                      help="List supported algorithms, which ones are available, and which implementation sources exist for them")
+                      help="list supported algorithms, which ones are available, and which implementation sources exist for them")
     return parser

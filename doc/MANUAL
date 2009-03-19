@@ -6,6 +6,7 @@ SYNOPSIS
   mkroesti -b [-a LIST] [-d] input
   mkroesti -f FILE [-a LIST] [-d]
   mkroesti -l
+  mkroesti -V
   mkroesti -h
 
 DESCRIPTION
@@ -23,16 +24,19 @@ OPTIONS
      Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
 
   -d, --duplicate-hashes
-     Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation
+     Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
 
   -e, --echo
-     Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen
+     Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen.
 
   -f FILE, --file FILE
-     Read the input from FILE
+     Read the input from FILE.
 
   -l, --list
-     List supported algorithms, which ones are available, and which implementation sources exist for them
+     List supported algorithms, which ones are available, and which implementation sources exist for them.
+
+  -V, --version
+     Print the version number.
 
   -h, --help
      Show a short usage summary.       

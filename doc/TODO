@@ -1,7 +1,4 @@
-* add test suite
 * prepare project for going public
-  * add -V/--version option; encode version in __init__.py
-  * create repository for mkroesti
   * add GPL
     * COPYING file
     * file header
@@ -43,3 +40,8 @@
   * HAS-V
   * MASH-1, MASH-2
   * hashemall.com has "3 passes" and "4 passes" variants of tiger-128/160/192; mkroesti currently provides the "3 passes" variant only
+* add more tests
+  * write a testcase class that accepts a provider in its __init__ and then goes on to exercise the provider to make sure that its implementation is valid
+    -> subclass the testcase and exercise the various concrete providers
+  * test deep copying? e.g. provider.getAliasNames() should return a list that we can modify, but the next call should return the same list
+  * write a test that uses AlgorithmStub and ProviderStub to exercise some functionality; see helper setUpProviderStub() 
