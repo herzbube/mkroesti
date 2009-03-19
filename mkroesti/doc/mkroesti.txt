@@ -96,7 +96,7 @@ ALGORITHMS
 
   base64
   crypt        use local crypt()
-  apr1         apr1 algorithm (Apache variant of the BSD algorithm)
+  *apr1         apr1 algorithm (Apache variant of the BSD algorithm)
   md2
   md4
   md5
@@ -106,24 +106,24 @@ ALGORITHMS
   sha-256
   sha-384
   sha-512
-  ripemd       original, superseded by ripemd-160
-  ripemd-128
+  *ripemd       original, superseded by ripemd-160
+  *ripemd-128
   ripemd-160
-  ripemd-256
-  ripemd-320
-  haval-128-[345]   3, 4 or 5 rounds
-  haval-160-[345]
-  haval-192-[345]
-  haval-224-[345]
-  haval-256-[345]
-  whirlpool
-  tiger-128
-  tiger-160
-  tiger-192
-  tiger2
+  *ripemd-256
+  *ripemd-320
+  *haval-128-[345]   3, 4 or 5 rounds
+  *haval-160-[345]
+  *haval-192-[345]
+  *haval-224-[345]
+  *haval-256-[345]
+  *whirlpool
+  *tiger-128
+  *tiger-160
+  *tiger-192
+  *tiger2
   windows-lm
   windows-nt
-  mysql-password       MySQL's PASSWORD() function
+  *mysql-password       MySQL's PASSWORD() function
 
   mkroesti defines the following aliases to refer to sets of hash algorithms
 
@@ -151,13 +151,11 @@ EXAMPLES
   
     mkroesti -b -a sha,ripemd secret
 
-
 EXIT CODES
 
   0  success
   1  runtime error
   2  error during parsing of command line arguments
-
 
 BUGS
 
@@ -165,13 +163,16 @@ BUGS
 
   If you find any other bugs, please report them to <mkroesti@herzbube.ch>.
 
-
 DEPENDENCIES
 
   mkroesti depends on the following Python modules:
 
+    base64
     hashlib
-
+    crypt
+    random
+    string
+    smbpasswd (see http://barryp.org/software/py-smbpasswd/)
 
 SEE ALSO
 
@@ -208,9 +209,14 @@ General program flow:
 
 TODO
 ----
+* implement missing hashes
 * a couple of TODOs in the code
 * add a command line option to list the supported hashes
 * try to improve handling of large inputs
+* add base16, base32 encodings (provided by base64 module)
 * add adler32 and crc32 checksums (provided by zlib module)
 * cf. "man dgst": openssl supports "mdc2" digest; what is this?
 * cf. "man dgst": openssl supports "dss1" digest (for signing/verifying using the DSA algorithm), but this also requires "a source of random numbers"
+* gracefully handle the situation that an algorithm is not available, e.g. if a python module is not available, or OpenSSL does not provide the digest
+* implement handling of encoding, or throw the issue out & add a comment under "BUGS"
+* add test suite
