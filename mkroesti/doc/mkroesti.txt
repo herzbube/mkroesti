@@ -155,11 +155,23 @@ EXAMPLES
 EXIT CODES
 
   0  success
+  1  runtime error
   2  error during parsing of command line arguments
+
 
 BUGS
 
-  None known, but report any bugs found to <mkroesti@herzbube.ch>
+  mkroesti is not good at handling large files, because it tries to read its entire input into memory.
+
+  If you find any other bugs, please report them to <mkroesti@herzbube.ch>.
+
+
+DEPENDENCIES
+
+  mkroesti depends on the following Python modules:
+
+    hashlib
+
 
 SEE ALSO
 
@@ -192,3 +204,13 @@ General program flow:
   - generate hash
   - convert hash into desired output format
 4) Output all results
+
+
+TODO
+----
+* a couple of TODOs in the code
+* add a command line option to list the supported hashes
+* try to improve handling of large inputs
+* add adler32 and crc32 checksums (provided by zlib module)
+* cf. "man dgst": openssl supports "mdc2" digest; what is this?
+* cf. "man dgst": openssl supports "dss1" digest (for signing/verifying using the DSA algorithm), but this also requires "a source of random numbers"
