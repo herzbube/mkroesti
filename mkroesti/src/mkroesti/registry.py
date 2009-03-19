@@ -1,6 +1,7 @@
 """Contains the ProviderRegistry class."""
 
 
+# mkroesti
 from mkroesti.names import *
 
 
@@ -19,12 +20,13 @@ class ProviderRegistry:
     do so in the current environment because some third party modules are
     missing.
 
-    To actually obtain an algorithm object, clients must first call
-    getProviders() to retrieve a list of providers that the algorithm is
-    available from. Next they must select one of the providers from the list,
-    and instruct it to create the algorithm object. Note: Clients should use
-    the interface defined by AlgorithmInterface to interact with the algorithm
-    object.
+    To actually obtain an algorithm object, a client must first call
+    getProviders() to retrieve a list of providers that the algorithm is known
+    to. Next the client must check each provider whether the algorithm is
+    actually available from it; from among these providers, the client must now
+    select one and instruct it to create the algorithm object. Note: The client
+    should use the interface defined by AlgorithmInterface to interact with the
+    algorithm object.
 
     ProviderRegistry also supports the handling of aliases. Clients may inspect
     which aliases exist (getAliasNames()) and resolve aliases to real algorithm
@@ -57,11 +59,11 @@ class ProviderRegistry:
         self.providers.append(provider)
 
     def getProviders(self, algorithmName):
-        """Returns a list of providers that the named algorithm is available from."""
+        """Returns a list of providers that the named algorithm is known to."""
         providers = list()
         for provider in self.providers:
-            if algorithmName in provider.getAvailableAlgorithmNames():
-               providers.append(provider)
+            if provider.isAlgorithmKnown(algorithmName):
+                providers.append(provider)
         return providers
 
     def getAlgorithmNames(self):
@@ -111,6 +113,7 @@ class ProviderRegistry:
                 unifyingDict.update(dict.fromkeys(provider.getAlgorithmNames()))
         else:
             for provider in self.providers:
-                unifyingDict.update(dict.fromkeys(provider.resolveAlias(aliasName)))
+                if aliasName in provider.getAliasNames():
+                    unifyingDict.update(dict.fromkeys(provider.resolveAlias(aliasName)))
         return unifyingDict.keys()
 

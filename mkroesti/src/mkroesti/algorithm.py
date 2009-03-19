@@ -13,6 +13,7 @@ getters for these attributes.
 """
 
 
+# PSL
 import base64
 import crypt
 import hashlib
@@ -20,10 +21,25 @@ from random import randint
 import string
 import zlib
 
-import smbpasswd
-import mhash
-import bcrypt
+# Third party
+availableModules = list()
+try:
+    import smbpasswd
+    availableModules.append("smbpasswd")
+except ImportError:
+    pass
+try:
+    import mhash
+    availableModules.append("mhash")
+except ImportError:
+    pass
+try:
+    import bcrypt
+    availableModules.append("bcrypt")
+except ImportError:
+    pass
 
+# mkroesti
 from mkroesti.errorhandling import MKRoestiError
 from mkroesti.names import *
 
@@ -174,6 +190,12 @@ class CryptAlgorithm(AbstractAlgorithm):
 
 
 class CryptBlowfishAlgorithm(AbstractAlgorithm):
+    @staticmethod
+    def isAvailable():
+        moduleName = "bcrypt"
+        isAvailable = moduleName in availableModules
+        return (isAvailable, moduleName)
+
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
 
@@ -186,6 +208,12 @@ class CryptBlowfishAlgorithm(AbstractAlgorithm):
 
 class WindowsHashAlgorithms(AbstractAlgorithm):
     """Implements Windows LanManager and NT password hashes."""
+
+    @staticmethod
+    def isAvailable():
+        moduleName = "smbpasswd"
+        isAvailable = moduleName in availableModules
+        return (isAvailable, moduleName)
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
@@ -201,6 +229,12 @@ class WindowsHashAlgorithms(AbstractAlgorithm):
 
 class MHashAlgorithms(AbstractAlgorithm):
     """Implements all algorithms available from the third party module mhash."""
+
+    @staticmethod
+    def isAvailable():
+        moduleName = "mhash"
+        isAvailable = moduleName in availableModules
+        return (isAvailable, moduleName)
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)

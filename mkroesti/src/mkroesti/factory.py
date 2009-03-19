@@ -1,6 +1,7 @@
 """Contains the AlgorithmFactory class."""
 
 
+# mkroesti
 from mkroesti.registry import ProviderRegistry
 from mkroesti.errorhandling import MKRoestiError
 
@@ -31,7 +32,7 @@ class AlgorithmFactory:
     """
 
     @staticmethod
-    def createAlgorithms(name, uniqueAlgorithms = True):
+    def createAlgorithms(name, duplicateHashes = False):
         """Creates and returns a list of mkroesti.algorithm.AlgorithmInterface objects."""
 
         # Resolve alias (if it is one) or create the list with algorithm names
@@ -47,14 +48,14 @@ class AlgorithmFactory:
         algorithms = list()
         for algorithmName in algorithmNames:
             providers = ProviderRegistry.getInstance().getProviders(algorithmName)
-            if len(providers) == 0:
-                # TODO: Check for not-yet-implemented algorithms.
-                raise MKRoestiError("Algorithm is not available: " + algorithmName)
-            if uniqueAlgorithms:
-                provider = providers[0]
+            algorithmsCreated = 0
+            for provider in providers:
+                (isAvailable, reason) = provider.isAlgorithmAvailable(algorithmName)
+                if not isAvailable:
+                    continue
+                if algorithmsCreated > 0 and not duplicateHashes:
+                    continue
                 algorithms.append(provider.createAlgorithm(algorithmName))
-            else:
-                for provider in providers:
-                    algorithms.append(provider.createAlgorithm(algorithmName))
+                algorithmsCreated += 1
         return algorithms
 

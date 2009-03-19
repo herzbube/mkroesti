@@ -22,8 +22,10 @@ and create an instance as illustrated in the following example:
 """
 
 
+# mkroesti
 from mkroesti.registry import ProviderRegistry
 from mkroesti import algorithm
+from mkroesti.errorhandling import MKRoestiError
 from mkroesti.names import *
 
 
@@ -161,18 +163,26 @@ class AbstractProvider(ProviderInterface):
             return False
 
     def getAvailableAlgorithmNames(self):
-        """Returns the list of known algorithms specified on construction,
-        thereby assuming that all known algorithms are also available.
+        """This default implementation combines the primitives
+        getAlgorithmNames() and isAlgorithmAvailable().
         """
-        return self.algorithmNames
+        availableAlgorithmNames = list()
+        for algorithmName in self.getAlgorithmNames():
+            (isAvailable, reason) = self.isAlgorithmAvailable(algorithmName)
+            if isAvailable:
+                availableAlgorithmNames.append(algorithmName)
+        return availableAlgorithmNames
 
     def isAlgorithmAvailable(self, algorithmName):
-        """This default implementation uses the primitive getAvailableAlgorithmNames()."""
-        algorithmNames = getAvailableAlgorithmNames()
-        if algorithmName in algorithmNames:
-            return True
+        """This default implementation returns (True, None) if the given
+        algorithm name is part of the list that the primitive
+        getAlgorithmNames() returns. Otherwise this default implementation
+        returns (False, "Unknown algorithm").
+        """
+        if algorithmName in self.getAlgorithmNames():
+            return (True, None)
         else:
-            return False
+            return (False, "Unknown algorithm")
 
     def getAliasNames(self):
         """Returns the list of known aliases specified on construction."""
@@ -209,7 +219,7 @@ class DictAbstractProvider(AbstractProvider):
     def resolveAlias(self, aliasName):
         if aliasName in self.namesDictionary:
             return self.namesDictionary[aliasName]
-        raise MKRoestiError("Unknown alias" + aliasName)
+        raise MKRoestiError("Unknown alias " + aliasName)
 
 
 class HashlibProvider(DictAbstractProvider):
@@ -225,7 +235,7 @@ class HashlibProvider(DictAbstractProvider):
         DictAbstractProvider.__init__(self, namesDictionary)
 
     def getAlgorithmSource(self, algorithmName):
-        return "Python Standard Library module hashlib"
+        return "hashlib"
 
     def createAlgorithm(self, algorithmName):
         return algorithm.HashlibAlgorithms(algorithmName, self)
@@ -242,7 +252,7 @@ class Base64Provider(DictAbstractProvider):
         DictAbstractProvider.__init__(self, namesDictionary)
 
     def getAlgorithmSource(self, algorithmName):
-        return "Python Standard Library module base64"
+        return "base64"
 
     def createAlgorithm(self, algorithmName):
         return algorithm.Base64Algorithms(algorithmName, self)
@@ -257,7 +267,7 @@ class ZlibProvider(DictAbstractProvider):
         DictAbstractProvider.__init__(self, namesDictionary)
 
     def getAlgorithmSource(self, algorithmName):
-        return "Python Standard Library module zlib"
+        return "zlib"
 
     def createAlgorithm(self, algorithmName):
         return algorithm.ZlibAlgorithms(algorithmName, self)
@@ -271,11 +281,18 @@ class CryptProvider(DictAbstractProvider):
         namesDictionary = { ALIAS_CRYPT : [ALGORITHM_CRYPT_SYSTEM, ALGORITHM_CRYPT_BLOWFISH] }
         DictAbstractProvider.__init__(self, namesDictionary)
 
+    def isAlgorithmAvailable(self, algorithmName):
+        if ALGORITHM_CRYPT_BLOWFISH == algorithmName:
+            (isAvailable, moduleName) = algorithm.CryptBlowfishAlgorithm.isAvailable()
+            if not isAvailable:
+                return (False, moduleName + " module not found")
+        return (True, None)
+
     def getAlgorithmSource(self, algorithmName):
         if ALGORITHM_CRYPT_SYSTEM == algorithmName:
-            return "Python Standard Library module crypt"
+            return "crypt"
         elif ALGORITHM_CRYPT_BLOWFISH == algorithmName:
-            return "Third party module bcrypt"
+            return "bcrypt"
         else:
             raise MKRoestiError("Unknown algorithm " + algorithmName)
 
@@ -297,7 +314,7 @@ class WindowsHashProvider(DictAbstractProvider):
         DictAbstractProvider.__init__(self, namesDictionary)
 
     def getAlgorithmSource(self, algorithmName):
-        return "Third party module smbpasswd"
+        return "smbpasswd"
 
     def createAlgorithm(self, algorithmName):
         return algorithm.WindowsHashAlgorithms(algorithmName, self)
@@ -326,7 +343,7 @@ class MHashProvider(DictAbstractProvider):
         DictAbstractProvider.__init__(self, namesDictionary)
 
     def getAlgorithmSource(self, algorithmName):
-        return "Third party module mhash"
+        return "mhash"
 
     def createAlgorithm(self, algorithmName):
         return algorithm.MHashAlgorithms(algorithmName, self)

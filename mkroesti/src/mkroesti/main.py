@@ -4,17 +4,18 @@ from optparse import OptionParser
 
 # mkroesti
 from mkroesti import factory
+from mkroesti import provider   # very important! creates provider instances!!!
+from mkroesti import registry
 from mkroesti.errorhandling import MKRoestiError
-import mkroesti.provider
 
 
 def main():
     # Setup the option parser
     version = "%prog 0.1"
     usage = """
-    %prog [-e] [-a LIST]
-    %prog -b [-a LIST] input
-    %prog -f file [-a LIST]
+    %prog [-e] [-a LIST] [-d]
+    %prog -b [-a LIST] [-d] input
+    %prog -f file [-a LIST] [-d]
     %prog -l
     %prog -h"""
 
@@ -27,6 +28,9 @@ def main():
     parser.add_option("-b", "--batch",
                       action="store_true", dest="batch", default=False,
                       help="Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.")
+    parser.add_option("-d", "--duplicate-hashes",
+                      action="store_true", dest="duplicateHashes", default=False,
+                      help="Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation")
     parser.add_option("-e", "--echo",
                       action="store_true", dest="echo", default=False,
                       help="Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen")
@@ -61,24 +65,29 @@ def main():
         try:
             file = open(options.file, "r")
             try:
-                input = file.read()
+                input = file.read()   # read() returns data as string
             finally:
                 file.close()
         except IOError, (errno, strerror):
             raise MKRoestiError(strerror)
     elif options.list:
-        pass
+        # --list implies --duplicate-hashes
+        if not options.duplicateHashes:
+            options.duplicateHashes = True
+        listAlgorithms()
+        return
     else:
-        # Use read() to read until EOF is reached (e.g. Ctrl+D is pressed)
+        # Use read() to read until EOF is reached (e.g. Ctrl+D is pressed).
+	# read() returns data as string.
         # Note: Don't use input() or raw_input() because these are line oriented
         input = sys.stdin.read()
 
     # Create algorithm objects
     algorithms = list()
     for name in options.algorithms.split(","):
-        # TODO we should make first resolve everything in options.algorithms
+        # TODO we should first resolve everything in options.algorithms
 	# and then make sure that no algorithm name appears twice
-        algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name))
+        algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name, options.duplicateHashes))
 
     # Create hashes
     algorithmCount = len(algorithms)
@@ -87,5 +96,49 @@ def main():
         if algorithmCount == 1:
             print hash
         else:
-            print algorithm.getName() + ": " + str(hash)
+            algorithmName = algorithm.getName()
+            if not options.duplicateHashes:
+                print algorithmName + ": " + str(hash)
+            else:
+                print algorithmName + " (" + algorithm.getProvider().getAlgorithmSource(algorithmName) + "): " + str(hash)
+
+
+def listAlgorithms():
+    # Hard-coded
+    columnSeparatorWidth = 2
+    # Calculated during first pass
+    algorithmColumnWidth = 0
+    sourceColumnWidth = 0
+    availableColumnWidth = 0
+    # First pass: collect strings to output and calculate column widths
+    lineList = list()
+    algorithmNames = registry.ProviderRegistry.getInstance().getAlgorithmNames()
+    # Sort by algorithm name
+    algorithmNames.sort()
+    for algorithmName in algorithmNames:
+        providers = registry.ProviderRegistry.getInstance().getProviders(algorithmName)
+        for provider in providers:
+            sourceString = provider.getAlgorithmSource(algorithmName)
+            (isAvailable, reason) = provider.isAlgorithmAvailable(algorithmName)
+            if isAvailable:
+                availableString = "yes"
+            else:
+                availableString = "no (" + reason + ")"
+            if len(algorithmName) > algorithmColumnWidth:
+                algorithmColumnWidth = len(algorithmName)
+            if len(sourceString) > sourceColumnWidth:
+                sourceColumnWidth = len(sourceString)
+            if len(availableString) > availableColumnWidth:
+                availableColumnWidth = len(availableString)
+            lineList.append((algorithmName, sourceString, availableString))
+    # Second pass: print output
+    columnSeparator = " ".ljust(columnSeparatorWidth)
+    print "Algorithm".ljust(algorithmColumnWidth), columnSeparator, "Source".ljust(sourceColumnWidth), columnSeparator, "Available (reason)".ljust(availableColumnWidth)
+    print "---------".ljust(algorithmColumnWidth), columnSeparator, "------".ljust(sourceColumnWidth), columnSeparator, "------------------".ljust(availableColumnWidth)
+    for (algorithmName, sourceString, availableString) in lineList:
+        print algorithmName.ljust(algorithmColumnWidth), \
+              columnSeparator, \
+              sourceString.ljust(sourceColumnWidth), \
+              columnSeparator, \
+              availableString.ljust(availableColumnWidth)
 
