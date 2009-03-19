@@ -3,10 +3,11 @@
 """Contains the AlgorithmInterface and AbstractAlgorithm classes, as well as
 a couple of concrete algorithm implementations.
 
-Algorithm classes *must* implement AlgorithmInterface. See that class'
-documentation for details. To contribute to the system, one or more algorithm
-provider classes must instantiate the concrete algorithm class. See the
-documentation of mkroesti.provider.ProviderInterface for details.
+Algorithm classes *must* implement AlgorithmInterface (although they do not
+need to inherit from it). See the class' documentation for details. To
+contribute to the system, one or more algorithm provider classes must 
+instantiate the concrete algorithm class. See the documentation of
+mkroesti.provider.ProviderInterface for details.
 
 AbstractAlgorithm derives from AlgorithmInterface. It is a base class that
 concrete algorithm classes may inherit from. It requires that algorithm name
@@ -42,12 +43,17 @@ except ImportError:
     pass
 
 # mkroesti
-from mkroesti.errorhandling import MKRoestiError
 from mkroesti.names import * #@UnusedWildImport
 
 
 class AlgorithmInterface:
-    """Interface that must be implemented by algorithm classes."""
+    """Interface that must be implemented by algorithm classes.
+
+    The main purpose of the class AlgorithmInterface is to document the
+    interface. In the spirit of duck typing, a concrete algorithm class is not
+    required to inherit from AlgorithmInterface (although it automatically does
+    if it inherits from AbstractAlgorithm). 
+    """
 
     def getName(self):
         """Returns a string that is the name of the algorithm."""
@@ -65,7 +71,7 @@ class AlgorithmInterface:
 class AbstractAlgorithm(AlgorithmInterface):
     """Abstract base class that implements common features of algorithm classes."""
 
-    def __init__(self, name, provider):
+    def __init__(self, name = None, provider = None):
         self.name = name
         self.provider = provider
 
@@ -74,10 +80,6 @@ class AbstractAlgorithm(AlgorithmInterface):
 
     def getProvider(self):
         return self.provider
-
-    def getHash(self, input):
-        """Raises mkroesti.errorhandling.MKRoestiError."""
-        raise MKRoestiError("Unknown algorithm " + self.getName())
 
 
 class HashlibAlgorithms(AbstractAlgorithm):

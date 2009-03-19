@@ -5,6 +5,8 @@
 
 # mkroesti
 from mkroesti.errorhandling import MKRoestiError
+from mkroesti.errorhandling import (DuplicateProviderError,
+                                    UnknownAlgorithmError, UnknownAliasError)
 from mkroesti.names import * #@UnusedWildImport
 
 
@@ -12,7 +14,7 @@ class ProviderRegistry:
     """Registry where provider objects must be registered.
 
     Provider objects are instances of classes that implement
-    mkroesti.provider.ProviderInterface.
+    mkroesti.provider.ProviderInterface (they do not need to inherit from it).
 
     Provider objects that want to contribute algorithms to mkroesti's operation
     must be registered by calling addProvider(). ProviderRegistry offers a
@@ -20,7 +22,7 @@ class ProviderRegistry:
     exist (getAlgorithmNames()) and which algorithms are actually available
     (getAvailableAlgorithmNames()). The difference is that sometimes a provider
     knows how to provide a certain algorithm "in theory", but is unable to
-    do so in the current environment because some third party modules are
+    do so in the current environment, e.g. because some third party modules are
     missing.
 
     To actually obtain an algorithm object, a client must first call
@@ -29,7 +31,8 @@ class ProviderRegistry:
     actually available from it; from among these providers, the client must now
     select one and instruct it to create the algorithm object. Note: The client
     should use the interface defined by AlgorithmInterface to interact with the
-    algorithm object.
+    algorithm object (the algorithm object's class does not necessarily
+    inherit from AlgorithmInterface).
 
     ProviderRegistry also supports the handling of aliases. Clients may inspect
     which aliases exist (getAliasNames()) and resolve aliases to real algorithm
@@ -45,29 +48,41 @@ class ProviderRegistry:
     def getInstance():
         """Access the singleton."""
         if None == ProviderRegistry._instance:
-            ProviderRegistry()
+            ProviderRegistry._instance = ProviderRegistry()
         return ProviderRegistry._instance
+
+    @staticmethod
+    def deleteInstance():
+        """Remove the reference to the singleton instance."""
+        if None != ProviderRegistry._instance:
+            ProviderRegistry._instance = None
 
     def __init__(self):
         """Create the singleton."""
         if None != ProviderRegistry._instance:
             raise MKRoestiError("Only one instance of ProviderRegistry is allowed!")
-        ProviderRegistry._instance = self
         self.providers = list()
 
     def addProvider(self, provider):
         """Adds a provider object to this registry."""
         if provider in self.providers:
-            raise MKRoestiError("Providers can be registered only once!")
+            raise DuplicateProviderError("Providers can be registered only once!")
         self.providers.append(provider)
 
     def getProviders(self, algorithmName):
-        """Returns a list of providers that the named algorithm is known to."""
+        """Returns a list of providers that the given algorithm is known to.
+
+        Raises UnknownAlgorithmError if the given algorithm is not known to any
+        registered provider.
+        """
         providers = list()
         for provider in self.providers:
             if provider.isAlgorithmKnown(algorithmName):
                 providers.append(provider)
-        return providers
+        if len(providers) > 0:
+            return providers
+        else:
+            raise UnknownAlgorithmError(algorithmName)
 
     def getAlgorithmNames(self):
         """Returns a list of all names of algorithms known to registered providers."""
@@ -91,22 +106,35 @@ class ProviderRegistry:
         return unifyingDict.keys()
 
     def isAlgorithmKnown(self, algorithmName):
-        """Returns True if the named algorithm is known to any registered provider."""
+        """Returns True if the given algorithm is known to any registered provider."""
         return (algorithmName in self.getAlgorithmNames())
 
     def isAlgorithmAvailable(self, algorithmName):
-        """Returns True if the named algorithm is available from any registered provider."""
+        """Returns True if the given algorithm is available from any registered provider.
+
+        Raises UnknownAlgorithmError if the given algorithm is not known to any
+        registered provider.
+        """
+        if not self.isAlgorithmKnown(algorithmName):
+            raise UnknownAlgorithmError(algorithmName)
         return (algorithmName in self.getAvailableAlgorithmNames())
 
     def getAliasNames(self):
-        """Returns a list of all names of aliases known to registered providers."""
+        """Returns a list of all names of aliases known to registered providers.
+
+        The list contains the special alias ALIAS_ALL.
+        """
         unifyingDict = { ALIAS_ALL : None }
         for provider in self.providers:
             unifyingDict.update(dict.fromkeys(provider.getAliasNames()))
         return unifyingDict.keys()
 
     def resolveAlias(self, aliasName):
-        """Returns a list of all names of aliases known to registered providers."""
+        """Returns a list of algorithm names that the given alias resolves to.
+
+        Raises UnknownAliasError if the given alias is not known to any
+        registered provider.
+        """
         unifyingDict = dict()
         if aliasName == ALIAS_ALL:
             # Must treat ALIAS_ALL specially because providers do not implement
@@ -115,6 +143,8 @@ class ProviderRegistry:
             for provider in self.providers:
                 unifyingDict.update(dict.fromkeys(provider.getAlgorithmNames()))
         else:
+            if aliasName not in self.getAliasNames():
+                raise UnknownAliasError(aliasName)
             for provider in self.providers:
                 if aliasName in provider.getAliasNames():
                     unifyingDict.update(dict.fromkeys(provider.resolveAlias(aliasName)))
