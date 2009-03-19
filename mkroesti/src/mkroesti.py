@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from mkroesti import main
+import mkroesti.main
 
 if __name__ == "__main__":
-  main()
+  mkroesti.main.main()

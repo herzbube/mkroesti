@@ -1,4 +1,5 @@
 from optparse import OptionParser
+import algorithm
 
 # ----------------------------------------------------------------------
 # processes command line options
@@ -16,7 +17,7 @@ def main():
   # "dest" is the name that can be used to refer to the option's value when
   # actual argument parsing commences
   parser.add_option("-a", "--algorithms",
-                    action="store", dest="algorithms", metavar="ALGORITHMS", default="all"
+                    action="store", dest="algorithms", metavar="ALGORITHMS", default="all",
                     help="Comma separated list of algorithms for which to generate hashes. See man page for details.")
   parser.add_option("-b", "--batch",
                     action="store_true", dest="batch", default=False,
@@ -43,9 +44,10 @@ def main():
     if options.echo:
       parser.error("echo mode cannot be combined with reading from file")
     # todo: test whether file exists/can be read
-  else
+  else:
+    pass
     # todo: acquire input from stdin
 
-  print "options = ", options
-  print "args = ", args
-
+  x = algorithm.AlgorithmRegistry.getInstance().getAlgorithm("base64");
+  print x
+  print "hash = ", x.getHash("iiiii")

@@ -34,6 +34,27 @@ Project description
   * python-bcrypt
 
 
+Design
+------
+* factory that creates algorithm instances based on the name(s) specified on the cmdline
+* how do we handle aliases?
+  * option 1: factory resolves aliases to the real algorithm names and creates the necessary instances
+    * pro
+      * alias to algorithm mapping is kept in one place
+      * complexity of algorithm class is low
+    * con
+      * algorithm names appear in several places
+      * factory class complexity is slightly higher
+  * option 2: each algorithm knows which aliases it belongs to
+    * pro
+      * algorithm names are kept in one place
+      * factory class complexity is low
+    * con
+      * alias names appear in several places
+      * complexity of algorithm class is higher
+      * it might also be necessary to extend the aliasing concept into the registry
+   * as long as the aliasing concept does not require more than creating multiple instances, option 1 is better
+
 
 Specification/Manual
 --------------------
