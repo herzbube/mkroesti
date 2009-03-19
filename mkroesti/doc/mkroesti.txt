@@ -35,6 +35,7 @@ SYNOPSIS
   mkroesti [-e] [-a LIST]
   mkroesti -b [-a LIST] input
   mkroesti -f FILE [-a LIST]
+  mkroesti -l
   mkroesti -h
 
 DESCRIPTION
@@ -67,7 +68,7 @@ ALGORITHMS
   adler32
   crc32
   crc32b
-  crypt            local crypt()
+  crypt-system     local crypt()
   crypt-md5        md5-based crypt (hash starts with $1$)
   crypt-apr1       md5-based crypt, Apache variant (hash starts with $apr1$)
   crypt-blowfish   blowfish-based crypt (hash starts with $2a$)
@@ -124,7 +125,7 @@ EXAMPLES
 
   (3) Take the input from standard input and generate a single hash using the local crypt() system function
   
-    cat foo | mkroesti -a crypt
+    cat foo | mkroesti -a crypt-system
 
   (4) Use the string "secret" as input and generate hashes for all algorithms of the SHA and RIPEMD family.
   
@@ -199,6 +200,7 @@ TODO
 * add support for "digest length"
   * algorithms should be selectable by digest length
   * for instance, there should be an alias "digest-160" that generates all hashes with a digest length of 160 bit
+* implement echo mode
 * try to improve handling of large inputs
 * find out why adler32 and crc32 checksums (provided by zlib module) are not correct
   * adler32 for "foo": expected = 45018202 (hex, i.e. dec = 1157726722), actual = 42074437 (dec)
@@ -275,23 +277,58 @@ Research
 
 Design
 ------
-* factory that creates algorithm instances based on the name(s) specified on the cmdline
-* how do we handle aliases?
-  * option 1: factory resolves aliases to the real algorithm names and creates the necessary instances
-    * pro
-      * alias to algorithm mapping is kept in one place
-      * complexity of algorithm class is low
-    * con
-      * algorithm names appear in several places
-      * factory class complexity is slightly higher
-  * option 2: each algorithm knows which aliases it belongs to
-    * pro
-      * algorithm names are kept in one place
-      * factory class complexity is low
-    * con
-      * alias names appear in several places
-      * complexity of algorithm class is higher
-      * it might also be necessary to extend the aliasing concept into the registry
-   * as long as the aliasing concept does not require more than creating multiple instances, option 1 is better
-
-
+* Algorithms
+  * Attributes
+    * name
+    * provider
+  * Operations
+    * get name
+    * get provider
+    * hash a given input and return the result as a string; the string's form depends on what is usually expected from the algorithm (e.g. hex digest, signed number, prefixed hash, etc.)
+  * Instances
+    * are created by mkroesti.factory.AlgorithmFactory, which delegates creation to the appropriate provider
+    * must implement mkroesti.algorithm.AlgorithmInterface
+* Providers
+  * Attributes
+    * names of provided algorithms; names must be unique, i.e. a single provider can provide only uniquely named algorithms
+    * names of provided aliases; names must be unique, i.e. a single provider can provide only uniquely named aliases
+    * mapping of algorithm names and descriptions of implementation sources of these algorithms
+    * mapping of algorithm names and aliases that the algorithm names belong to
+  * Operations
+    * get names of provided algorithms
+    * is an algorithm with a given name provided?
+    * is an algorithm with a given name available?
+    * return string description of the implementation source for an algorithm with a given name (e.g. "Python Standard Library module hashlib")
+    * create and return algorithm object for a given algorithm name
+    * get names of provided aliases
+    * get names of algorithms that a given alias resolves to
+  * Instances
+    * are usually created right after the class declaration; each provider class should be instantiated exactly once
+    * must implement mkroesti.provider.ProviderInterface
+    * must register with mkroesti.registry.ProviderRegistry; this can be accomplished by subclassing mkroesti.provider.ProviderBase (which in turn subclasses mkroesti.provider.ProviderInterface)
+* Registry
+  * Attributes
+    * list of providers
+  * Operations
+    * register provider
+    * does an algorithm with a given name exist?
+    * is an algorithm with a given name available?
+    * return the providers that the algorithm with a given name is available from
+    * does an alias with a given name exist?
+    * return the names of algorithms that a given alias resolves to
+  * Instances
+    * there is exactly one instance
+    * implements the Singleton design pattern
+* Factory
+  * Attributes
+    * should all available algorithm objects be created for a given algorithm name, or only one?
+  * Operations
+    * create and return list of algorithm objects for a given alias or algorithm name
+  * Instances
+    * there is exactly one instance
+    * implements the Singleton design pattern
+  * Handling of aliases
+    * when a create request comes in, it must first be established whether the given name is an alias or an algorithm name
+    * to this end, the factory assumes that the name is an alias and tries to resolve the alias using mkroesti.registry.ProviderRegistry
+    * if resolution is successful, create requests are spawned in a recursive manner for each of the names obtained by alias resolution
+    * if resolution is not successful, the create request proceeds as normal
