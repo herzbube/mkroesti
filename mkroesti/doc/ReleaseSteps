@@ -1,0 +1,19 @@
+Perform the following steps to make a release
+- update the ChangeLog (should have been done continuously, anyway)
+- replace the "Changes in this release" section of the README with a collection
+  of the most important entries from the ChangeLog
+- bump the version number and the copyright year
+  - in the README file
+  - in setup.py
+- perform tests
+- source control
+  - commit all changes
+    cd <projectdir>
+    svn commit
+  - tag the release
+    cd <projectdir>
+    svn copy http://herzbube.ch/svn/mkroesti/trunk http://herzbube.ch/svn/mkroesti/tags/0.1
+- to make the distribution
+  - foo
+- to make the distribution available on the Web
+  - bar

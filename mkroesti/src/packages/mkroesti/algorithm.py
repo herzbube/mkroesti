@@ -1,3 +1,5 @@
+# encoding=utf-8
+
 """Contains the AlgorithmInterface and AbstractAlgorithm classes, as well as
 a couple of concrete algorithm implementations.
 

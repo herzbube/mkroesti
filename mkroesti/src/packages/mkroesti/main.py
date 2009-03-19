@@ -1,3 +1,5 @@
+# encoding=utf-8
+
 # PSL
 import sys
 from optparse import OptionParser

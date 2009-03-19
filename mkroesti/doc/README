@@ -1,12 +1,17 @@
 Project description
 -------------------
-* Why mkroesti
+* Why mkroesti?
   * At first because I thought it might be useful to me, or someone else
   * In time I found utilities that do everything mkroesti is intended to do, and probably better
   * Since there is no real justification left to realize the project, I settled for "this is a learning project"
 
-* Why "Rösti"?
+* Why "mkroesti"?
+  * Another convoluted pun made up by a programmer with a weird sense of humor
+  * mkroesti = make roesti
+  * "roesti" is transcribed from "Rösti", which contains the German umlaut "ö" (&ouml; as an HTML entity reference)
   * Hash = Hash browns = Rösti
+  * so it all boils down to saying "make hashes"
+  * See these Wikipedia references:
     http://en.wikipedia.org/wiki/R%C3%B6sti
     http://en.wikipedia.org/wiki/Hash_browns
 
@@ -20,7 +25,7 @@ Project description
   * write documentation in XML and use XSLT to transform it into various formats
     * man page
     * man page / HTML
-    * README
+    * MANUAL
     * ...
 
 Research

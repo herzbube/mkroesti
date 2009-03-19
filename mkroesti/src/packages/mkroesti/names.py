@@ -1,3 +1,5 @@
+# encoding=utf-8
+
 """Defines constants for predefined algorithm and alias names."""
 
 ALIAS_ALL = "all"

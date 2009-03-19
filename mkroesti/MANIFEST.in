@@ -1,0 +1,3 @@
+recursive-include doc *
+exclude doc/ReleaseSteps
+global-exclude .DS_Store

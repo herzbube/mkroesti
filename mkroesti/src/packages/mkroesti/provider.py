@@ -1,3 +1,5 @@
+# encoding=utf-8
+
 """Contains the ProviderInterface and AbstractProvider classes, as well as
 a couple of concrete provider implementations.
 
