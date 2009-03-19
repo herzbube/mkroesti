@@ -214,7 +214,7 @@ class OpenSSLAlgorithm(AbstractAlgorithm):
     def mapAlgorithmName(mkroestiName):
         if "ripemd-160" == mkroestiName:
            return "rmd160"
-        if "sha-0" == mkroestiName:
+        elif "sha-0" == mkroestiName:
            return "sha"
         elif "md2" == mkroestiName or \
              "md4" == mkroestiName:
@@ -369,6 +369,7 @@ class AlgorithmFactory:
                 returnList.append("md4")
                 returnList.append("md5")
                 returnList.append("whirlpool")
+                returnList.append("gost")
                 returnList.append("windows-lm")
                 returnList.append("windows-nt")
                 returnList.append("mysql-password")
@@ -386,7 +387,9 @@ class AlgorithmFactory:
                 returnList.append("sha-384")
                 returnList.append("sha-512")
             elif "ripemed" == algorithmName:
-                returnList.append("ripemd")
+                # TODO actually "ripemd" should refer to an algorithm; we should
+                # provide a different alias for referring to "all ripemd algos",
+                # for instance "ripemd-all"
                 returnList.append("ripemd-128")
                 returnList.append("ripemd-160")
                 returnList.append("ripemd-256")
