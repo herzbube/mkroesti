@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+from optparse import OptionParser
+
+version = "%prog 0.1"
+usage = """
+  %prog [-e] [-a LIST]
+  %prog -b [-a LIST] input
+  %prog -f file [-a LIST]
+  %prog -h"""
+
+parser = OptionParser(usage=usage, version=version)
+parser.add_option("-a", "--algorithms",
+                  action="store", dest="algorithms", metavar="ALGORITHMS",
+                  help="Comma separated list of algorithms for which to generate hashes. See man page for details.")
+parser.add_option("-b", "--batch",
+                  action="store_true", dest="batch", default=False,
+                  help="Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.")
+parser.add_option("-e", "--echo",
+                  action="store_true", dest="echo", default=False,
+                  help="Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen")
+parser.add_option("-f", "--file",
+                  action="store", dest="file", metavar="FILE",
+                  help="Read the input from FILE")
+
+(options, args) = parser.parse_args()
+
+print "options = ", options
+print "args = ", args
