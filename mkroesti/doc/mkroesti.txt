@@ -18,6 +18,7 @@ Project description
   * programming in Python
   * using a Python program as CGI script
   * hashes & encodings
+    * note: encoding handling thrown out the window
   * write documentation in XML and use XSLT to transform it into various formats
     * man page
     * man page / HTML
@@ -32,9 +33,9 @@ NAME
   mkroesti - generate different kinds of hashes
 
 SYNOPSIS
-  mkroesti [-e] [-a LIST]
-  mkroesti -b [-a LIST] input
-  mkroesti -f FILE [-a LIST]
+  mkroesti [-e] [-a LIST] [-d]
+  mkroesti -b [-a LIST] [-d] input
+  mkroesti -f FILE [-a LIST] [-d]
   mkroesti -l
   mkroesti -h
 
@@ -52,11 +53,17 @@ OPTIONS
   -b, --batch
      Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
 
+  -d, --duplicate-hashes
+     Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation
+
   -e, --echo
      Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen
 
   -f FILE, --file FILE
      Read the input from FILE
+
+  -l, --list
+     List supported algorithms, which ones are available, and which implementation sources exist for them
 
   -h, --help
      Show a short usage summary.       
@@ -68,20 +75,20 @@ ALGORITHMS
   adler32
   crc32
   crc32b
-  crypt-system     local crypt()
-  crypt-md5        md5-based crypt (hash starts with $1$)
-  crypt-apr1       md5-based crypt, Apache variant (hash starts with $apr1$)
-  crypt-blowfish   blowfish-based crypt (hash starts with $2a$)
+  crypt-system      local crypt()
+  crypt-md5         md5-based crypt (hash starts with $1$)
+  crypt-apr1        md5-based crypt, Apache variant (hash starts with $apr1$)
+  crypt-blowfish    blowfish-based crypt (hash starts with $2a$)
   md2
   md4
   md5
-  sha-0        original, superseded by sha-1
+  sha-0             original, superseded by sha-1
   sha-1
   sha-224
   sha-256
   sha-384
   sha-512
-  ripemd       original, superseded by ripemd-160
+  ripemd            original, superseded by ripemd-160
   ripemd-128
   ripemd-160
   ripemd-256
@@ -100,7 +107,7 @@ ALGORITHMS
   gost
   windows-lm
   windows-nt
-  mysql-password       MySQL's PASSWORD() function
+  mysql-password    MySQL's PASSWORD() function
 
   mkroesti defines the following aliases to refer to sets of hash algorithms
 
@@ -116,19 +123,19 @@ ALGORITHMS
 EXAMPLES
 
   (1) Prompt the user to interactively provide the input, not echoing the input on the screen. Hashes for all algorithms are generated.
-  
+
     mkroesti 
 
   (2) Take the input from file foo and generate hashes for the algorithms md5, sha-1 and haval-128 (4 rounds variant)
-  
+
     mkroesti -f foo -a md5,sha-1,haval-128-4
 
   (3) Take the input from standard input and generate a single hash using the local crypt() system function
-  
+
     cat foo | mkroesti -a crypt-system
 
   (4) Use the string "secret" as input and generate hashes for all algorithms of the SHA and RIPEMD family.
-  
+
     mkroesti -b -a sha,ripemd secret
 
 EXIT CODES
@@ -140,6 +147,8 @@ EXIT CODES
 BUGS
 
   mkroesti is not good at handling large files, because it tries to read its entire input into memory.
+
+  mkroesti does nothing at all about string encodings; if in doubt assume the worst.
 
   If you find any other bugs, please report them to <mkroesti@herzbube.ch>.
 
@@ -169,37 +178,9 @@ LICENSE
   GPLv2
 
 
-Analysis
---------
-General program flow:
-1) Select algorithm(s)
-2) Convert program input into algorithm input
-   - determine program input encoding: auto-detect, or by specification of command line arguments
-   - normalize program input to UTF-8
-3) For each selected algorithm, generate hash
-   - prepare algorithm input
-     - if algorithm does not require specific encoding and/or transformation of input
-       - use the original program input as the algorithm input
-     - if algorithm requires specific encoding and/or transformation of input
-       - if encoding is required: convert normalized UTF-8 input into encoding required by algorithm
-       - if transformation (e.g. conversion to upper case) is required: perform transformation
-       - use the encoded and/or transformed input as the algorithm input
-  - generate hash
-  - convert hash into desired output format
-4) Output all results
-
-
 TODO
 ----
 * TODOs in the code
-* add support for "algorithm sources"
-  * determine which sources are available
-  * if an algorithm is available through several sources, automatically select one
-  * gracefully handle that an algorithm is not available at all
-  * add a command line option to list supported hashes, which ones are available, and which sources provide them
-* add support for "digest length"
-  * algorithms should be selectable by digest length
-  * for instance, there should be an alias "digest-160" that generates all hashes with a digest length of 160 bit
 * implement echo mode
 * try to improve handling of large inputs
 * find out why adler32 and crc32 checksums (provided by zlib module) are not correct
@@ -224,7 +205,6 @@ TODO
   * HAS-V
   * MASH-1, MASH-2
   * hashemall.com has "3 passes" and "4 passes" variants of tiger-128/160/192; mkroesti currently provides the "3 passes" variant only
-* implement handling of encoding, or throw the issue out & add a comment under "BUGS"
 * add test suite
 
 Research
