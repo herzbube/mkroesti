@@ -22,31 +22,31 @@ DESCRIPTION
 
 The **mkroesti** command takes an input and generates different kinds of hashes from that input. Without special instructions, **mkroesti** takes its input either from standard input or asks for it interactively. Unless echo mode is enabled (**--echo**), **mkroesti** does not display input typed by the user, assuming that the user enters a secret password.
 
-Additional sources for the input are: a file (**--file**) or the command line (**--batch**). Note that the latter option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
+Additional sources for the input are: a file (**--file**) or the command line (**--batch**). Note that the latter option should be used with extreme care, since if the input is a password, it will be visible to any programm or user looking at the system's list of processes at that time.
 
-The user may specify one or more algorithms that should be used to generate hashes. If no specific algorithm is selected, **mkroesti** generates hashes for all algorithms that it knows about.
+The user usually specifies one or more algorithms (**--algorithms**) that should be used to generate hashes. If no specific algorithm is selected, **mkroesti** generates hashes for all algorithms that it knows about.
 
 
 OPTIONS
 =======
 
 -a LIST, --algorithms LIST
-  Comma separated list of algorithms and/or aliases for which to generate hashes. See **ALGORITHMS** and **ALIASES** below.
+  Comma separated list of algorithms and/or aliases that should be used to generate hashes. See **ALGORITHMS** and **ALIASES** below.
 
 -b, --batch
-  Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line.
+  Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at that time.
 
 -d, --duplicate-hashes
   Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
 
 -e, --echo
-  Enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen.
+  Enable echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen. This option cannot be combined with **--batch** or **--file**.
 
 -f FILE, --file FILE
   Read the input from **FILE**.
 
 -l, --list
-  List supported algorithms, which ones are available, and which implementation sources exist for them.
+  List all supported algorithms, together with the information which algorithms are actually available, and which implementation sources exist for them.
 
 -V, --version
   Print the version number.
@@ -61,83 +61,85 @@ ALGORITHMS
 **mkroesti** defines the following keywords to identify distinct hash algorithms:
 
 base16
-  .. empty definition
+  Base16 encoding as specified in RFC 3548. Strictly speaking, this is not a hash but an encoding.
 base32
-  .. empty definition
+  Base32 encoding as specified in RFC 3548. Strictly speaking, this is not a hash but an encoding.
 base64
-  .. empty definition
+  Base64 encoding as specified in RFC 3548. Strictly speaking, this is not a hash but an encoding.
 adler32
-  .. empty definition
+  Adler-32 checksum. Strictly speaking, this is not a hash but a checksum.
 crc32
-  .. empty definition
+  CRC-32 checksum. Strictly speaking, this is not a hash but a checksum.
 crc32b
   .. empty definition
 crypt-system
-  local crypt()
+  Local crypt() system call. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-md5
-  md5-based crypt (hash starts with **$1$**)
+  MD5-based crypt (hash starts with **$1$**). Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-apr1
-  md5-based crypt, Apache variant (hash starts with **$apr1$**)
+  MD5-based crypt, Apache variant (hash starts with **$apr1$**). Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-blowfish
-  blowfish-based crypt (hash starts with **$2a$**)
+  blowfish-based crypt (hash starts with **$2a$**). Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 md2
-  .. empty definition
+  Message-Digest algorithm 2.
 md4
-  .. empty definition
+  Message-Digest algorithm 4, produces a 128 bit hash.
 md5
-  .. empty definition
+  Message-Digest algorithm 5, produces a 128 bit hash.
 sha-0
-  original, superseded by **sha-1**
+  The original SHA algorithm. Superseded by **sha-1**.
 sha-1
-  .. empty definition
+  SHA-1 algorithm, produces a 160 bit hash. Supersedes **sha-0**.
 sha-224
-  .. empty definition
+  SHA-2 algorithm, produces a 224 bit hash.
 sha-256
-  .. empty definition
+  SHA-2 algorithm, produces a 256 bit hash.
 sha-384
-  .. empty definition
+  SHA-2 algorithm, produces a 384 bit hash.
 sha-512
-  .. empty definition
-ripemd
-  original, superseded by **ripemd-160**
+  SHA-2 algorithm, produces a 512 bit hash.
+ripemd-original
+  The original RIPEMD algorithm. Superseded by **ripemd-160**.
 ripemd-128
-  .. empty definition
+  RIPEMD algorithm, produces a 128 bit hash.
 ripemd-160
-  .. empty definition
+  RIPEMD algorithm, produces a 160 bit hash. Supersedes **ripemed**.
 ripemd-256
-  .. empty definition
+  RIPEMD algorithm, produces a 256 bit hash.
 ripemd-320
-  .. empty definition
+  RIPEMD algorithm, produces a 320 bit hash.
 haval-128-[345]
-  3, 4 or 5 rounds
+  HAVAL algorithm, produces a 128 bit hash. The number of rounds is either 3, 4 or 5.
 haval-160-[345]
-  .. empty definition
+  HAVAL algorithm, produces a 160 bit hash. The number of rounds is either 3, 4 or 5.
 haval-192-[345]
-  .. empty definition
+  HAVAL algorithm, produces a 192 bit hash. The number of rounds is either 3, 4 or 5.
 haval-224-[345]
-  .. empty definition
+  HAVAL algorithm, produces a 224 bit hash. The number of rounds is either 3, 4 or 5.
 haval-256-[345]
-  .. empty definition
+  HAVAL algorithm, produces a 256 bit hash. The number of rounds is either 3, 4 or 5.
 whirlpool
-  .. empty definition
+  WHIRLPOOL algorithm.
 tiger-128
-  .. empty definition
+  Tiger algorithm, produces a 128 bit hash.
 tiger-160
-  .. empty definition
+  Tiger algorithm, produces a 160 bit hash.
 tiger-192
-  .. empty definition
+  Tiger algorithm, produces a 192 bit hash. This is the variant commonly used, and commonly referred to as "Tiger".
 tiger2
   .. empty definition
-snefru
-  .. empty definition
+snefru-128
+  Snefru algorithm, produces a 128 bit hash.
+snefru-256
+  Snefru algorithm, produces a 256 bit hash.
 gost
-  .. empty definition
+  GOST algorithm, produces a 256 bit hash.
 windows-lm
-  .. empty definition
+  The Windows LanManager password hash.
 windows-nt
-  .. empty definition
+  The Windows NT password hash.
 mysql-password
-  MySQL's PASSWORD() function
+  MySQL's PASSWORD() function.
 
 
 ALIASES
@@ -146,21 +148,23 @@ ALIASES
 **mkroesti** defines the following aliases to refer to sets of hash algorithms:
 
 all
-  .. empty definition
+  All algorithms known to **mkroesti**. The default if **--algorithms** is not specified.
 chksum
-  .. empty definition
+  All algorithms that produce a checksum instead of a hash.
+encoding
+  All algorithms that produce an encoding instead of a hash.
 crypt
-  .. empty definition
+  All algorithms that produce hash based on crypt().
 sha
-  .. empty definition
+  All SHA (Secure Hash Algorithm) algorithms.
 ripemd
-  .. empty definition
+  All RIPEMD (RACE Integrity Primitives Evaluation Message Digest) algorithms.
 haval
-  .. empty definition
+  All HAVAL algorithms.
 tiger
-  .. empty definition
+  All Tiger algorithms.
 snefru
-  .. empty definition
+  All Snefru algorithms.
 
 
 EXAMPLES

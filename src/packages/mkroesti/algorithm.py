@@ -1,8 +1,6 @@
 # encoding=utf-8
 
-# $Id: algorithm.py 40 2008-12-02 00:04:32Z patrick $
-
-# Copyright 2008 Patrick Näf
+# Copyright 2009 Patrick Näf
 # 
 # This file is part of mkroesti
 #
@@ -188,6 +186,8 @@ class ZlibAlgorithms(AbstractAlgorithm):
 
 
 class CryptAlgorithm(AbstractAlgorithm):
+    """Implements the crypt-system algorithm."""
+
     salt_chars = './' + string.ascii_letters + string.digits
 
     def __init__(self, algorithmName, provider):
@@ -214,6 +214,8 @@ class CryptAlgorithm(AbstractAlgorithm):
 
 
 class CryptBlowfishAlgorithm(AbstractAlgorithm):
+    """Implements the crypt-blowfish algorithm."""
+
     @staticmethod
     def isAvailable():
         moduleName = "bcrypt"
@@ -231,7 +233,7 @@ class CryptBlowfishAlgorithm(AbstractAlgorithm):
 
 
 class WindowsHashAlgorithms(AbstractAlgorithm):
-    """Implements Windows LanManager and NT password hashes."""
+    """Implements the windows-lm and windows-nt algorithms."""
 
     @staticmethod
     def isAvailable():
@@ -250,6 +252,7 @@ class WindowsHashAlgorithms(AbstractAlgorithm):
             return smbpasswd.nthash(input)
         else:
             return AbstractAlgorithm.getHash(self, input)
+
 
 class MHashAlgorithms(AbstractAlgorithm):
     """Implements all algorithms available from the third party module mhash."""

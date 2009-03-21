@@ -1,4 +1,6 @@
 recursive-include doc *
-recursive-include src/tests *
+recursive-include src/packages/tests *
 exclude doc/ReleaseSteps
+exclude doc/DESIGN
 global-exclude .DS_Store
+global-exclude *.pyc

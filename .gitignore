@@ -1,0 +1,5 @@
+# Build products
+*.pyc
+# Source distribution products
+MANIFEST
+dist/

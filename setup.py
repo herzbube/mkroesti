@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding=utf-8
 
-# Copyright 2008 Patrick Näf
+# Copyright 2009 Patrick Näf
 # 
 # This file is part of mkroesti
 #
@@ -92,10 +92,10 @@ setup(
 """
 mkroesti is an extensible hash generator written in Python.
 
-mkroesti can be used both as a command line utility and as a Web tool. It takes
-an input (e.g. a file, a password) and generates different kinds of hashes from
-that input. The hashes to generate are selected by naming them on the command
-line.
+mkroesti can be used both as a command line utility and as a web tool. It takes
+an input (e.g. a file, or a password) and generates different kinds of hashes
+from that input. The hashes to generate are selected by naming them on the
+command line.
 
 The vanilla mkroesti package provides no hash algorithm implementations of its
 own, it is merely a front-end to hash algorithms available through modules in
@@ -108,9 +108,7 @@ details.
 """,
       # Listing packages/modules
       package_dir = {"": PACKAGES_BASEDIR},
-      packages = ["mkroesti", "tests"],
+      packages = ["mkroesti"],
       # Listing scripts
       scripts = ["src/scripts/mkroesti"]
-      # Listing other stuff
-#      data_files = [("man page directory, ["man page file"])]
      )

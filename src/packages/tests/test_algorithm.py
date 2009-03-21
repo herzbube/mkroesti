@@ -1,8 +1,6 @@
 # encoding=utf-8
 
-# $Id: test_algorithm.py 40 2008-12-02 00:04:32Z patrick $
-
-# Copyright 2008 Patrick Näf
+# Copyright 2009 Patrick Näf
 # 
 # This file is part of mkroesti
 #

@@ -1,20 +1,54 @@
-Perform the following steps to make a release
-- update the ChangeLog (should have been done continuously, anyway)
-- replace the "Changes in this release" section of the README with a collection
-  of the most important entries from the ChangeLog and/or the SVN log
+Purpose of this document
+------------------------
+This document lists the steps needed to make a project release.
+
+
+Before the release
+------------------
+- if necessary, update the ROADMAP and TODO files
+- update the ChangeLog file (should have been done continuously, anyway)
+- replace the "Changes in this release" section in the README file with a
+  collection of the most important entries from the ChangeLog file and/or the
+  git log
 - bump the version number (and the copyright year, where applicable)
   - in the README file
   - in setup.py
   - in mkroesti/__init__.py
-- perform tests
-- source control
-  - commit all changes
+- prepare the bug tracker so that issues can be reported for the new release
+- run automated tests, either in the IDE or on the command line issuing the
+  following command:
+    python setup.py test
+- make the source distribution tar ball by issuing the following command (check
+  the command's output for suspicious warnings, although you can ignore warnings
+  about missing README, .DS_Store and *.pyc files):
     cd <projectdir>
-    svn commit
-  - tag the release
-    cd <projectdir>
-    svn copy http://herzbube.ch/svn/mkroesti/trunk http://herzbube.ch/svn/mkroesti/tags/0.1
-- to make the distribution
-  - foo
-- to make the distribution available on the Web
-  - bar
+    python setup.py sdist
+- take the source distribution tar ball to another system, install it on that
+  system and try to run mkroesti:
+    cd ~
+    tar xfvz mkroesti-x.y.tar.gz
+    cd mkroesti-x.y
+    ./setup.py test
+    ./setup.py install --home=~
+    PYTHONPATH=~/lib/python ~/bin/mkroesti -ba all foo
+- git commit final changes (check with "git status" that nothing was forgotten)
+
+
+Make the release
+----------------
+- git tag and sign the release
+  cd <projectdir>
+  git tag -s -m "tagging release x.y" x.y <commithash>
+- git push to the blessed repository on herzbube.ch
+  cd <projectdir>
+  TODO
+- make source distribution tar ball available on the project website
+- update the website to announce the new release
+
+
+After the release
+-----------------
+- cleanup
+  cd <projectdir>
+  rm MANIFEST
+  rm -r dist

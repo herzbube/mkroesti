@@ -1,0 +1,48 @@
+Purpose of this document
+------------------------
+This document gives a broad view of the plan for future development of the
+project. There is no time schedule associated with releases. It happens when it
+happens :-)
+
+In addition to this roadmap document, there is a TODO list that contains minor
+features and technical stuff, ideas for which come up on-the-fly. If something
+on the TODO list becomes important, it is possible to move it from there to
+this roadmap.
+
+Version 0.8
+- implement even more hashes
+  - ripemd-original
+  - mysql-passwd
+  - HAS-160
+  - MDC-2 (probably provided by hashlib)
+  - N-Hash
+  - RadioGatún
+  - HAS-V
+  - MASH-1, MASH-2
+  - hashemall.com has "3 passes" and "4 passes" variants of tiger-128/160/192; mkroesti currently provides the "3 passes" variant only
+
+Version 0.7
+- implement missing hash tiger2
+
+Version 0.6
+- implement missing hash haval-*-[45] (for a possible source, see
+  http://www.theserverpages.com/php/manual/en/ref.mhash.php)
+
+Version 0.5
+- implement web front-end
+
+Version 0.4
+- implement a Mac OS X GUI front-end
+
+Version 0.3
+- implement missing hash crypt-md5
+
+Version 0.2
+- implement missing hash crypt-apr1
+- add Python 3 support to mkroesti (keeping backward compatibility with
+  Python 2.5 and 2.6)
+
+Version 0.1
+- first version suitable for public release
+- implements extensible provider/algorithm scheme
+- implements a script for command line usage of mkroesti

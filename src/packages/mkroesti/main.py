@@ -1,8 +1,6 @@
 # encoding=utf-8
 
-# $Id: main.py 40 2008-12-02 00:04:32Z patrick $
-
-# Copyright 2008 Patrick Näf
+# Copyright 2009 Patrick Näf
 # 
 # This file is part of mkroesti
 #
@@ -51,10 +49,12 @@ def main(args = None):
     specified, sys.exit(0) is called, which raises SystemExit.
     """
 
-    # Adds providers with registry; must do this early because processing some
-    # of the options relies on providers already being present.
+    # Registers providers with the registry; must do this early because
+    # processing some of the options relies on providers already being present.
+    #
     # TODO: Define a mechanism that allows third-party providers to be
-    # registered.
+    # registered. Document this mechanism in README, in the section titled
+    # "How to extend mkroesti".
     provider.registerProviders()
 
     # Create and set up the option parser

@@ -1,0 +1,26 @@
+Purpose of this document
+------------------------
+This document contains notes about ongoing research.
+
+
+Research
+--------
+- The module "m2crypto" (MeTooCrypto) [1]
+  - Debian package "python-m2crypto"
+  - the module is a wrapper for OpenSSL
+  - more investigation is needed
+- The module "mcrypt" [2]; manually built package "python-mcrypt"; is a wrapper for the mcrypt library
+  - how to get the python module
+    - download
+    - unpack tar ball
+    - install dependencies (python-dev, libmcrypt-dev)
+    - ./setup.py build
+    - ./setup.py install
+  - what does the library/python module provide?
+- details about the Apache-specific md5 algorithm can be found here [3]; the page mentions that OpenSSL knows the algorithm, therefore I try to use a python wrapper for OpenSSL to get at the algorithm
+
+[1] http://chandlerproject.org/Projects/MeTooCrypto
+[2] http://labix.org/python-mcrypt
+[3] http://httpd.apache.org/docs/trunk/misc/password_encryptions.html
+
+ 

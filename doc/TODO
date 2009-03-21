@@ -4,18 +4,13 @@ This document contains a list of minor features and technical stuff that should
 be implemented when time permits it. The TODO list is updated frequently as new
 ideas crop up during programming.
 
+For a broader view of how the project will develop over time, you should see
+the Roadmap document.
+
 
 Priority 1 (important)
 ----------------------
-- prepare project for going public
-  - write ReleaseSteps
-  - write INSTALL
-  - improve README
-    - add section "How to extend mkroesti" to README
-  - add a nice "long description" to setup.py
-- go public
-  - create a web page
-  - register with PyPI?
+- publish initial releases
 - fix TODOs in the code
 
 
@@ -28,52 +23,13 @@ Priority 2 (nice to have)
   - see issue 1202: http://bugs.python.org/issue1202
     - as per standard, the result should always be an unsigned number
     - python 2.x implementation always returns a signed number
-- improve algorithm/alias descriptions in MANUAL
 
 
 Priority 3 (not important)
 -------------------------
-- implement missing hashes
-  - crypt-apr1
-  - crypt-md5
-  - ripemd ("ripemd" currently is an alias)
-  - haval-*-[45]
-    - http://www.theserverpages.com/php/manual/en/ref.mhash.php
-  - tiger2
-  - mysql-passwd
-- add even more hashes
-  - HAS-160
-  - MDC-2 (probably provided by hashlib)
-  - N-Hash
-  - RadioGatún
-  - HAS-V
-  - MASH-1, MASH-2
-  - hashemall.com has "3 passes" and "4 passes" variants of tiger-128/160/192; mkroesti currently provides the "3 passes" variant only
 - add more tests
   - write a testcase class that accepts a provider in its __init__ and then goes on to exercise the provider to make sure that its implementation is valid
     -> subclass the testcase and exercise the various concrete providers
   - test deep copying? e.g. provider.getAliasNames() should return a list that we can modify, but the next call should return the same list
   - write a test that uses AlgorithmStub and ProviderStub to exercise some functionality; see helper setUpProviderStub()
-
-
-Research
---------
-- The module "m2crypto" (MeTooCrypto) [1]
-  - Debian package "python-m2crypto"
-  - the module is a wrapper for OpenSSL
-  - more investigation is needed
-- The module "mcrypt" [2]; manually built package "python-mcrypt"; is a wrapper for the mcrypt library
-  - how to get the python module
-    - download
-    - unpack tar ball
-    - install dependencies (python-dev, libmcrypt-dev)
-    - ./setup.py build
-    - ./setup.py install
-  - what does the library/python module provide?
-- details about the Apache-specific md5 algorithm can be found here [3]; the page mentions that OpenSSL knows the algorithm, therefore I try to use a python wrapper for OpenSSL to get at the algorithm
-
-[1] http://chandlerproject.org/Projects/MeTooCrypto
-[2] http://labix.org/python-mcrypt
-[3] http://httpd.apache.org/docs/trunk/misc/password_encryptions.html
-
- 
+- register with PyPI

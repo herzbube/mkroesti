@@ -1,0 +1,103 @@
+Purpose of this document
+------------------------
+This document provides information on how to install mkroesti on a target
+system. If you are an end user, read the section titled "End user installation".
+If you are a packager, skip the end user section and read on below.
+
+
+End user installation
+---------------------
+1. Download the source tar ball from the mkroesti website
+2. Extract the tar ball contents
+
+     tar xfvz mkroesti-x.y.tar.gz
+
+3. Perform a build
+
+    cd mkroesti-x.y
+    ./setup.py build
+
+4. Optionally run tests
+
+    ./setup.py test
+
+5. Install. If you have system administration rights, just do this: 
+
+     ./setup.py install
+
+   You might also consider installing to some prefix directory such as
+   /usr/local. In this case the command would be
+
+     ./setup.py install --prefix=/usr/local
+
+   Finally, if you want to install mkroesti into your home directory, e.g.
+   because you are not the system administrator, the command looks like this
+
+    ./setup.py install --home=~
+
+6. Wherever you installed mkroesti, two things must be true for you to be
+   able to use the program:
+   
+   a) The directory that contains the "mkroesti" shell script must be in your
+      PATH
+   b) The directory that contains the "mkroesti" package with the Python source
+      files must be in your PYTHONPATH
+
+   If you need to adjust PATH and/or PYTHONPATH, a good starting place might be
+   your ~/.bashrc file (if you are using bash).
+
+
+Packager information
+--------------------
+The tar ball that can be downloaded from the project website has been created
+using the Distutils Python module. In the terminology of Distutils, the tar
+ball is a so-called "source distribution" intended to be converted by a packager
+into a so-called "built distribution" (e.g. an RPM or Debian package).
+
+If you are a packager, the next two sections give you an overview of the source
+distribution's directory structure and the content of each directory.
+
+
+Directory structure
+-------------------
+The directory structure inside the source distribution tar ball looks like
+this:
+
+root
++-- src
+|   +-- packages
+|   |   +-- mkroesti
+|   |   +-- tests
+|   +-- scripts
++-- doc
+
+
+Content description
+-------------------
+src/pacakges/mkroesti
+- contains the source files that are intended to go into the built distribution
+- the "mkroesti" package's final destination is somewhere within the PYTHONPATH
+  (e.g. /usr/lib/python2.5 on a Debian system)
+
+src/packages/tests
+- contains automated tests that can be run from the root folder using
+    python setup.py test
+- the test files are not intended to go into the built distribution, although
+  you may certainly include them if you wish to do so
+
+src/scripts
+- contains the shell script that can be used to invoke mkroesti from the
+  command line
+- this script should go into the built distribution and should end up somewhere
+  in the PATH (e.g. /usr/bin)
+
+doc
+- contains documentation files such as this README document
+- some of these files should probably go into the built distribution (e.g.
+  README, LICENSE), whereas others are of minor interest and can be omitted
+  (e.g. Roadmap, TODO)
+- an important file is the MANUAL: it contains documentation marked up using
+  reStructured text, and is intended for generating a man page; see the
+  section titled "How to generate the documentation" in the README file for
+  possible instructions on how to do this
+

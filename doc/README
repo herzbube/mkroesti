@@ -3,13 +3,15 @@ Table of Contents
 1. Introduction
 2. Changes in this release
 3. License and source code
-4. Why mkroesti? Why "mkroesti"?
-5. How to extend mkroesti
-6. How to test mkroesti
-7. How to generate the documentation
+4. Packaging
+5. How to test mkroesti
+6. How to generate the documentation
+7. How to extend mkroesti
 8. Dependencies
 9. Platforms
 10. Limitations
+11. Why mkroesti (the motivation)?
+12. Why "mkroesti" (the name)?
 
 
 Introduction
@@ -19,11 +21,13 @@ generating different kinds of cryptographic and other hashes from that input.
 mkroesti takes its input either interactively from the user, or from any one of
 the following sources: standard input, the command line, any file. So far,
 mkroesti does not have its own implementation of hash algorithms. Instead, it
-relies on other modules to provide algorithm implementations and acts as a front
-end to those modules. See the section "Dependencies" for details.
+relies on other Python modules to provide algorithm implementations and merely
+acts as a front end to those modules. See the section "Dependencies" for
+details.
 
 At the moment, mkroesti can only be run as a command line utility. One of the
-next versions will allow mkroesti to be run as a web application.
+next versions will allow mkroesti to be run as a web application. There is also
+a plan for implementing a Mac OS X GUI front end.
 
 
 Changes in this release
@@ -40,44 +44,16 @@ have received a copy of the license along with the mkroesti module distribution
 (see the file COPYING inside the distribution). If not, see
 <http://www.gnu.org/licenses/>.
 
-The source code for mkroesti can be downloaded from its homepage
-http://www.herzbube.ch/mkroesti. The source files are packaged into a tar ball
+The source code for mkroesti can be downloaded from its website
+http://www.herzbube.ch/mkroesti/. The source files are packaged into a tar ball
 using the Distutils Python module. Alternatively you may also get the source
-code from this subversion respository: http://herzbube.ch/svn/mkroesti/
-
-
-Why mkroesti? Why "mkroesti"?
------------------------------
-Why mkroesti (the motivation)? During my effort to integrate Samba with LDAP, I
-found that Samba wants to store a user's password twice in the LDAP directory:
-the NT password hash and the LM password hash. I was looking for information on
-how to generate these two kinds of hashes, but found no readily available tool.
-It occurred to me that it would make a nice little and focused project to create
-a command line tool that would be able to generate a wide array of hashes from a
-given input, including of course NT and LM password hashes. In addition,
-mkroesti is also my "learning python" project.
-
-Why "mkroesti" (the name)? Well, basically it's just another convoluted pun made
-up by a programmer with a weird sense of humor. This is an attempt at
-decryption :-)
-- "roesti" is transcribed from "Rösti", which contains the German umlaut "ö"
-  (&ouml; as an HTML entity reference)
-- Rösti is a potato dish from Switzerland. I associate Rösti with the English
-  translation "hash browns", therefore, "make hashes" for me is "make rösti" :-)
-- so it all boils down to saying "make hashes" 
-- See these Wikipedia references:
-  http://en.wikipedia.org/wiki/R%C3%B6sti
-  http://en.wikipedia.org/wiki/Hash_browns
-
-
-How to extend mkroesti
-----------------------
-TODO
+code (including project files to hack mkroesti in Eclipse) from this git
+respository: http://herzbube.ch/git/mkroesti/
 
 
 How to test mkroesti
 --------------------
-Run unit tests on the command line, from within an SVN working copy:
+Run unit tests on the command line, from within an git working tree:
   python setup.py test
 
 Run unit tests from within Eclipse ("Python unittest" configuration type):
@@ -100,7 +76,8 @@ Run unit tests from within Eclipse ("Python Run" configuration type using setup.
   - main module = ${workspace_loc:mkroesti/setup.py}
   - on the "Arguments" tab: program arguments = "test" 
 
-Run mkroesti on the command line, from within an SVN working copy:
+Run mkroesti itself on the command line (e.g. to compare its output with
+predefined hashes) from within a git working tree:
   cd src/scripts
   PYTHONPATH=../packages ./mkroesti --batch foo
 
@@ -113,14 +90,39 @@ generate a man page and a HTML page like this:
   cat MANUAL | pandoc -s -f rst -t man mkroesti.1
   cat MANUAL | pandoc -s -f rst -t html MANUAL.html
 
-To view the man page on screen (using the ISO Latin-1 charachter set):
+To view the man page on screen (using the ISO Latin-1 character set):
 
   cat mkroesti.1 | groff -mandoc -Tlatin1 | less
 
 
+How to extend mkroesti
+----------------------
+mkroesti is labelled "extensible", so how can new hashing algorithms be added
+to mkroesti by third parties?
+
+The short answer is:
+- Create a class that implements AlgorithmInterface. It is not necessary to
+  subclass AlgorithmInterface, although you may find it useful to inherit
+  from AbstractAlgorithm, in which case you automatically also inherit from
+  AlgorithmInterface.
+- Create a class that implements ProviderInterface. It is not necessary to
+  subclass ProviderInterface, although you may find it useful to inherit
+  from AbstractProvider or AliasAbstractProvider, in which case you
+  automatically also inherit from ProviderInterface.
+- TODO Describe how to register an instance of the provider class with the
+  registry.
+
+For API details, use pydoc to view the documentation inside the modules
+mkroesti.algorithm and mkroesti.provider.
+
+To view an example, look at mkroesti.algorithm.Base64Algorithms and
+mkroesti.provider.Base64Provider.
+
+
 Dependencies
 ------------
-This section documents which modules provide hash algorithms for mkroesti.
+This section documents which modules provide hash algorithms for mkroesti. An
+abbreviated list of dependencies can be found in the MANUAL document.
 
 The Python Standard Library
 - provides a couple of modules under the heading "Cryptographic Services" [1]
@@ -173,10 +175,14 @@ time I did not knowingly add any code that requires a newer Python version. It
 should therefore be safe to assume that the minimum requirement for running
 mkroesti is Python 2.5
 
+At the moment, mkroesti does not yet run with Python 3.
+
 
 Limitations
 -----------
-Not all hash algorithms advertised on the man page are actually provided.
+Not all hash algorithms advertised on the man page are actually provided. Use
+"mkroesti --list" to find out which algorithms are actually available on your
+system.
 
 mkroesti is not good at handling large files, because it tries to read its
 entire input into memory.
@@ -184,3 +190,42 @@ entire input into memory.
 mkroesti does nothing at all about string encodings; if in doubt assume the
 worst.
 
+
+Why mkroesti (the motivation)?
+------------------------------
+First and foremost, mkroesti is my "learning Python" project. So I beg your
+forgiveness if you spot any "uncommon" implementation practices.
+
+The reason why I chose "generate hashes" as my learning project's theme can be
+traced back to the time when I was making an effort to integrate Samba with
+LDAP on my home-brew Linux server. I found that Samba wants to store a user's
+password in the LDAP directory both as an NT password hash and an LM password
+hash. I was then looking for information on how to generate these two kinds of
+hashes, but could find no readily available tool, and so decided that I would
+simply write my own utility - taking the opportunity to learn Python, which was
+then for me a new programming language. Soon after that I discovered that my
+self-assigned task had already been implemented by the "smbpasswd" Python
+module, and I also found some web-based hash generators that implemented a wide
+variety of hashing algorithms.
+
+By that time, though, I was too deeply entangled in the fascination of learning
+a new programming language to simply give up. So I shifted my focus towards a
+tool that is more general in nature - the primary reason being that none of the
+web-based hash generators seemed to have an open sourced implementations - and
+thus mkroesti came into being.
+
+
+Why "mkroesti" (the name)?
+--------------------------
+Basically it's just another convoluted pun made up by a programmer with a weird
+sense of humor. This is an attempt at decryption :-)
+- "roesti" is transcribed from "Rösti", which contains the German umlaut "ö"
+  (the double-quoted character should appear the same as the HTML entity
+  reference "&ouml;"; if it doesn't, you might need to re-open this file in a
+  text editor with the proper encoding, which is UTF-8)
+- Rösti is a potato dish from Switzerland. I associate Rösti with the English
+  translation "hash browns", therefore, "make hashes" for me is "make rösti" :-)
+- the name "mkroesti" therefore  boils down to saying "make hashes" 
+- also see these Wikipedia references:
+  http://en.wikipedia.org/wiki/R%C3%B6sti
+  http://en.wikipedia.org/wiki/Hash_browns

@@ -1,8 +1,6 @@
 # encoding=utf-8
 
-# $Id: names.py 40 2008-12-02 00:04:32Z patrick $
-
-# Copyright 2008 Patrick Näf
+# Copyright 2009 Patrick Näf
 # 
 # This file is part of mkroesti
 #
@@ -24,6 +22,7 @@
 
 ALIAS_ALL = "all"
 ALIAS_CHKSUM = "chksum"
+ALIAS_ENCODING = "encoding"
 ALIAS_CRYPT = "crypt"
 ALIAS_SHA = "sha"
 ALIAS_RIPEMD = "ripemd"
@@ -50,7 +49,7 @@ ALGORITHM_SHA_224 = "sha-224"
 ALGORITHM_SHA_256 = "sha-256"
 ALGORITHM_SHA_384 = "sha-384"
 ALGORITHM_SHA_512 = "sha-512"
-ALGORITHM_RIPEMD = "ripemd"
+ALGORITHM_RIPEMD_ORIGINAL = "ripemd-original"
 ALGORITHM_RIPEMD_128 = "ripemd-128"
 ALGORITHM_RIPEMD_160 = "ripemd-160"
 ALGORITHM_RIPEMD_256 = "ripemd-256"

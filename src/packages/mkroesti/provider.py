@@ -1,8 +1,6 @@
 # encoding=utf-8
 
-# $Id: provider.py 40 2008-12-02 00:04:32Z patrick $
-
-# Copyright 2008 Patrick Näf
+# Copyright 2009 Patrick Näf
 # 
 # This file is part of mkroesti
 #
@@ -303,11 +301,11 @@ class HashlibProvider(AliasAbstractProvider):
 
 
 class Base64Provider(AliasAbstractProvider):
-    """Provides hashes/checksums available from the Python Standard Library module base64."""
+    """Provides hashes/encodings available from the Python Standard Library module base64."""
 
     def __init__(self):
         namesDictionary = {
-            ALIAS_CHKSUM : [ALGORITHM_BASE16, ALGORITHM_BASE32, ALGORITHM_BASE64]
+            ALIAS_ENCODING : [ALGORITHM_BASE16, ALGORITHM_BASE32, ALGORITHM_BASE64]
             }
         AliasAbstractProvider.__init__(self, namesDictionary)
 
@@ -364,7 +362,7 @@ class CryptProvider(AliasAbstractProvider):
 
 
 class WindowsHashProvider(AliasAbstractProvider):
-    """Provides LanManager and Windows NT password hashes."""
+    """Provides windows-lm and windows-nt hashes."""
 
     def __init__(self):
         namesDictionary = { ALIAS_CHKSUM : [ALGORITHM_WINDOWS_LM, ALGORITHM_WINDOWS_NT] }

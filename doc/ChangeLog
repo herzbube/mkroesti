@@ -1,3 +1,22 @@
+Sat Mar 21 2009   "Patrick Näf" <mkroesti@herzbube.ch>
+- organizational changes
+  - switched project source control from Subversion to git
+  - removed Subversion keyword substitution line
+  - updated copyright notice to 2009
+  - setup.py no longer installs the "tests" package; the package is still added
+    to the source distribution, though (via MANIFEST.in), so that tests can be
+    run on a target machine
+- documentation overhaul
+  - updated ReleaseSteps document
+  - added the documents Roadmap, Research and INSTALL
+  - rewrote parts of README, also added section titled "How to extend mkroesti"
+  - improved algorithm/alias descriptions in MANUAL
+- implementation changes
+  - base16, base32 and base64 algorithms are now grouped under the alias
+    "encoding" (previously under "chksum")
+  - fixed name collision between "ripemd" algorithm and "ripemd" alias (algorithm
+    is now named "ripemd-original")
+
 Mon Dec 08 2008   "Patrick Näf" <mkroesti@herzbube.ch>
 - marked up the MANUAL file using reStructured text
 - wrote section "How to generate documentation" in README
