@@ -87,7 +87,7 @@ setup(
       cmdclass = { "test" : test },
       # Meta-data
       name="mkroesti",
-      version="0.1",
+      version="0.2",
       url="http://www.herzbube.ch/mkroesti",
       author="Patrick Näf",
       author_email="herzbube@herzbube.ch",
