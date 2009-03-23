@@ -13,9 +13,6 @@ Priority 1 (important)
 - publish initial releases
 - fix TODOs in the code
 
-module = __import__('.'.join(parts_copy))
-elif callable(obj):
-
 
 Priority 2 (nice to have)
 -------------------------

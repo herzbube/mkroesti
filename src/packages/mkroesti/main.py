@@ -121,8 +121,11 @@ def main(args = None):
     # Create algorithm objects
     algorithms = list()
     for name in options.algorithms.split(","):
-        # TODO: we should first resolve everything in options.algorithms
-        # and then make sure that no algorithm name appears twice
+        # Don't check whether the same algorithm name appears twice in
+        # options.algorithms (we would need to resolve aliases first) - if the
+        # user specifies the same algorithm multiple times, she will see the
+        # same hash if she has also enabled --duplicate-hashes, but that is her
+        # problem...
         algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name, options.duplicateHashes))
 
     # Create hashes

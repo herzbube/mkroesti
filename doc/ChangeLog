@@ -1,3 +1,6 @@
+Mon Mar 23 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- version 0.1
+
 Sun Mar 22 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - added --providers and --exclude-builtins command line options
 - AbstractProvider no longer registers itself automatically; the automatic part

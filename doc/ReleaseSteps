@@ -5,24 +5,33 @@ This document lists the steps needed to make a project release.
 
 Before the release
 ------------------
-- if necessary, update the ROADMAP and TODO files
+- if necessary, update the TODO file
 - update the ChangeLog file (should have been done continuously, anyway)
 - replace the "Changes in this release" section in the README file with a
   collection of the most important entries from the ChangeLog file and/or the
   git log
-- bump the version number (and the copyright year, where applicable)
-  - in the README file
-  - in setup.py
-  - in mkroesti/__init__.py
-- prepare the bug tracker so that issues can be reported for the new release
+- change the release date in the following files:
+  - MANUAL
+  - Roadmap
+- make sure that the version number is up to date in the following files
+  (it should have been bumped already after the last release was made):
+  - README
+  - MANUAL
+  - setup.py
+  - mkroesti/__init__.py
+- make sure that the copyright year is up to date in the following files:
+  - *.py
+- add the new version number to the bug tracker so that issues can be reported
+  once the release has been made public
 - run automated tests, either in the IDE or on the command line issuing the
-  following command:
-    python setup.py test
-- make the source distribution tar ball by issuing the following command (check
+  following commands:
+    cd <projectdir>
+    ./setup.py test
+- make the source distribution tar ball by issuing the following commands (check
   the command's output for suspicious warnings, although you can ignore warnings
   about missing README, .DS_Store and *.pyc files):
     cd <projectdir>
-    python setup.py sdist
+    ./setup.py sdist
 - take the source distribution tar ball to another system, install it on that
   system and try to run mkroesti:
     cd ~
@@ -31,15 +40,15 @@ Before the release
     ./setup.py test
     ./setup.py install --home=~
     PYTHONPATH=~/lib/python ~/bin/mkroesti -ba all foo
-- git commit final changes (check with "git status" that nothing was forgotten)
+- commit final changes (check with "git status" that nothing was forgotten)
 
 
 Make the release
 ----------------
-- git tag and sign the release
+- tag and sign the release
   cd <projectdir>
-  git tag -s -m "tagging release x.y" x.y <commithash>
-- git push to the blessed repository on herzbube.ch
+  git tag -s -m "tagging release x.y" x.y <commit hash>
+- update the blessed repository
   cd <projectdir>
   git push
 - make source distribution tar ball available on the project website
@@ -52,3 +61,5 @@ After the release
   cd <projectdir>
   rm MANIFEST
   rm -r dist
+- bump the version number to the next planned release; check above under
+  "Before the release" which files are affected

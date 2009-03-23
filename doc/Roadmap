@@ -42,7 +42,7 @@ Version 0.2
 - add Python 3 support to mkroesti (keeping backward compatibility with
   Python 2.5 and 2.6)
 
-Version 0.1
+Version 0.1 (Mar 23 2009)
 - first version suitable for public release
 - implements extensible provider/algorithm scheme
 - implements a script for command line usage of mkroesti
