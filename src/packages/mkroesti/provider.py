@@ -23,22 +23,20 @@ classes, as well as a couple of concrete provider implementations.
 
 Algorithm provider classes *must* implement ProviderInterface (although they do
 not need to inherit from it). See the class' documentation for details. In
-addition, to make the algorithms they provide known to the system, instances of
-algorithm provider classes *must* be registered with
-mkroesti.registry.ProviderRegistry. Registration is done like this:
+addition, instances of algorithm provider classes *must* be registered so that
+the algorithms they provide become known to the mkroesti system. Provider
+instances injected into the system by third party Python modules via the
+--providers command line option are automatically registered. All other
+hacking attempts should use the following convenience functions for
+registration:
 
-    ProviderRegistry.getInstance().addProvider(self)
+    import mkroesti
+    mkroesti.registerProvider(aProvider)
+    mkroesti.registerProviders(providerList)
 
 AbstractProvider derives from ProviderInterface. It is a base class that
-concrete provider classes may inherit from. Besides default-implementing a few
-methods of ProviderInterface, its main feature is that it registers the
-provider class instance automatically with mkroesti.registry.ProviderRegistry.
-For instance:
-
-    class ConcreteProvider(AbstractProvider):
-        [...]
-    # Creating an instance registers the provider
-    ConcreteProvider()
+concrete provider classes may inherit from. It provides useful default
+implementations for most of the methods of ProviderInterface.
 
 AliasAbstractProvider extends AbstractProvider with support for aliases.
 Subclasses must provide a dictionary that maps alias to algorithm names.
@@ -60,7 +58,6 @@ For instance:
 import copy
 
 # mkroesti
-from mkroesti.registry import ProviderRegistry
 from mkroesti import algorithm
 from mkroesti.errorhandling import * #@UnusedWildImport
 from mkroesti.names import * #@UnusedWildImport
@@ -103,15 +100,15 @@ class ProviderInterface:
     a set of predefined algorithm and alias names.
 
     To make the algorithms it provides known to the system, concrete algorithm
-    provider classes must be instantiated and the instance must be added to
-    mkroesti.registry.ProviderRegistry. The recommended approach is to subclass
-    AbstractProvider or AliasAbstractProvider, which both automatically add the
-    provider instance to the registry on construction. For instance:
+    provider classes must be instantiated and the instance must be registered.
+    Provider instances injected into the system by third party Python modules
+    via the --providers command line option are automatically registered. All
+    other hacking attempts should use the following convenience functions for
+    registration:
 
-        class ConcreteProvider(AbstractProvider):
-            [...]
-        # Creating an instance registers the provider
-        ConcreteProvider()
+        import mkroesti
+        mkroesti.registerProvider(aProvider)
+        mkroesti.registerProviders(providerList)
     """
 
     def getAlgorithmNames(self):
@@ -161,6 +158,8 @@ class ProviderInterface:
     def getAliasNames(self):
         """Returns a list of alias names that this provider knows about.
 
+        If this provider does not know any aliases, it returns an empty list.
+
         The list must not include the special alias ALIAS_ALL.
         """
         raise NotImplementedError
@@ -183,10 +182,6 @@ class ProviderInterface:
 class AbstractProvider(ProviderInterface):
     """Abstract base class that implements common features of provider classes.
 
-    The main feature of this class is that during construction it automatically
-    registers the provider class instance with
-    mkroesti.registry.ProviderRegistry.
-
     The default implementations of methods in AbstractProvider are based on
     the assumption that on construction subclasses specify a list of known
     algorithm names.
@@ -199,7 +194,6 @@ class AbstractProvider(ProviderInterface):
         if len(algorithmNames) != len(set(algorithmNames)):
             raise DuplicateAlgorithmError("Algorithm names must be unique")
         self.algorithmNames = algorithmNames[:]   # make a copy
-        ProviderRegistry.getInstance().addProvider(self)
 
     def getAlgorithmNames(self):
         """Returns the list of known algorithms specified on construction."""
@@ -234,6 +228,12 @@ class AbstractProvider(ProviderInterface):
             return (True, None)
         else:
             raise UnknownAlgorithmError(algorithmName)
+
+    def getAliasNames(self):
+        """This default implementation returns an empty list, assuming that
+        this provider knows no aliases.
+        """
+        return list()
 
 
 class AliasAbstractProvider(AbstractProvider):
@@ -415,10 +415,7 @@ class MHashProvider(AliasAbstractProvider):
         return algorithm.MHashAlgorithms(algorithmName, self)
 
 
-def registerProviders():
-    HashlibProvider()
-    Base64Provider()
-    ZlibProvider()
-    CryptProvider()
-    WindowsHashProvider()
-    MHashProvider()
+def getProviders():
+    providers = HashlibProvider(), Base64Provider(), ZlibProvider(), \
+        CryptProvider(), WindowsHashProvider(), MHashProvider()
+    return providers

@@ -18,7 +18,7 @@
 # along with mkroesti. If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Stub classes that can be used by mkroesti unit tests."""
+"""Stub classes that can be used by mkroesti unit tests. Currently unused."""
 
 # mkroesti
 from mkroesti.provider import AliasAbstractProvider

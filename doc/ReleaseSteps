@@ -41,7 +41,7 @@ Make the release
   git tag -s -m "tagging release x.y" x.y <commithash>
 - git push to the blessed repository on herzbube.ch
   cd <projectdir>
-  TODO
+  git push
 - make source distribution tar ball available on the project website
 - update the website to announce the new release
 

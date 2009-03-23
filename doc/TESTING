@@ -1,0 +1,71 @@
+Purpose of this document
+------------------------
+This document contains information about the proejct's automated test suite.
+
+
+Run automated tests from the command line
+---------------------------------------
+The following command runs all automated tests from the command line, from
+within the git working tree:
+
+  ./setup.py test
+
+To run tests from only one module (test.algorithm.py in this example):
+
+  setup.py test --suite=tests.test_algorithm
+
+
+Run automated tests from within Eclipse
+---------------------------------------
+There are two types of run configuration that can be used to run mkroesti's
+automated test suite from within Eclipse:
+
+- the "Python unittest" configuration type, which runs the tests directly from
+  the "tests" package
+- The "Python Run" configuration type, which is using setup.py to run the tests
+
+Set up a run configuration of type "Python unittest":
+- PyDev must be installed for the following to work
+- Right-click on the folder that contains your tests and select
+  "Run as... -> Python unittest"
+- Configure the resulting run configuration as follows:
+  - name = mkroesti tests
+  - project = mkroesti
+  - main module = ${workspace_loc:mkroesti/src/packages/tests} (or any other folder that contains tests)
+  - on the "Arguments" tab: working directory = ${workspace_loc:mkroesti/src/packages}
+
+Set up a run configuration of type "Python Run":
+- PyDev must be installed for the following to work
+- Open "Run configurations" dialog
+- Double-click "Python Run" to create a new configuration
+- Configure the resulting run configuration as follows:
+  - name = mkroesti tests (setup.py)
+  - project = mkroesti
+  - main module = ${workspace_loc:mkroesti/setup.py}
+  - on the "Arguments" tab: program arguments = "test" 
+
+
+Run mkroesti from the command line
+----------------------------------
+The mkroesti shell script can be run on the command line to execute an
+end-to-end test, e.g. to compare the script's output with predefined hashes.
+
+From within a git working tree, do the following:
+
+  cd src/scripts
+  PYTHONPATH=../packages ./mkroesti --batch foo
+
+
+Writing new tests
+-----------------
+New test modules must be placed into the "tests" package. If the module is
+intended to be run by setup.py, it must also be added to the callable
+
+  tests.__init__.py.allTests()
+
+Last but not least, each module should contain the following block of code so
+that it can be run standalone:
+
+  if __name__ == "__main__":
+      unittest.main()
+

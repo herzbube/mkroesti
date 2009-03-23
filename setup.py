@@ -33,7 +33,11 @@ sys.path.append(PACKAGES_BASEDIR)
 
 
 class test(Command):
-    """Implements a distutils command to execute unit tests.
+    """Implements a distutils command to execute automated tests.
+
+    To run the command, a user must type one of the following:
+      ./setup.py test                                # run all tests
+      ./setup.py test --suite=tests.test_algorithm   # run tests from only one module
 
     The class name is the same as the command name string used in the 'cmdclass'
     dictionary passed to the setup() function further down. The reason for this
@@ -44,7 +48,7 @@ class test(Command):
 
     # This must be a class attribute; it is used by
     # "python setup.py --help-commands"
-    description = "execute unit tests"
+    description = "execute automated tests"
 
     # Options must be defined in a class attribute. The attribute value is a
     # list of tuples. Each tuple defines an option and must contain 3 values:
@@ -86,11 +90,11 @@ setup(
       version="0.1",
       url="http://www.herzbube.ch/mkroesti",
       author="Patrick Näf",
-      author_email="mkroesti@herzbube.ch",
-      description="Extensible hash generator",
+      author_email="herzbube@herzbube.ch",
+      description="A hash generator",
       long_description=
 """
-mkroesti is an extensible hash generator written in Python.
+mkroesti is a hash generator written in Python.
 
 mkroesti can be used both as a command line utility and as a web tool. It takes
 an input (e.g. a file, or a password) and generates different kinds of hashes

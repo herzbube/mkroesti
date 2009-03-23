@@ -28,6 +28,7 @@ from mkroesti.registry import ProviderRegistry
 from mkroesti.errorhandling import (MKRoestiError, DuplicateProviderError,
                                     UnknownAlgorithmError, UnknownAliasError)
 from mkroesti.names import ALIAS_ALL
+import mkroesti
 from tests.stubs import (TestProvider, ALGORITHM_NAME_1, ALGORITHM_NAME_2,
                          ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE,
                          ALGORITHM_NAME_UNKNOWN, ALIAS_NAME_1, ALIAS_NAME_2,
@@ -41,11 +42,9 @@ class ProviderRegistryTest(unittest.TestCase):
         # The registry
         self.registry = ProviderRegistry.getInstance()
         # Setup providers with no alias
-        # Note: Don't need to register providers, they do so automatically
         self.noAliasProviders = list()
         self.noAliasProviders.append(TestProvider({None : [ALGORITHM_NAME_1]}))
         # Setup providers with aliases
-        # Note: Don't need to register providers, they do so automatically
         self.aliasProviders = list()
         self.noAliasProviders.append(TestProvider({ALIAS_NAME_1 : [ALGORITHM_NAME_1, ALGORITHM_NAME_2]}))
         self.noAliasProviders.append(TestProvider({ALIAS_NAME_2 : [ALGORITHM_NAME_1, ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE]}))
@@ -54,6 +53,8 @@ class ProviderRegistryTest(unittest.TestCase):
         self.registeredProviders = list()
         self.registeredProviders.extend(self.noAliasProviders)
         self.registeredProviders.extend(self.aliasProviders)
+        # Register providers
+        mkroesti.registerProviders(self.registeredProviders)
         # Setup various dictionaries that help certain test method
         self.algorithm2ProviderDict = dict()
         self.alias2ProviderDict = dict()

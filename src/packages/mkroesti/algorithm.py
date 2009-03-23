@@ -176,10 +176,10 @@ class ZlibAlgorithms(AbstractAlgorithm):
     def getHash(self, input):
         algorithmName = self.getName()
         if ALGORITHM_ADLER32 == algorithmName:
-            # TODO should return an unsigned hex value
+            # TODO: should return an unsigned hex value
             return zlib.adler32(input)
         elif ALGORITHM_CRC32 == algorithmName:
-            # TODO should return an unsigned hex value
+            # TODO: should return an unsigned hex value
             return zlib.crc32(input)
         else:
             return AbstractAlgorithm.getHash(self, input)

@@ -28,6 +28,7 @@ from mkroesti.factory import AlgorithmFactory
 from mkroesti.registry import ProviderRegistry
 from mkroesti.errorhandling import UnknownAlgorithmError, UnavailableAlgorithmError
 from mkroesti.names import ALIAS_ALL
+import mkroesti
 from tests.stubs import (TestProvider, ALGORITHM_NAME_1, ALGORITHM_NAME_2,
                          ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE,
                          ALGORITHM_NAME_UNKNOWN, ALIAS_NAME_1, ALIAS_NAME_2,
@@ -39,11 +40,9 @@ class AlgorithmFactoryTest(unittest.TestCase):
 
     def setUp(self):
         # Setup providers with no alias
-        # Note: Don't need to register providers, they do so automatically
         self.noAliasProviders = list()
         self.noAliasProviders.append(TestProvider({None : [ALGORITHM_NAME_1]}))
         # Setup providers with aliases
-        # Note: Don't need to register providers, they do so automatically
         self.aliasProviders = list()
         self.noAliasProviders.append(TestProvider({ALIAS_NAME_1 : [ALGORITHM_NAME_1, ALGORITHM_NAME_2]}))
         self.noAliasProviders.append(TestProvider({ALIAS_NAME_2 : [ALGORITHM_NAME_1, ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE]}))
@@ -52,6 +51,8 @@ class AlgorithmFactoryTest(unittest.TestCase):
         self.registeredProviders = list()
         self.registeredProviders.extend(self.noAliasProviders)
         self.registeredProviders.extend(self.aliasProviders)
+        # Register providers
+        mkroesti.registerProviders(self.registeredProviders)
         # Setup various dictionaries that help certain test method
         self.algorithm2CountDict = dict()
         self.alias2AlgorithmDict = dict()
@@ -77,7 +78,6 @@ class AlgorithmFactoryTest(unittest.TestCase):
         self.registeredProviders.sort()
         for aliasName in self.alias2AlgorithmDict:
             self.alias2AlgorithmDict[aliasName].sort()
-        pass
 
     def tearDown(self):
         ProviderRegistry.deleteInstance()

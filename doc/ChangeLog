@@ -1,4 +1,13 @@
-Sat Mar 21 2009   "Patrick Näf" <mkroesti@herzbube.ch>
+Sun Mar 22 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- added --providers and --exclude-builtins command line options
+- AbstractProvider no longer registers itself automatically; the automatic part
+  is now done in main.py when mkroesti is run from the command line; for other
+  hacking purposes (e.g. unit tests) there are now convenience functions in
+  mkroesti.__init__.py
+- AbstractProvider now provides a useful implementation for getAliasNames()
+- added document TESTING
+
+Sat Mar 21 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - organizational changes
   - switched project source control from Subversion to git
   - removed Subversion keyword substitution line
@@ -17,14 +26,14 @@ Sat Mar 21 2009   "Patrick Näf" <mkroesti@herzbube.ch>
   - fixed name collision between "ripemd" algorithm and "ripemd" alias (algorithm
     is now named "ripemd-original")
 
-Mon Dec 08 2008   "Patrick Näf" <mkroesti@herzbube.ch>
+Mon Dec 08 2008   "Patrick Näf" <herzbube@herzbube.ch>
 - marked up the MANUAL file using reStructured text
 - wrote section "How to generate documentation" in README
 
-Mon Dec 01 2008   "Patrick Näf" <mkroesti@herzbube.ch>
+Mon Dec 01 2008   "Patrick Näf" <herzbube@herzbube.ch>
 - rewrote README and TODO documents
 - added DESIGN document
 
-Sun Nov 30 2008   "Patrick Näf" <mkroesti@herzbube.ch>
+Sun Nov 30 2008   "Patrick Näf" <herzbube@herzbube.ch>
 - added COPYING (full text of GPLv3)
 - added copyright notice at the top of each source file

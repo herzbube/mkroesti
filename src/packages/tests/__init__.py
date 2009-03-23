@@ -30,7 +30,11 @@ import test_main
 
 
 def allTests():
-    """Callable that can be used by unittest.TestLoader.loadTestsFromName()."""
+    """This function is used by the test command in setup.py.
+
+    This function is a callable that can be used from anywhere by
+    unittest.TestLoader.loadTestsFromName().
+    """
 
     suite = unittest.TestSuite()
     suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(test_algorithm))

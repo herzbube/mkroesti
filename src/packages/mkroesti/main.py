@@ -27,7 +27,6 @@ import getpass
 # mkroesti
 import mkroesti   # import stuff from __init__.py (e.g. mkroesti.version)
 from mkroesti import factory
-from mkroesti import provider
 from mkroesti import registry
 from mkroesti.errorhandling import MKRoestiError
 
@@ -49,24 +48,27 @@ def main(args = None):
     specified, sys.exit(0) is called, which raises SystemExit.
     """
 
-    # Registers providers with the registry; must do this early because
-    # processing some of the options relies on providers already being present.
-    #
-    # TODO: Define a mechanism that allows third-party providers to be
-    # registered. Document this mechanism in README, in the section titled
-    # "How to extend mkroesti".
-    provider.registerProviders()
-
     # Create and set up the option parser
     parser = setupOptionParser()
 
-    # Process options
+    # Start processing options
     # Note: The order in which arguments are checked is important!
     (options, args) = parser.parse_args(args = args)
     input = None
     if options.version:
         print os.path.basename(sys.argv[0]) + " " + mkroesti.version
         return
+
+    # Registers providers with the registry; must do this early because
+    # processing some of the options relies on providers already being present.
+    providerModuleNames = list()
+    if not options.excludeBuiltins:
+        providerModuleNames.append("mkroesti.provider")
+    if options.providers:
+        providerModuleNames.extend(options.providers.split(","))
+    registerProviders(providerModuleNames)
+
+    # Check for different modes (batch, file, list, stdin)
     if options.batch:
         if options.echo:
             parser.error("batch mode cannot be combined with echo mode")
@@ -104,7 +106,7 @@ def main(args = None):
         # will read until EOF is reached, it is therefore possible to process
         # input with, for instance, multiple lines. read() returns data as
         # string.
-        # Note 2: Don't use input() or raw_input() because these are line
+        # Note: Don't use input() or raw_input() because these are line
         # oriented
         if not sys.stdin.isatty():
             input = sys.stdin.read()
@@ -119,7 +121,7 @@ def main(args = None):
     # Create algorithm objects
     algorithms = list()
     for name in options.algorithms.split(","):
-        # TODO we should first resolve everything in options.algorithms
+        # TODO: we should first resolve everything in options.algorithms
         # and then make sure that no algorithm name appears twice
         algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name, options.duplicateHashes))
 
@@ -135,6 +137,42 @@ def main(args = None):
                 print algorithmName + ": " + str(hash)
             else:
                 print algorithmName + " (" + algorithm.getProvider().getAlgorithmSource(algorithmName) + "): " + str(hash)
+
+
+def registerProviders(providerModuleNames):
+    if len(providerModuleNames) == 0:
+        return
+    # For each provider module, do the following
+    # - try to import it
+    # - try and find the callable that returns provider instances
+    # - execute the callable, then register every provider instance that the
+    #   callable returned to us
+    callableName = "getProviders"
+    for providerModuleName in providerModuleNames:
+        try:
+            # We could test first whether the module has already been imported,
+            # but we are lazy and rely on __import__() doing that for us...
+            __import__(providerModuleName)
+        except ImportError:
+            raise MKRoestiError("Unable to import provider module " + providerModuleName)
+        providerModule = sys.modules[providerModuleName]
+        try:
+            theCallable = getattr(providerModule, callableName)
+        except AttributeError:
+            raise MKRoestiError("Provider module " + providerModuleName + " has no attribute named " + callableName)
+        if not callable(theCallable):
+            raise MKRoestiError("Provider module " + providerModuleName + " has an attribute named " + callableName + ", but it is not a callable")
+        # Don't check whether we have processed the same module in a previous
+        # iteration - if the user specifies the same module multiple times, she
+        # will see the same hash if she has also enabled --duplicate-hashes,
+        # but that is her problem...
+        providers = theCallable()
+        # It's ok if the module returns 0 providers - we don't know why it
+        # would want to do so, but who are we to judge :-)
+        if providers is None:
+            continue
+        for provider in providers:
+            registry.ProviderRegistry.getInstance().addProvider(provider)
 
 
 def listAlgorithms():
@@ -197,17 +235,27 @@ def setupOptionParser():
                       help="comma separated list of algorithms for which to generate hashes; see man page for details")
     parser.add_option("-b", "--batch",
                       action="store_true", dest="batch", default=False,
-                      help="use batch mode; i.e., get the input from the command line rather than prompting for it; this option should be used with extreme care, since if the input is a password, it will be clearly visible on the command line")
+                      help="use batch mode; i.e., get the input from the command line rather than prompting for it; this option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at the time when mkroesti is run")
     parser.add_option("-d", "--duplicate-hashes",
                       action="store_true", dest="duplicateHashes", default=False,
                       help="allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation")
     parser.add_option("-e", "--echo",
                       action="store_true", dest="echo", default=False,
-                      help="enable Echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen")
+                      help="enable echo mode; i.e. when the user is prompted for input, the characters she types are echoed on the screen")
     parser.add_option("-f", "--file",
                       action="store", dest="file", metavar="FILE",
                       help="read the input from FILE")
     parser.add_option("-l", "--list",
                       action="store_true", dest="list", default=False,
                       help="list supported algorithms, which ones are available, and which implementation sources exist for them")
+    parser.add_option("-p", "--providers",
+                      action="store", dest="providers", metavar="PROVIDERS", default=None,
+                      help="comma separated list of third party Python modules that provide hash algorithms; see man page for details")
+    parser.add_option("-x", "--exclude-builtins",
+                      action="store_true", dest="excludeBuiltins", default=False,
+                      help="exclude built-in algorithms from the operation of mkroesti")
     return parser
+
+
+if __name__ == "__main__":
+    main()

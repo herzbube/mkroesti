@@ -70,7 +70,7 @@ class AbstractProviderTest(unittest.TestCase):
         self.assertRaises(NotImplementedError, self.provider.createAlgorithm, None)
 
     def testGetAliasNames(self):
-        self.assertRaises(NotImplementedError, self.provider.getAliasNames)
+        self.assertEquals(self.provider.getAliasNames(), list())
 
     def testResolveAlias(self):
         self.assertRaises(NotImplementedError, self.provider.resolveAlias, "dummy-alias")

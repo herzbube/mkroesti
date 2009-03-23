@@ -53,33 +53,7 @@ respository: http://herzbube.ch/git/mkroesti/
 
 How to test mkroesti
 --------------------
-Run unit tests on the command line, from within an git working tree:
-  python setup.py test
-
-Run unit tests from within Eclipse ("Python unittest" configuration type):
-- PyDev must be installed for the following to work
-- right-click on the folder that contains your tests and select
-  "Run as... -> Python unittest"
-- configure the resulting run configuration as follows:
-  - name = mkroesti tests
-  - project = mkroesti
-  - main module = ${workspace_loc:mkroesti/src/packages/tests} (or any other folder that contains tests)
-  - on the "Arguments" tab: working directory = ${workspace_loc:mkroesti/src/packages}
-
-Run unit tests from within Eclipse ("Python Run" configuration type using setup.py):
-- PyDev must be installed for the following to work
-- open "Run configurations" dialog
-- double-click "Python Run" to create a new configuration
-- configure the resulting run configuration as follows:
-  - name = mkroesti tests (setup.py)
-  - project = mkroesti
-  - main module = ${workspace_loc:mkroesti/setup.py}
-  - on the "Arguments" tab: program arguments = "test" 
-
-Run mkroesti itself on the command line (e.g. to compare its output with
-predefined hashes) from within a git working tree:
-  cd src/scripts
-  PYTHONPATH=../packages ./mkroesti --batch foo
+See the TESTING file.
 
 
 How to generate the documentation
@@ -100,7 +74,7 @@ How to extend mkroesti
 mkroesti is labelled "extensible", so how can new hashing algorithms be added
 to mkroesti by third parties?
 
-The short answer is:
+The cook book answer is:
 - Create a class that implements AlgorithmInterface. It is not necessary to
   subclass AlgorithmInterface, although you may find it useful to inherit
   from AbstractAlgorithm, in which case you automatically also inherit from
@@ -109,14 +83,23 @@ The short answer is:
   subclass ProviderInterface, although you may find it useful to inherit
   from AbstractProvider or AliasAbstractProvider, in which case you
   automatically also inherit from ProviderInterface.
-- TODO Describe how to register an instance of the provider class with the
-  registry.
+- Create a module-level callable named "getProviders" (usually a function) that
+  returns a list of instances of your algorithm provider classes (a list with
+  one element if you have only one provider class). When you run mkroesti on the
+  command line, you can specify the module that contains the callable in this
+  fashion:
 
-For API details, use pydoc to view the documentation inside the modules
-mkroesti.algorithm and mkroesti.provider.
+    mkroesti --providers mymodule [...]
 
-To view an example, look at mkroesti.algorithm.Base64Algorithms and
-mkroesti.provider.Base64Provider.
+-  mkroesti invokes the callable and registers the provider instances it gets
+   in its internal system, just as it does for its own built-in providers.
+
+For the gritty details:
+- Use pydoc to view the API documentation inside the modules mkroesti.algorithm
+  and mkroesti.provider.
+- Have a look at an example, a good one would be
+  mkroesti.algorithm.Base64Algorithms and mkroesti.provider.Base64Provider.
+- The man page has a more details on how to run mkroesti from the command line.
 
 
 Dependencies

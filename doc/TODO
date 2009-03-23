@@ -13,6 +13,9 @@ Priority 1 (important)
 - publish initial releases
 - fix TODOs in the code
 
+module = __import__('.'.join(parts_copy))
+elif callable(obj):
+
 
 Priority 2 (nice to have)
 -------------------------
@@ -33,3 +36,6 @@ Priority 3 (not important)
   - test deep copying? e.g. provider.getAliasNames() should return a list that we can modify, but the next call should return the same list
   - write a test that uses AlgorithmStub and ProviderStub to exercise some functionality; see helper setUpProviderStub()
 - register with PyPI
+- check whether in Python 3 the command "python setup.py test --help" still
+  prints out the command class' name instead of the command name string used
+  to setup the command; file a bug with Distutils if this problem still persists 

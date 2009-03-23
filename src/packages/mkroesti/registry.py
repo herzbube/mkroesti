@@ -104,7 +104,7 @@ class ProviderRegistry:
 
     def getAlgorithmNames(self):
         """Returns a list of all names of algorithms known to registered providers."""
-        # TODO The following block appears several times in this class, the
+        # TODO: The following block appears several times in this class, the
         # only difference being the method that is called on providers and its
         # parameters. Is it possible to make a function from the block and specify
         # as function parameters the method name and the method parameters?

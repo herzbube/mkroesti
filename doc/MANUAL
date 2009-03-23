@@ -22,9 +22,11 @@ DESCRIPTION
 
 The **mkroesti** command takes an input and generates different kinds of hashes from that input. Without special instructions, **mkroesti** takes its input either from standard input or asks for it interactively. Unless echo mode is enabled (**--echo**), **mkroesti** does not display input typed by the user, assuming that the user enters a secret password.
 
-Additional sources for the input are: a file (**--file**) or the command line (**--batch**). Note that the latter option should be used with extreme care, since if the input is a password, it will be visible to any programm or user looking at the system's list of processes at that time.
+Additional sources for the input are: a file (**--file**) or the command line (**--batch**). Note that the latter option should be used with extreme care, since if the input is a password, it will be visible to any programm or user looking at the system's list of processes at the time when **mkroesti** is run.
 
 The user usually specifies one or more algorithms (**--algorithms**) that should be used to generate hashes. If no specific algorithm is selected, **mkroesti** generates hashes for all algorithms that it knows about.
+
+**mkroesti** knows about a number of built-in hash algorithms and aliases. These are listed further down in the **ALGORITHMS** and **ALIASES** section. Using the **--providers** option, it is possible to extend **mkroesti** with new hash algorithms and aliases. Details are listed in the **ALGORITHM PROVIDERS** section.
 
 
 OPTIONS
@@ -34,7 +36,7 @@ OPTIONS
   Comma separated list of algorithms and/or aliases that should be used to generate hashes. See **ALGORITHMS** and **ALIASES** below.
 
 -b, --batch
-  Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at that time.
+  Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at the time when **mkroesti** is run.
 
 -d, --duplicate-hashes
   Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
@@ -48,6 +50,12 @@ OPTIONS
 -l, --list
   List all supported algorithms, together with the information which algorithms are actually available, and which implementation sources exist for them.
 
+-p LIST, --providers LIST
+  Comma separated list of third party Python modules that provide hash algorithms. This option can be used to extend mkroesti with new algorithms. See **ALGORITHM PROVIDERS** below.
+
+-x, --exclude-builtin
+  Exclude built-in algorithms from the operation of **mkroesti**. This is useful if you want to test your own algorithm providing modules without interference from built-in algorithms.
+
 -V, --version
   Print the version number.
 
@@ -58,7 +66,7 @@ OPTIONS
 ALGORITHMS
 ==========
 
-**mkroesti** defines the following keywords to identify distinct hash algorithms:
+**mkroesti** defines the following keywords to identify built-in hash algorithms:
 
 base16
   Base16 encoding as specified in RFC 3548. Strictly speaking, this is not a hash but an encoding.
@@ -145,7 +153,7 @@ mysql-password
 ALIASES
 =======
 
-**mkroesti** defines the following aliases to refer to sets of hash algorithms:
+**mkroesti** defines the following keywords to identify built-in aliases. Each alias refers to a set of hash algorithms:
 
 all
   All algorithms known to **mkroesti**. The default if **--algorithms** is not specified.
@@ -154,17 +162,31 @@ chksum
 encoding
   All algorithms that produce an encoding instead of a hash.
 crypt
-  All algorithms that produce hash based on crypt().
+  All algorithms that produce a hash based on crypt().
 sha
-  All SHA (Secure Hash Algorithm) algorithms.
+  All algorithms of the SHA (Secure Hash Algorithm) family.
 ripemd
-  All RIPEMD (RACE Integrity Primitives Evaluation Message Digest) algorithms.
+  All algorithms of the RIPEMD (RACE Integrity Primitives Evaluation Message Digest) family.
 haval
-  All HAVAL algorithms.
+  All algorithms of the HAVAL family.
 tiger
-  All Tiger algorithms.
+  All algorithms of the Tiger family.
 snefru
-  All Snefru algorithms.
+  All algorithms of the Snefru family.
+
+
+ALGORITHM PROVIDERS
+===================
+
+It is possible to extend **mkroesti** with new algorithms by specifying third party Python modules that provide these new algorithms. The option to use is **--providers**, the option value is a list of comma separated Python modules that provide the new algorithms. The following example adds algorithms provided by the three new modules *mymodule1*, *mymodule2* and *mypackage.mymodule3* to whatever operation is performed by **mkroesti**:
+
+  **mkroesti** **--providers** *mymodule1*,*mymodule2,*mypackage.mymodule3* [...]
+
+The specified modules must be available for importing via the regular Python module search path. If the modules are not part of the system, it might be necessary to make them known to Python by setting the PYTHONPATH environment variable.
+
+Every module must contain a callable named "getProviders"; this will usually be a function. **mkroesti** invokes the callable and expects to get a list of instances of algorithm provider classes in return. **mkroesti** registers these provider instances in its internal system, just as it does for its own built-in providers. **mkroesti** then goes on to perform whatever operation was requested.
+
+For the gritty details, use **pydoc** to view the API documentation inside the modules **mkroesti.algorithm** and **mkroesti.provider**. It might also be useful to have a look at an example, a good one would be **mkroesti.algorithm.Base64Algorithms** and **mkroesti.provider.Base64Provider**.
 
 
 EXAMPLES
@@ -175,12 +197,12 @@ EXAMPLES
   **mkroesti** 
 
 
-(2) Take the input from file *foo* and generate hashes for the algorithms **md5**, **sha-1** and **haval-128** (4 rounds variant)
+(2) Take the input from file *foo* and generate hashes for the algorithms **md5**, **sha-1** and **haval-128** (4 rounds variant).
 
   **mkroesti** **-f** *foo* **-a** **md5**,**sha-1**,**haval-128-4**
 
 
-(3) Take the input from standard input and generate a single hash using the local crypt() system function
+(3) Take the input from standard input and generate a single hash using the local crypt() system function.
 
   **cat** foo | **mkroesti** **-a** **crypt-system**
 
@@ -188,6 +210,21 @@ EXAMPLES
 (4) Use the string *secret* as input and generate hashes for all algorithms of the SHA and RIPEMD family.
 
   **mkroesti** **-b** **-a** **sha**,**ripemd** *secret*
+
+
+(5) List all supported algorithms, which in this case are: built-in algorithms, and algorithms provided by the Python module *mymodule*.
+
+  **mkroesti** **-l** **-p** *mymodule*
+
+
+(6) Use the string *secret* as input and generate a single hash using the algorithm *myalgorithm*. Algorithms provided by the Python module *mymodule* are included in the operation (which is probably what the user wants, since *myalgorithm* is not a built-in algorithm).
+
+  **mkroesti** **-b** **-p** *mymodule* **-a** *myalgorithm* *secret*
+
+
+(7) Use the string *secret* as input and generate hashes for all algorithms provided by the Python module *mymodule*.
+
+  **mkroesti** **-b** **-x** **-p** *mymodule* *secret*
 
 
 EXIT CODES
@@ -211,7 +248,7 @@ If you find any other bugs, please report them to <**mkroesti**@herzbube.ch>.
 DEPENDENCIES
 ============
 
-**mkroesti** depends on the following Python modules:
+The built-in algorithms provided by *mkroesti** depend on the following Python modules:
 
 base64
   From the Python Standard Library

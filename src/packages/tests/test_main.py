@@ -27,7 +27,9 @@ import tempfile
 import os
 
 # mkroesti
+from mkroesti.algorithm import AbstractAlgorithm
 from mkroesti.main import main
+from mkroesti.provider import AbstractProvider
 from mkroesti.registry import ProviderRegistry
 import mkroesti
 
@@ -57,10 +59,12 @@ class MainTest(unittest.TestCase):
     """Exercise mkroesti.main.main()"""
 
     def setUp(self):
+        self.thisModule = sys.modules["tests.test_main"]
         self.stdoutOriginal = sys.stdout
         self.stdoutReplacement = StandardOutputReplacement()
         sys.stdout = self.stdoutReplacement
-        # A pre-defined algorithm with pre-defined input and expected output
+        # A pre-defined algorithm with pre-defined input and expected output.
+        # Note: Use an algorithm that is normally available on all systems.
         self.hashAlgorithmName = "md5"
         self.hashInput = "foo"
         self.hashExpectedOutput = "acbd18db4cc2f85cedef654fccc4a4d8" 
@@ -70,6 +74,8 @@ class MainTest(unittest.TestCase):
         sys.stdout = self.stdoutOriginal
 
     def testHelp(self):
+        """Exercise the --help option"""
+
         # Asserts that the option -h exits with code 0, and that it prints a
         # hopefully helpful message to stdout. The message must start with
         # "Usage:", which is a string defined by the optparse module. 
@@ -84,6 +90,8 @@ class MainTest(unittest.TestCase):
         self.assertEqual(self.stdoutReplacement.getStdoutBuffer()[:6], "Usage:")
 
     def testVersion(self):
+        """Exercise the --version option"""
+
         # Asserts that the version string printed to stdout ends with the
         # current mkroesti version.
         args = ["-V"]
@@ -94,8 +102,8 @@ class MainTest(unittest.TestCase):
         self.assertEqual(strippedMessage[-versionLength:], mkroesti.version)
 
     def testBatchMode(self):
-        # Make only a single test with MD5 (this algorithm should be
-        # available on all systems)
+        """Exercise the --batch option"""
+
         args = ["-a", self.hashAlgorithmName, "-b", self.hashInput]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
@@ -103,6 +111,8 @@ class MainTest(unittest.TestCase):
         self.assertEqual(actualHash, self.hashExpectedOutput)
 
     def testListMode(self):
+        """Exercise the --list option"""
+
         args = ["-l"]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
@@ -127,16 +137,111 @@ class MainTest(unittest.TestCase):
             self.assertTrue(registryAlgorithmName in outputAlgorithmNames)
 
     def testFileMode(self):
+        """Exercise the --file option"""
+
+        # Prepare the file
         (fileHandle, absPathName) = tempfile.mkstemp()
         os.write(fileHandle, self.hashInput)
         os.close(fileHandle)
-        # Make only a single test with MD5 (this algorithm should be
-        # available on all systems)
+        # Generate the hash
         args = ["-a", self.hashAlgorithmName, "-f", absPathName]
         main(args)
         actualOutput = self.stdoutReplacement.getStdoutBuffer().strip()
         self.assertEqual(actualOutput, self.hashExpectedOutput)
+        # Cleanup
         os.remove(absPathName)
+
+    def testProviderModule(self):
+        """Exercise the --providers option"""
+
+        algorithmName = "SomeUniqueAlgorithmName"
+        self.thisModule.provider = TestProvider(algorithmName)
+        args = ["-a", algorithmName, "-b", self.hashInput, "-p", "tests.test_main"]
+        returnValue = main(args)
+        self.assertEqual(returnValue, None)
+        actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
+        self.assertEqual(actualHash, TestAlgorithmFixedHashValue.fixedHashValue)
+
+    def testProviderPrecedence(self):
+        """Test that built-in algorithms have precedence over 3rd party algorithms."""
+        
+        # Tell the bogus test algorithm to use the name of a well-known,
+        # built-in algorithm. We expect that the built-in algorithm will be
+        # used to provide the hash value. We know that this has happened if we
+        # get the real valid hash value instead of the bogus fixed hash value.
+        self.thisModule.provider = TestProvider(self.hashAlgorithmName)
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-p", "tests.test_main"]
+        returnValue = main(args)
+        self.assertEqual(returnValue, None)
+        actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
+        self.assertEqual(actualHash, self.hashExpectedOutput)
+
+    def testExcludeBuiltins(self):
+        """Exercise the --exclude-builtins option"""
+
+        # Tell the bogus test algorithm to use the name of a well-known,
+        # built-in algorithm. We expect that --exclude-builtins will disable
+        # the built-in algorithm, which will allow our bogus test algorithm to
+        # kick in. We know that this has happened if we get the bogus fixed
+        # hash value instead of the real valid hash value.
+        self.thisModule.provider = TestProvider(self.hashAlgorithmName)
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-p", "tests.test_main", "-x"]
+        returnValue = main(args)
+        self.assertEqual(returnValue, None)
+        actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
+        self.assertEqual(actualHash, TestAlgorithmFixedHashValue.fixedHashValue)
+
+
+class TestProvider(AbstractProvider):
+    """Provides the pseudo algorithm TestAlgorithmFixedHashValue under an
+    arbitrary algorithm name. The algorithm name must be specified when this
+    provider is instantiated.
+
+    The test case that is going to employ this provider must create an instance
+    of this provider and store it in this module's list of global attributes
+    under the attribute name "provider". The test case must do so prior to
+    invoking mkroesti. When mkroesti is invoked, it will then call the
+    getProviders() method, which in turn will return the pre-fabricated
+    provider instance.
+
+    This somewhat complicated approach allows the test case to inject an
+    algorithm with an arbitrary name into the system.
+    
+    Note: In a previous somewhat simpler scheme, I tried to store the algorithm
+    name (which is the actual variable part that the test case should be able
+    to vary) in a class attribute TestAlgorithmFixedHashValue.algorithmName.
+    Unfortunately, by the time that getProviders() had been called, the class
+    attribute had somehow mysteriously been deleted.
+    """ 
+
+    def __init__(self, algorithmName):
+        AbstractProvider.__init__(self, [algorithmName])
+
+    def getAlgorithmSource(self, algorithmName):
+        return "tests.test_main.py"
+
+    def createAlgorithm(self, algorithmName):
+        return TestAlgorithmFixedHashValue(algorithmName, self)
+
+
+class TestAlgorithmFixedHashValue(AbstractAlgorithm):
+    """Implements a pseudo algorithm that always returns a fixed hash value."""
+
+    fixedHashValue = "fixed hash value"
+
+    def __init__(self, algorithmName, provider):
+        AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def getHash(self, input):
+        return TestAlgorithmFixedHashValue.fixedHashValue
+
+
+def getProviders():
+    """Function is called if mkroesti is run with --providers tests.test_main"""
+
+    # Return a provider instance that must have been prepared previously by the
+    # test case which triggers this method call.
+    return [sys.modules["tests.test_main"].provider]
 
 
 if __name__ == "__main__":

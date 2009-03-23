@@ -18,9 +18,33 @@
 # along with mkroesti. If not, see <http://www.gnu.org/licenses/>.
 
 
+# mkroesti
+from registry import ProviderRegistry
+
+
 # Feed these modules to clients that say "from mkroesti import *"
 __all__ = (["algorithm", "errorhandling", "factory", "main", "names",
             "provider", "registry"])
 
+
 # The package version; this is used by "mkroesti --version"
 version = "0.1"
+
+
+def registerProvider(provider):
+    """Registers a single provider.
+    
+    Convenience function for clients that want to remain ignorant of registry details.
+    """
+
+    ProviderRegistry.getInstance().addProvider(provider)
+
+
+def registerProviders(providers):
+    """Registers multiple providers.
+    
+    Convenience function for clients that want to remain ignorant of registry details.
+    """
+
+    for provider in providers:
+        registerProvider(provider)
