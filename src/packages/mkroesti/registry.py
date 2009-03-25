@@ -110,14 +110,20 @@ class ProviderRegistry:
             # will appear only once within unifyingDict even if several
             # providers know about that algorithm
             unifyingDict.update(dict.fromkeys(provider.getAlgorithmNames()))
-        return unifyingDict.keys()
+        # Python 3 returns a "view" object for dict.keys(), but our interface
+        # says we must return a list object. Use list() to explicitly return
+        # a list object.
+        return list(unifyingDict.keys())
 
     def getAvailableAlgorithmNames(self):
         """Returns a list of all names of algorithms that are available from registered providers."""
         unifyingDict = dict()
         for provider in self.providers:
             unifyingDict.update(dict.fromkeys(provider.getAvailableAlgorithmNames()))
-        return unifyingDict.keys()
+        # Python 3 returns a "view" object for dict.keys(), but our interface
+        # says we must return a list object. Use list() to explicitly return
+        # a list object.
+        return list(unifyingDict.keys())
 
     def isAlgorithmKnown(self, algorithmName):
         """Returns True if the given algorithm is known to any registered provider."""
@@ -141,7 +147,10 @@ class ProviderRegistry:
         unifyingDict = { ALIAS_ALL : None }
         for provider in self.providers:
             unifyingDict.update(dict.fromkeys(provider.getAliasNames()))
-        return unifyingDict.keys()
+        # Python 3 returns a "view" object for dict.keys(), but our interface
+        # says we must return a list object. Use list() to explicitly return
+        # a list object.
+        return list(unifyingDict.keys())
 
     def resolveAlias(self, aliasName):
         """Returns a list of algorithm names that the given alias resolves to.
@@ -162,5 +171,7 @@ class ProviderRegistry:
             for provider in self.providers:
                 if aliasName in provider.getAliasNames():
                     unifyingDict.update(dict.fromkeys(provider.resolveAlias(aliasName)))
-        return unifyingDict.keys()
-
+        # Python 3 returns a "view" object for dict.keys(), but our interface
+        # says we must return a list object. Use list() to explicitly return
+        # a list object.
+        return list(unifyingDict.keys())

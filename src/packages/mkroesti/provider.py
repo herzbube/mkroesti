@@ -272,7 +272,10 @@ class AliasAbstractProvider(AbstractProvider):
         AbstractProvider.__init__(self, algorithmNames)
 
     def getAliasNames(self):
-        return self.aliasNames[:]   # make a copy
+        # In Python 3, self.aliasNames is a "view" object because it was
+        # created by dict.keys(), but our interface says we must return a list
+        # object. Use list() to explicitly return a list object.
+        return list(self.aliasNames)   # make a copy
 
     def resolveAlias(self, aliasName):
         if aliasName in self.namesDictionary:

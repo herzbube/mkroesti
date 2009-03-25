@@ -10,7 +10,48 @@ the Roadmap document.
 
 Priority 1 (important)
 ----------------------
-- publish initial releases
+- test what works and what doesn't after Python 3 changes have been implemented;
+  things that probably need fixing: handling of text vs. data (i.e. usage of the
+  Python 3 type "bytes"); things that should be ok: absolute imports;
+  new "except as" syntax (should have been backported to Python 2.6; to which
+  version? specify that version in the minimum requirements section in README);
+  print() as a function (we use "from __future import"); handling of
+  dict.keys(); replacement of callable() by hasattr()
+- check if all algorithms return the correct value for needBytesInput()
+- experiment how getpass.getpass() interprets the user input; it is currently
+  assumed that it uses the current default encoding; an interesting experiment
+  would be one where the default encoding is different from what user input
+  actually provides, e.g. user input provides UTF-8 but default encoding is
+  something like ISO8859-1; write down the results in the Research
+- add support for encodings in Python 3 (should be made to work with Python 2.6
+  as well; if not possible, find the limitations and specify them in README and
+  MANUAL)
+  - if the user does not specify anything, mkroesti will use the default
+    encoding to translate between str and bytes; the default encoding will be
+    determined by LANG (or some other magic); this is the behaviour that we
+    already have
+  - [NEW] the user should be able to specify the encoding of the input (it
+    doesn't matter whether the input comes from a file, stdin, the command line,
+    or is read directly from the keyboard); mkroesti will use the specified
+    instead of the default encoding to translate between str and bytes.
+  - this will require a set of new test cases that mess around with the default
+    encoding
+  - it will also require changes in test_main.py where some test cases provide
+    input to mkroesti.main.main() that is UTF-8 encoded (because the file
+    tests/test.main.py is UTF-8 encoded), but do not specify an explicit
+    encoding; without specifying an encoding, the tests will fail if the user
+    runs the test cases using, for instance, ISO8859-1 in her LANG environment
+    variable, or, in other words, runs the test cases using any default encoding
+    that is *not* UTF-8
+  - Note: It seems to be impossible to specify an encoding that will influence
+    the interpretation of the command line argument in batch mode; if there is
+    an error converting the argument into unicode for storage in sys.argv, using
+    the default encoding, the error will cause the interpreter to abort before
+    execution even has reached the mkroesti code; the abort message looks like
+    this on my Mac Book Pro using Python 3.0.1: "Could not convert argument 5 to string".
+    This problem can probably not be fixed, maybe there should be a FAQ for it?
+- check if in Python 2.6 sys.stdin.buffer exists and can be used in the same
+  way as in Python 3 to read binary data
 - fix TODOs in the code
 
 

@@ -12,6 +12,7 @@ Design notes
   * Operations
     * get name
     * get provider
+    * need hash input of type str or bytes
     * hash a given input and return the result as a string; the string's form depends on what is usually expected from the algorithm (e.g. hex digest, signed number, prefixed hash, etc.)
   * Instances
     * are created by mkroesti.factory.AlgorithmFactory, which delegates creation to the appropriate provider
@@ -32,9 +33,9 @@ Design notes
     * get names of provided aliases
     * get names of algorithms that a given alias resolves to
   * Instances
-    * are usually created right after the class declaration; each provider class should be instantiated exactly once
+    * are created by a module-level function getProviders(); each provider class should be instantiated exactly once
     * must implement mkroesti.provider.ProviderInterface
-    * must register with mkroesti.registry.ProviderRegistry; this can be accomplished by subclassing mkroesti.provider.ProviderBase (which in turn subclasses mkroesti.provider.ProviderInterface)
+    * must be registered with mkroesti.registry.ProviderRegistry; this is done automatically in mkroesti.main.py when the getProviders() function is called; may also be accomplished by calling one of the convenience functions registerProvider() and registerProviders() in mkroesti.__init__.py
 
 * Registry
   * Attributes

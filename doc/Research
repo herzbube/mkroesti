@@ -3,8 +3,8 @@ Purpose of this document
 This document contains notes about ongoing research.
 
 
-Research
---------
+Research on hash algorithm sources
+----------------------------------
 - The module "m2crypto" (MeTooCrypto) [1]
   - Debian package "python-m2crypto"
   - the module is a wrapper for OpenSSL
@@ -23,4 +23,115 @@ Research
 [2] http://labix.org/python-mcrypt
 [3] http://httpd.apache.org/docs/trunk/misc/password_encryptions.html
 
- 
+
+Research on how mkroesti handles its input
+------------------------------------------
+mkroesti gets its input in one of the following ways:
+1) Reading from a file (file mode)
+2) Reading from the command line (batch mode)
+3) Reading from stdin, when stdin is not a tty
+4) Reading from stdin, when stdin is a tty *and* echo mode is on
+5) Reading from stdin, when stdin is a tty *and* echo mode is off
+
+As a short summary, this table shows which functions are used in the different
+modes:
+
+---------------------------------------------------------------------------------------------------------
+                                       Python 3                                   Python 2.6
+---------------------------------------------------------------------------------------------------------
+1) File mode                           open() + file.read(), input is bytes       open() + file.read()
+2) Batch mode                          sys.argv, input is str                     sys.argv
+3) stdin mode, not a tty               sys.stdin.buffer.read(), input is bytes    sys.stdin.buffer.read()  
+4) stdin mode, tty + echo mode on      input()                                    raw_input()
+5) stdin mode, tty + echo mode off     getpass.getpass(), input is str            getpass.getpass()
+---------------------------------------------------------------------------------------------------------
+
+In Python 2.6 there is no difference between binary and string data. This is one
+of the major issues that was fixed in Python 3. The official documentation for
+Python 2.6.1 says, in "The Python Language Reference", document "Data model",
+section "The standard type hierarchy", entry about sequences/strings:
+
+     "The string data type is also used to represent arrays of bytes, e.g., to hold data read from a file."
+
+
+About each of the functions:
+- For case 1, the file object is created using the built-in function open(),
+  using binary mode. data is then read from the file object using the function
+  read(); both for Python 3 and Python 2.6.1, the built-in type "file" as well
+  as the type's function read() are documented in "The Python Standard Library",
+  document "Built-in Types", section "File Objects"
+- For case 3, the file object sys.stdin already exists and is read using its
+  underlying binary buffer (as recommended by the Python 3 docs for sys.stdin).
+  The effect is the same as when reading binary data in case 1. 
+- raw_input() (case 4, Python 2.6): The function documentation says that the
+  function "reads a line from input [and] converts it to a string". The
+  documentation does not specify, however, what exactly that conversion is
+  doing; in an experiment I found that when I am entering a single character as
+  a two-byte UTF-8 character, the string returned by raw_input() has length 2
+  (measured using the len() built-in function), which seems to indicate that
+  the user input is indeed, as the function name implies, stored inside the
+  string raw and uninterpreted. If the input had been interpreted as UTF-8,
+  len() would have reported length 1 (this was also shown by experiment).
+- getpass.getpass() (case 5): How exactly that method reads and interprets the
+  user input is not specified in the module's documentation
+  - Python 3: An experiment shows that the result is stored in an object of
+    type str. Lacking the ability to specify an encoding, the function must
+    obviously use the default encoding to interpret the user input. This still
+    needs confirmation by experiment, though.
+  - Python 2.6: The same experiment as with raw_input() also yields a 2-byte
+    string, indicating that the function stores the user input inside the
+    string raw and uninterpreted 
+- sys.argv: The only mention I found in the Python documentation about how
+  exactly the strings in sys.argv are generated, was the following paragraph
+  in the "What's New in Python 3.0" document of the Python 3 documentation:
+  
+     "Some system APIs like os.environ and sys.argv can also present problems
+      when the bytes made available by the system is not interpretable using
+      the default encoding. Setting the LANG variable and rerunning the
+      program is probably the best approach."
+
+  - Python 3: An experiment shows that, with LANG=de_CH.UTF-8, the following
+    input gives Python a headache: it immediately aborts with this error: "Could
+    not convert argument <x> to string".
+        PYTHONPATH=../packages /Library/Frameworks/Python.framework/Versions/3.0/bin/python mkroesti -a md5 -b $(cat ~/winlatin1.txt)  
+    However, with LANG=de_CH.ISO8859-1, there was no such error. It appears that
+    Python 3 tries to interpret the command line arguments so that it can
+    convert them to string to store them in sys.argv. It fails if any argument
+    cannot be converted using the default encoding (in the above example, I am
+    providing an ISO8859-1 input, but the default encoding is UTF-8 due to the
+    LANG variable).
+  - Python 2.6: In an experiment I was able to confirm that the arguments are
+    stored in the sys.argv strings raw and uninterpreted. The experiment works
+    like this: The two following command line invocations result in two
+    different md5 hashes, which is the expected outcome since the input files
+    contain the same text, but in different encodings (i.e. different byte
+    streams):
+        PYTHONPATH=../packages /sw/bin/python2.5 mkroesti -a md5 -b $(cat ~/winlatin1.txt)  
+        PYTHONPATH=../packages /sw/bin/python2.5 mkroesti -a md5 -b $(cat ~/utf8.txt)  
+
+Conclusions:
+- Input coming from a file is read as a byte stream, due to the file mode
+  specified to the built-in function open(). This is true both for Python 3 and
+  Python 2.6.
+- Experiments seem to indicate that for both Python 3 and Python 2.6, input
+  coming from the keyboard is also read by all the functions involved in a
+  faithful manner. In Python 3, the input is interpreted in some cases (e.g.
+  sys.argv) and therefore dependent on the interpreter's default encoding.
+  In Python 2.6, keyboard input never seems to be uninterpreted, but stored
+  in its raw byte stream form. Of course, how exactly that byte stream looks
+  always depends on the user's input scheme, i.e. the encoding that is produced
+  by her typing on the keyboard.
+- For Python 3, it is clearly necessary that the user be able to specify the
+  encoding of the input, in case the default encoding used by the Python
+  interpreter (which often depends on the LANG environment variable) is the
+  wrong one, for whatever reasons. This necessity exists even for input read
+  from a file as a byte stream, because some of mkroesti's algorithms (e.g.
+  crypt-system) require string input, which means that the byte stream, i.e.
+  the file's content, needs to be converted and therefore interpreted with a
+  certain encoding.
+- For Python 2.6, specification of input encoding is not strictly necessary for
+  the bare operation of the program. However, without information on the
+  encoding the program might produce the wrong result, which is clearly
+  undesirable. If possible, specification of input encoding should therefore
+  be possible for Python 2.6 as well.
+

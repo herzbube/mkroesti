@@ -151,14 +151,11 @@ The module "bcrypt" [4]
 
 Python versions
 ---------------
-I develop and test mkroesti on my Mac OS X machine, and on a Debian box set up
-for the testing distribution. When I made the first release of mkroesti, these
-machines were using Python version 2.5.1 and 2.5.2, respectively. Since that
-time I did not knowingly add any code that requires a newer Python version. It
-should therefore be safe to assume that the minimum requirement for running
-mkroesti is Python 2.5
+The minimum requirement for running a current version of mkroesti is Python 2.6.
+It should also run fine with Python 3.
 
-At the moment, mkroesti does not yet run with Python 3.
+Older versions:
+- mkroesti 0.1 requires Python 2.5 but does not run with Python 3
 
 
 Limitations
@@ -169,9 +166,6 @@ system.
 
 mkroesti is not good at handling large files, because it tries to read its
 entire input into memory.
-
-mkroesti does nothing at all about string encodings; if in doubt assume the
-worst.
 
 
 Why mkroesti (the motivation)?

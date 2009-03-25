@@ -70,3 +70,8 @@ class DuplicateProviderError(Exception):
         self.message = message
 
 
+class ConversionError(Exception):
+    """Is raised if conversion from str to bytes, or vice versa, fails."""
+
+    def __init__(self, message):
+        self.message = message

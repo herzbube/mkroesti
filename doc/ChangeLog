@@ -1,3 +1,34 @@
+Tue Mar 24 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- changes for compatibility with Python 3
+  - change all relative import statements to be absolute; this is due to the
+    new relative import syntax "from .foo import bar" (see PEP 328); making all
+    imports absolute is the easiest way to remain compatible with older versions
+    of Python (it also makes PyDev happy, which does not know yet about the new
+    relative import syntax); affected files: pretty much all files: 
+  - use "except exc as var" instead of "except exc, var" (see PEP 3110);
+    according to the PEP, this syntax has been backported to Python 2.6;
+    affected files: mkroesti/main.py, tests.test_main.py
+  - change print statement to print() function; to make this work in Python 2.6
+    also, I use "from __future__ import print_function"; affected files:
+    scripts/mkroesti, mkroesti/main.py, tests/test_main.py
+  - change handling of dict.keys() where necessary; this is due to the function
+    now returning a "view" instead of a list object; where a change is
+    necessary, a list object is now created explicitly (e.g. using
+    "list(dict.keys())" or "sorted(dict.keys())"); where sorting of normally
+    unsortable objects takes place (e.g. provider intances), the object's id()
+    is used as the sort key; these changes are compatible with older versions
+    of Python; affected files: mkroesti/provider.py, mkroesti/registry.py,
+    tests/test_factory.py, tests/test_provider.py, tests/test_registry.py
+  - replace built-in function callable(), which has been removed from Python 3,
+    by the suggested form "hasattr(f, '__call__')"; this change is compatible
+    with older versions of Python; affected files: mkroesti/main.py
+  - fix input handling to match the new "text vs. data" paradigm of Python 3;
+    use the new type "bytes" where appropriate, and explicitly open files in
+    binary mode; affected files: mkroesti/main.py, tests/test_main.py
+- renamed "input" variable in main.py because the built-in input() function was
+  accidentally shadowed
+- fixed comments about provider instantiation and registration in DESIGN
+
 Mon Mar 23 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - version 0.1
 

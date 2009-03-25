@@ -238,11 +238,11 @@ EXIT CODES
 BUGS
 ====
 
+Not all hash algorithms advertised in this manual are actually provided. Use "**mkroesti** **--list**" to find out which algorithms are actually available on your system.
+
 **mkroesti** is not good at handling large files, because it tries to read its entire input into memory.
 
-**mkroesti** does nothing at all about string encodings; if in doubt assume the worst.
-
-If you find any other bugs, please report them to <**mkroesti**@herzbube.ch>.
+If you find any other bugs, please report them to <herzbube@herzbube.ch>.
 
 
 DEPENDENCIES

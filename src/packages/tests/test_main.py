@@ -64,10 +64,27 @@ class MainTest(unittest.TestCase):
         self.stdoutReplacement = StandardOutputReplacement()
         sys.stdout = self.stdoutReplacement
         # A pre-defined algorithm with pre-defined input and expected output.
-        # Note: Use an algorithm that is normally available on all systems.
+        # Note 1: We use an algorithm that is normally available on all systems
+        # Note 2: We include some special non-ASCII characters in the input to
+        # make life more interesting :-)
+        #
+        # TODO: In Python 3, tests using self.hashInput to generate a hash will
+        # fail if the user runs them with a default encoding that is not UTF-8.
+        # The reason is that the file you are reading is UTF-8 encoded, which
+        # means that the literal stored in self.hashInput is also UTF-8 encoded.
+        # When the user runs tests e.g. with LANG set to something containing
+        # ISO8859-1, the default encoding will be set to ISO8859-1 and
+        # mkroesti.main.main() will try to convert the literal using ISO8859-1.
+        # Conversion will probably fail entirely, raising an exception, but even
+        # if it appears to "succeed", the generated hash will certainly not be
+        # what we expect. We can fix this problem only when mkroesti starts to
+        # support the specification of the input encoding. Any test case using
+        # self.hashInput to generate a hash will have to be fixed so that it
+        # specifies UTF-8 as the input encoding. Note: There is a large entry
+        # in the TODO file that talks about this issue.
         self.hashAlgorithmName = "md5"
-        self.hashInput = "foo"
-        self.hashExpectedOutput = "acbd18db4cc2f85cedef654fccc4a4d8" 
+        self.hashInput = "foo-äöü-αβγ-⅓⅙⅞"
+        self.hashExpectedOutput = "3f920874c43f9aee62346ee6543f7c2c" 
 
     def tearDown(self):
         ProviderRegistry.deleteInstance()
@@ -82,7 +99,7 @@ class MainTest(unittest.TestCase):
         try:
             args = ["-h"]
             main(args)
-        except SystemExit, (errorInstance):
+        except SystemExit as errorInstance:
             self.assertEqual(errorInstance.code, 0)
         else:
             self.fail("SystemExit not raised")
@@ -139,9 +156,11 @@ class MainTest(unittest.TestCase):
     def testFileMode(self):
         """Exercise the --file option"""
 
-        # Prepare the file
+        # Prepare the file. Specify the UTF-8 encoding because we know that
+        # this file and therefore the literal stored in self.hashInput is
+        # UTF-8 encoded.
         (fileHandle, absPathName) = tempfile.mkstemp()
-        os.write(fileHandle, self.hashInput)
+        os.write(fileHandle, self.hashInput.encode("utf-8"))
         os.close(fileHandle)
         # Generate the hash
         args = ["-a", self.hashAlgorithmName, "-f", absPathName]
@@ -231,6 +250,9 @@ class TestAlgorithmFixedHashValue(AbstractAlgorithm):
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def needBytesInput(self):
+        return True   # we don't really care since we don't really operate on the input
 
     def getHash(self, input):
         return TestAlgorithmFixedHashValue.fixedHashValue

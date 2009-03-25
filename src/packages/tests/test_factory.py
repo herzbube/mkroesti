@@ -70,12 +70,12 @@ class AlgorithmFactoryTest(unittest.TestCase):
                     seenAlgorithmNames = self.alias2ProviderDict[aliasName]
                     seenAlgorithmNames.extend(newAlgorithmNames)
                     self.alias2ProviderDict[aliasName] = set(seenAlgorithmNames)
-        self.alias2AlgorithmDict[ALIAS_ALL] = self.algorithm2CountDict.keys()
+        self.alias2AlgorithmDict[ALIAS_ALL] = list(self.algorithm2CountDict.keys())
         # Bring lists to a defined order so that they can be used in assertions
         # that compare for equality
-        self.noAliasProviders.sort()
-        self.aliasProviders.sort()
-        self.registeredProviders.sort()
+        self.noAliasProviders.sort(key=id)
+        self.aliasProviders.sort(key=id)
+        self.registeredProviders.sort(key=id)
         for aliasName in self.alias2AlgorithmDict:
             self.alias2AlgorithmDict[aliasName].sort()
 
@@ -157,10 +157,10 @@ class AlgorithmFactoryTest(unittest.TestCase):
         expectedAlgorithm2CountDict = self.algorithm2CountDict.copy()
         del expectedAlgorithm2CountDict[ALGORITHM_NAME_UNAVAILABLE]
         self.assertEqual(actualAlgorithm2CountDict, expectedAlgorithm2CountDict)
-        expectedAlgorithmNames = self.algorithm2CountDict.keys()
+        expectedAlgorithmNames = sorted(self.algorithm2CountDict.keys())
         expectedAlgorithmNames.remove(ALGORITHM_NAME_UNAVAILABLE)
-        actualAlgorithmNames = actualAlgorithm2CountDict.keys() 
-        self.assertEqual(sorted(actualAlgorithmNames), sorted(expectedAlgorithmNames))
+        actualAlgorithmNames = sorted(actualAlgorithm2CountDict.keys()) 
+        self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
 
     def testCreateAlgorithmWithUnknownAlias(self):
         # The factory cannot distinguish between unknown algorithms and

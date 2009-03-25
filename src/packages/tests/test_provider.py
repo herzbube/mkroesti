@@ -102,7 +102,7 @@ class AliasAbstractProviderTest(unittest.TestCase):
         for algorithmList in self.namesDictionary.values():
             self.providedAlgorithmNames.extend(algorithmList)
         # Create flat list of alias names
-        self.providedAliasNames = self.namesDictionary.keys()
+        self.providedAliasNames = list(self.namesDictionary.keys())
         self.providedAliasNames.remove(None)
         # Bring lists to a defined order so that they can be used in assertions
         # that compare for equality

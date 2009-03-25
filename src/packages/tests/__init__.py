@@ -22,11 +22,11 @@
 import unittest
 
 # mkroesti
-import test_algorithm
-import test_provider
-import test_registry
-import test_factory
-import test_main
+from tests import test_algorithm
+from tests import test_provider
+from tests import test_registry
+from tests import test_factory
+from tests import test_main
 
 
 def allTests():

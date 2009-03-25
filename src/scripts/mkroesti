@@ -19,6 +19,9 @@
 # along with mkroesti. If not, see <http://www.gnu.org/licenses/>.
 
 
+# Compatibility Python 2.6
+from __future__ import print_function
+
 # PSL
 import sys
 import os.path
@@ -35,16 +38,18 @@ try:
 except (mkroesti.errorhandling.MKRoestiError,
         mkroesti.errorhandling.DuplicateAlgorithmError,
         mkroesti.errorhandling.DuplicateAliasError,
-        mkroesti.errorhandling.DuplicateProviderError), (errorInstance):
-    print scriptName + ": error: " + errorInstance.message
+        mkroesti.errorhandling.DuplicateProviderError) as errorInstance:
+    print(scriptName + ": error: " + errorInstance.message)
     exit(1)
-except mkroesti.errorhandling.UnknownAlgorithmError, (errorInstance):
-    print scriptName + ": " + errorInstance.message
+except mkroesti.errorhandling.UnknownAlgorithmError as errorInstance:
+    print(scriptName + ": " + errorInstance.message)
     exit(1)
-except mkroesti.errorhandling.UnavailableAlgorithmError, (errorInstance):
-    print scriptName + ": " + errorInstance.message
+except mkroesti.errorhandling.UnavailableAlgorithmError as errorInstance:
+    print(scriptName + ": " + errorInstance.message)
     exit(1)
-except mkroesti.errorhandling.UnknownAliasError, (errorInstance):
-    print scriptName + ": unknown alias: " + errorInstance.message
+except mkroesti.errorhandling.UnknownAliasError as errorInstance:
+    print(scriptName + ": unknown alias: " + errorInstance.message)
     exit(1)
-    
+except mkroesti.errorhandling.ConversionError as errorInstance:
+    print(scriptName + ": conversion error: " + errorInstance.message)
+

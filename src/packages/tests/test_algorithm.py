@@ -42,6 +42,11 @@ class AbstractAlgorithmTest(unittest.TestCase):
         self.assertEqual(algorithm.getProvider(), provider)
         pass
 
+    def testNeedBytesInput(self):
+        algorithm = AbstractAlgorithm()
+        self.assertRaises(NotImplementedError, algorithm.needBytesInput)
+        pass
+
     def testGetHash(self):
         input = "dummy-input"
         algorithm = AbstractAlgorithm()

@@ -18,6 +18,9 @@
 # along with mkroesti. If not, see <http://www.gnu.org/licenses/>.
 
 
+# Compatibility Python 2.6
+from __future__ import print_function
+
 # PSL
 import sys
 import os
@@ -28,7 +31,7 @@ import getpass
 import mkroesti   # import stuff from __init__.py (e.g. mkroesti.version)
 from mkroesti import factory
 from mkroesti import registry
-from mkroesti.errorhandling import MKRoestiError
+from mkroesti.errorhandling import MKRoestiError, ConversionError
 
 
 def main(args = None):
@@ -37,7 +40,9 @@ def main(args = None):
     args is the list of command line arguments that should be used (default is
     sys.argv[1:]). This is mainly intended for testing purposes.
 
-    Writes output to sys.stdout.
+    Writes output to sys.stdout. Output can be captured by replacing sys.stdout
+    with a custom object. See tests.test_main.StandardOutputReplacement for an
+    example.
 
     Does not return a value. If no error has been raised, a command line program
     should now return with exit code 0.
@@ -48,15 +53,20 @@ def main(args = None):
     specified, sys.exit(0) is called, which raises SystemExit.
     """
 
+    # Set python2 to True or False, depending on which version of the
+    # interpreter we are running
+    (major, minor, micro, releaselevel, serial) = sys.version_info
+    python2 = (major == 2)
+
     # Create and set up the option parser
     parser = setupOptionParser()
 
     # Start processing options
     # Note: The order in which arguments are checked is important!
     (options, args) = parser.parse_args(args = args)
-    input = None
+    hashInput = None
     if options.version:
-        print os.path.basename(sys.argv[0]) + " " + mkroesti.version
+        print(os.path.basename(sys.argv[0]) + " " + mkroesti.version)
         return
 
     # Registers providers with the registry; must do this early because
@@ -80,20 +90,29 @@ def main(args = None):
             parser.error("missing input for batch processing")
         elif len(args) > 1:
             parser.error("too many input arguments for batch processing")
-        input = args[0]
+        hashInput = args[0]
     elif options.file is not None:
         if options.echo:
             parser.error("echo mode cannot be combined with reading from file")
         elif options.list:
             parser.error("batch mode cannot be combined with list mode")
         try:
-            file = open(options.file, "r")
+            # Explicitly use "binary" mode. If omitted, Python 3 would open the
+            # file in text mode and interpret the file's content using the
+            # current default encoding - which might, or might not, produce the
+            # correct results. In Python 2.6, read() returns data as type str,
+            # but in its raw, uninterpreted form.
+            file = open(options.file, "rb")
             try:
-                input = file.read()   # read() returns data as string
+                hashInput = file.read()
             finally:
                 file.close()
-        except IOError, (errno, strerror): #@UnusedVariable
-            raise MKRoestiError(strerror)
+        except IOError as exc:
+            # TODO: We previously accessed exc.arg (singular), but changed this
+            # to exc.args (plural). Check if this (the plural) works with
+            # Python 2.6. Probably not...
+            errno, strerror = exc.args
+            raise MKRoestiError(strerror)   # pass on detailed error description (e.g. "no such file")
     elif options.list:
         # --list implies --duplicate-hashes
         if not options.duplicateHashes:
@@ -101,22 +120,33 @@ def main(args = None):
         listAlgorithms()
         return
     else:
-        # Get the input from stdin if it is not attached to a TTY (e.g. because
-        # a pipe has been set up, or a file has been redirected to stdin). read()
-        # will read until EOF is reached, it is therefore possible to process
-        # input with, for instance, multiple lines. read() returns data as
-        # string.
-        # Note: Don't use input() or raw_input() because these are line
-        # oriented
         if not sys.stdin.isatty():
-            input = sys.stdin.read()
+            # Get the input directly from the stdin file object, if stdin is
+            # not attached to a TTY. This is the case e.g. because a pipe has
+            # been set up, or a file has been redirected to stdin. read() will
+            # read until EOF is reached, it is therefore possible to process
+            # input with, for instance, multiple lines, or an entire file. We
+            # don't use input() or raw_input() because these are line oriented.
+            #
+            # Note: sys.stdin is in text mode, so reading from it would cause
+            # Python 3 to interpret the data using the current default encoding.
+            # To prevent that, we are using the underlying binary buffer of
+            # sys.stdin to read binary data (this is recommended by the Python 3
+            # docs for sys.stdin)
+            #
+            # TODO: Check if this works for Python 2.6.
+            hashInput = sys.stdin.buffer.read()
         else:
-            # Get a single line of input (newline is stripped)
+            # Get a single line of input (newline is stripped). The input is
+            # of type str for both functions.
             prompt = "Enter text to hash: "
             if options.echo:
-                input = raw_input(prompt)
+                if python2:
+                    hashInput = raw_input(prompt)
+                else:
+                    hashInput = input(prompt)
             else:
-                input = getpass.getpass(prompt)
+                hashInput = getpass.getpass(prompt)
 
     # Create algorithm objects
     algorithms = list()
@@ -128,18 +158,53 @@ def main(args = None):
         # problem...
         algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name, options.duplicateHashes))
 
+    # In Python 3 only: The input might be present as either type str or bytes.
+    # We might need to convert from one to the other, depending on the
+    # requirements of each algorithm. We delay such conversion until it becomes
+    # really necessary. Reason 1: Efficiency. For instance, it makes no sense
+    # to convert a large file to type str, when we will never need that str.
+    # Reason 2 (the real reason :-): It is actually impossible to convert
+    # *binary* files into str. Should the user request an algorithm that
+    # requires conversion to str, the result will be an error. If we were to
+    # perform conversion up front, we would therefore *always* have an error.
+    #
+    # TODO 1: Find out how we can make this work for Python 2.6
+    # TODO 2: At the moment we are using the current default encoding (which is
+    # probably determined by the LANG environment variable) for converting
+    # between str and bytes. We should use a user specified encoding, though.
+    # Change this as soon as the feature has been implemented.
+    hashInputType = type(hashInput)
+    if hashInputType is type(str()):
+        hashInputAsStr = hashInput
+        hashInputAsBytes = None
+    elif hashInputType == type(bytes()):
+        hashInputAsStr = None
+        hashInputAsBytes = hashInput
+    else:
+        raise MKRoestiError("Unsupported type for hash input: " + str(hashInputType))
+
     # Create hashes
     algorithmCount = len(algorithms)
     for algorithm in algorithms:
-        hash = algorithm.getHash(input)
+        if algorithm.needBytesInput():
+            if hashInputAsBytes is None:
+                hashInputAsBytes = hashInputAsStr.encode()
+            hash = algorithm.getHash(hashInputAsBytes)
+        else:
+            if hashInputAsStr is None:
+                try:
+                    hashInputAsStr = hashInputAsBytes.decode()
+                except UnicodeDecodeError:
+                    raise ConversionError("Cannot convert input to string using encoding '" + sys.getdefaultencoding() + "'")
+            hash = algorithm.getHash(hashInputAsStr)
         if algorithmCount == 1:
-            print hash
+            print(hash)
         else:
             algorithmName = algorithm.getName()
             if not options.duplicateHashes:
-                print algorithmName + ": " + str(hash)
+                print(algorithmName + ": " + str(hash))
             else:
-                print algorithmName + " (" + algorithm.getProvider().getAlgorithmSource(algorithmName) + "): " + str(hash)
+                print(algorithmName + " (" + algorithm.getProvider().getAlgorithmSource(algorithmName) + "): " + str(hash))
 
 
 def registerProviders(providerModuleNames):
@@ -163,7 +228,7 @@ def registerProviders(providerModuleNames):
             theCallable = getattr(providerModule, callableName)
         except AttributeError:
             raise MKRoestiError("Provider module " + providerModuleName + " has no attribute named " + callableName)
-        if not callable(theCallable):
+        if not hasattr(theCallable, "__call__"):
             raise MKRoestiError("Provider module " + providerModuleName + " has an attribute named " + callableName + ", but it is not a callable")
         # Don't check whether we have processed the same module in a previous
         # iteration - if the user specifies the same module multiple times, she
@@ -208,14 +273,14 @@ def listAlgorithms():
             lineList.append((algorithmName, sourceString, availableString))
     # Second pass: print output
     columnSeparator = " ".ljust(columnSeparatorWidth)
-    print "Algorithm".ljust(algorithmColumnWidth), columnSeparator, "Source".ljust(sourceColumnWidth), columnSeparator, "Available (reason)".ljust(availableColumnWidth)
-    print "---------".ljust(algorithmColumnWidth), columnSeparator, "------".ljust(sourceColumnWidth), columnSeparator, "------------------".ljust(availableColumnWidth)
+    print("Algorithm".ljust(algorithmColumnWidth), columnSeparator, "Source".ljust(sourceColumnWidth), columnSeparator, "Available (reason)".ljust(availableColumnWidth))
+    print("---------".ljust(algorithmColumnWidth), columnSeparator, "------".ljust(sourceColumnWidth), columnSeparator, "------------------".ljust(availableColumnWidth))
     for (algorithmName, sourceString, availableString) in lineList:
-        print algorithmName.ljust(algorithmColumnWidth), \
+        print(algorithmName.ljust(algorithmColumnWidth), \
               columnSeparator, \
               sourceString.ljust(sourceColumnWidth), \
               columnSeparator, \
-              availableString.ljust(availableColumnWidth)
+              availableString.ljust(availableColumnWidth))
 
 
 def setupOptionParser():

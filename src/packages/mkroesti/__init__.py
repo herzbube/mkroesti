@@ -19,7 +19,7 @@
 
 
 # mkroesti
-from registry import ProviderRegistry
+from mkroesti.registry import ProviderRegistry
 
 
 # Feed these modules to clients that say "from mkroesti import *"

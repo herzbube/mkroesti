@@ -79,11 +79,13 @@ class ProviderRegistryTest(unittest.TestCase):
                     self.alias2ProviderDict[aliasName] = set(seenAlgorithmNames)
         # Bring lists to a defined order so that they can be used in assertions
         # that compare for equality
-        self.noAliasProviders.sort()
-        self.aliasProviders.sort()
-        self.registeredProviders.sort()
+        # Note: Algorithm provider instances are not intrinsically sortable, so
+        # we just sort them by their id()
+        self.noAliasProviders.sort(key=id)
+        self.aliasProviders.sort(key=id)
+        self.registeredProviders.sort(key=id)
         for algorithmName in self.algorithm2ProviderDict:
-            self.algorithm2ProviderDict[algorithmName].sort()
+            self.algorithm2ProviderDict[algorithmName].sort(key=id)
         for aliasName in self.alias2ProviderDict:
             self.alias2ProviderDict[aliasName].sort()
         for aliasName in self.alias2AlgorithmDict:
@@ -115,7 +117,7 @@ class ProviderRegistryTest(unittest.TestCase):
         for algorithmName in self.algorithm2ProviderDict:
             providers = self.registry.getProviders(algorithmName)
             # bring to defined order before comparing
-            providers.sort()
+            providers.sort(key=id)
             self.assertEqual(providers, self.algorithm2ProviderDict[algorithmName])
 
     def testGetProvidersUnknownAlgorithm(self):
@@ -123,18 +125,14 @@ class ProviderRegistryTest(unittest.TestCase):
         self.assertRaises(UnknownAlgorithmError, self.registry.getProviders, None)
 
     def testGetAlgorithmNames(self):
-        expectedAlgorithmNames = self.algorithm2ProviderDict.keys()
-        expectedAlgorithmNames.sort()
-        actualAlgorithmNames = self.registry.getAlgorithmNames()
-        actualAlgorithmNames.sort()
+        expectedAlgorithmNames = sorted(self.algorithm2ProviderDict.keys())
+        actualAlgorithmNames = sorted(self.registry.getAlgorithmNames())
         self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
 
     def testGetAvailableAlgorithmNames(self):
-        expectedAlgorithmNames = self.algorithm2ProviderDict.keys()
+        expectedAlgorithmNames = sorted(self.algorithm2ProviderDict.keys())
         expectedAlgorithmNames.remove(ALGORITHM_NAME_UNAVAILABLE)
-        expectedAlgorithmNames.sort()
-        actualAlgorithmNames = self.registry.getAvailableAlgorithmNames()
-        actualAlgorithmNames.sort()
+        actualAlgorithmNames = sorted(self.registry.getAvailableAlgorithmNames())
         self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
 
     def testIsAlgorithmKnown(self):
@@ -154,7 +152,7 @@ class ProviderRegistryTest(unittest.TestCase):
         self.assertRaises(UnknownAlgorithmError, self.registry.isAlgorithmAvailable, None)
 
     def testGetAliasNames(self):
-        expectedAliasNames = self.alias2ProviderDict.keys()
+        expectedAliasNames = list(self.alias2ProviderDict.keys())
         expectedAliasNames.append(ALIAS_ALL)
         expectedAliasNames.sort()
         actualAliasNames = self.registry.getAliasNames()
@@ -169,10 +167,8 @@ class ProviderRegistryTest(unittest.TestCase):
             self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
 
     def testResolveAliasAll(self):
-        expectedAlgorithmNames = self.algorithm2ProviderDict.keys()
-        expectedAlgorithmNames.sort()
-        actualAlgorithmNames = self.registry.resolveAlias(ALIAS_ALL)
-        actualAlgorithmNames.sort()
+        expectedAlgorithmNames = sorted(self.algorithm2ProviderDict.keys())
+        actualAlgorithmNames = sorted(self.registry.resolveAlias(ALIAS_ALL))
         self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
 
     def testResolveUnknownAlias(self):

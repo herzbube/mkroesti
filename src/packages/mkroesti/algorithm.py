@@ -81,8 +81,24 @@ class AlgorithmInterface:
         """Returns the provider that created the instance of the algorithm class."""
         raise NotImplementedError
 
+    def needBytesInput(self):
+        """Returns True if getHash() requires input to be of type bytes, False
+        if it requires input to be of type str.
+
+        If this program is run in versions prior to Python 3, this function will
+        never be called and the input to getHash() will always be of type str.
+        """
+        raise NotImplementedError
+        
     def getHash(self, input):
-        """Returns a string that is the result of the algorithm hashing input."""
+        """Returns a string that is the result of the algorithm hashing input.
+
+        If this program is run in Python 3, the type of input (str or bytes) is
+        determined by the return value of needBytesInput(). If this program is
+        run in versions prior to Python 3, the type of input will always be str
+        (because in versions prior to Python 3 the string data type is used to
+        represent arrays of bytes).
+        """
         raise NotImplementedError
 
 
@@ -94,9 +110,11 @@ class AbstractAlgorithm(AlgorithmInterface):
         self.provider = provider
 
     def getName(self):
+        """This default implementation returns the name specified on construction."""
         return self.name
 
     def getProvider(self):
+        """This default implementation returns the provider specified on construction."""
         return self.provider
 
 
@@ -107,6 +125,9 @@ class HashlibAlgorithms(AbstractAlgorithm):
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def needBytesInput(self):
+        return True
 
     def getHash(self, input):
         algorithmName = self.getName()
@@ -153,6 +174,9 @@ class Base64Algorithms(AbstractAlgorithm):
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
 
+    def needBytesInput(self):
+        return True
+
     def getHash(self, input):
         algorithmName = self.getName()
         if ALGORITHM_BASE16 == algorithmName:
@@ -173,6 +197,9 @@ class ZlibAlgorithms(AbstractAlgorithm):
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
 
+    def needBytesInput(self):
+        return True
+
     def getHash(self, input):
         algorithmName = self.getName()
         if ALGORITHM_ADLER32 == algorithmName:
@@ -192,6 +219,9 @@ class CryptAlgorithm(AbstractAlgorithm):
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def needBytesInput(self):
+        return False
 
     def getHash(self, input):
         if ALGORITHM_CRYPT_SYSTEM != self.getName():
@@ -225,6 +255,9 @@ class CryptBlowfishAlgorithm(AbstractAlgorithm):
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
 
+    def needBytesInput(self):
+        return True
+
     def getHash(self, input):
         if ALGORITHM_CRYPT_BLOWFISH != self.getName():
             return AbstractAlgorithm.getHash(self, input)
@@ -243,6 +276,9 @@ class WindowsHashAlgorithms(AbstractAlgorithm):
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def needBytesInput(self):
+        return True
 
     def getHash(self, input):
         algorithmName = self.getName()
@@ -265,6 +301,9 @@ class MHashAlgorithms(AbstractAlgorithm):
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def needBytesInput(self):
+        return True
 
     def getHash(self, input):
         mhashAlgorithmName = MHashAlgorithms.mapAlgorithmName(self.getName())
