@@ -251,7 +251,7 @@ def main(args = None):
     if not conversionRequired and options.codec:
         print("Warning: Ignoring --codec because no conversion was required", file = sys.stderr)
     if hashInputType is type(str()) and needBytesInput and options.codec:
-        print("Warning: Re-interpreting input data using your encoding '" + encoding + "' (see man page for details)", file = sys.stderr)
+        print("Warning: Re-interpreting input data using encoding '" + encoding + "' (Python has already interpreted your input using a locale-based encoding)", file = sys.stderr)
 
     # Create hashes
     algorithmCount = len(algorithms)

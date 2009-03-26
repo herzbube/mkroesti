@@ -23,18 +23,8 @@ Priority 1 (important)
   would be one where the default encoding is different from what user input
   actually provides, e.g. user input provides UTF-8 but default encoding is
   something like ISO8859-1; write down the results in the Research
-- support for encodings is not yet finished; the following things need to be
-  done, still:
-  - write a set of new test cases
-  - add support for encodings in Python 2.6 as well; if not possible, find the
-    limitations and specify them in README and MANUAL
-  - Note: It seems to be impossible to specify an encoding that will influence
-    the interpretation of the command line argument in batch mode; if there is
-    an error converting the argument into unicode for storage in sys.argv, using
-    the default encoding, the error will cause the interpreter to abort before
-    execution even has reached the mkroesti code; the abort message looks like
-    this on my Mac Book Pro using Python 3.0.1: "Could not convert argument 5 to string".
-    This problem can probably not be fixed, maybe there should be a FAQ for it?
+- add support for encodings in Python 2.6; if not possible, find the
+  limitations and specify them in README and MANUAL
 - check if in Python 2.6 sys.stdin.buffer exists and can be used in the same
   way as in Python 3 to read binary data
 - fix TODOs in the code
@@ -48,7 +38,6 @@ Priority 1 (important)
        (use expect for interactive entry)
     3) Last but not least: Have an end-to-end test suite (as opposed to the
        more detailed automated unit tests)
-  - add tests to test_main.py for -p, -x and -c
   - write a test case class that accepts a provider in its __init__ and then
     goes on to exercise the provider to make sure that its implementation is
     valid

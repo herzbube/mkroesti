@@ -3,6 +3,9 @@ Thu Mar 26 2009   "Patrick Näf" <herzbube@herzbube.ch>
   - documented design decisions about handling of encodings in the DESIGN file
   - clarified ENCODINGS section in MANUAL
   - added various warnings to main function
+- documentation fixes due to misunderstanding of locale-based vs. default
+  encoding
+- added test cases for --codec to tests.test_main.py
 
 Wed Mar 25 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - added --codec command line option

@@ -28,6 +28,7 @@ import os
 
 # mkroesti
 from mkroesti.algorithm import AbstractAlgorithm
+from mkroesti.errorhandling import ConversionError
 from mkroesti.main import main
 from mkroesti.provider import AbstractProvider
 from mkroesti.registry import ProviderRegistry
@@ -35,12 +36,13 @@ import mkroesti
 
 
 class StandardOutputReplacement():
-    """An instance of this class can be used to replace sys.stdout.
-    
-    Starting with the moment when sys.stdout is replaced, any output to
-    sys.stdout will be added to a continually growing string buffer. The
-    current content of the string buffer can be requested at any time by
-    calling getStdoutBuffer().
+    """An instance of this class can be used to replace sys.stdout or
+    sys.stderr.
+
+    Starting with the moment when sys.stdout or sys.stderr is replaced, any
+    output to sys.stdout or sys.stderr will be added to a continually growing
+    string buffer. The current content of the string buffer can be requested at
+    any time by calling getStdoutBuffer().
     """
 
     def __init__(self):
@@ -60,20 +62,27 @@ class MainTest(unittest.TestCase):
 
     def setUp(self):
         self.thisModule = sys.modules[__name__]
+        # Replace stdout so that we can watch out for the generated hash
         self.stdoutOriginal = sys.stdout
         self.stdoutReplacement = StandardOutputReplacement()
         sys.stdout = self.stdoutReplacement
+        # Replace stderr to prevent warnings from being printed
+        self.stderrOriginal = sys.stderr
+        self.stderrReplacement = StandardOutputReplacement()
+        sys.stderr = self.stderrReplacement
         # A pre-defined algorithm with pre-defined input and expected output.
         # Note 1: We use an algorithm that is normally available on all systems
         # Note 2: We include some special non-ASCII characters in the input to
         # make life more interesting :-)
         self.hashAlgorithmName = "md5"
         self.hashInput = "foo-äöü-αβγ-⅓⅙⅞"
-        self.hashExpectedOutput = "3f920874c43f9aee62346ee6543f7c2c" 
+        self.hashExpectedOutput = {"utf-8" : "3f920874c43f9aee62346ee6543f7c2c",
+                                   "utf-16" : "eebf197417a9ace8fca4729be42ee594"}
 
     def tearDown(self):
         ProviderRegistry.deleteInstance()
         sys.stdout = self.stdoutOriginal
+        sys.stderr = self.stderrOriginal
 
     def testHelp(self):
         """Exercise the --help option"""
@@ -107,11 +116,12 @@ class MainTest(unittest.TestCase):
     def testBatchMode(self):
         """Exercise the --batch option"""
 
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", "utf-8"]
+        encoding = "utf-8"
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
-        self.assertEqual(actualHash, self.hashExpectedOutput)
+        self.assertEqual(actualHash, self.hashExpectedOutput[encoding])
 
     def testListMode(self):
         """Exercise the --list option"""
@@ -145,15 +155,16 @@ class MainTest(unittest.TestCase):
         # Prepare the file. Specify the UTF-8 encoding because we know that
         # this file and therefore the literal stored in self.hashInput is
         # UTF-8 encoded.
+        encoding = "utf-8"
         (fileHandle, absPathName) = tempfile.mkstemp()
-        os.write(fileHandle, self.hashInput.encode("utf-8"))
+        os.write(fileHandle, self.hashInput.encode(encoding))
         os.close(fileHandle)
         # Generate the hash. We don't need to specify the encoding because the
         # file will be read as binary data.
         args = ["-a", self.hashAlgorithmName, "-f", absPathName]
         main(args)
         actualOutput = self.stdoutReplacement.getStdoutBuffer().strip()
-        self.assertEqual(actualOutput, self.hashExpectedOutput)
+        self.assertEqual(actualOutput, self.hashExpectedOutput[encoding])
         # Cleanup
         os.remove(absPathName)
 
@@ -176,11 +187,12 @@ class MainTest(unittest.TestCase):
         # used to provide the hash value. We know that this has happened if we
         # get the real valid hash value instead of the bogus fixed hash value.
         self.thisModule.provider = TestProvider(self.hashAlgorithmName)
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", "utf-8", "-p", __name__]
+        encoding = "utf-8"
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding, "-p", __name__]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
-        self.assertEqual(actualHash, self.hashExpectedOutput)
+        self.assertEqual(actualHash, self.hashExpectedOutput[encoding])
 
     def testExcludeBuiltins(self):
         """Exercise the --exclude-builtins option"""
@@ -196,6 +208,30 @@ class MainTest(unittest.TestCase):
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
         self.assertEqual(actualHash, TestAlgorithmFixedHashValue.fixedHashValue)
+
+    def testCodecValid(self):
+        """Exercise the --codec option using a valid encoding"""
+
+        encoding = "utf-16"
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
+        returnValue = main(args)
+        self.assertEqual(returnValue, None)
+        actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
+        self.assertEqual(actualHash, self.hashExpectedOutput[encoding])
+
+    def testCodecInvalid(self):
+        """Exercise the --codec option using an invalid encoding"""
+
+        # Conversion to this encoding will fail because self.hashInput contains
+        # characters that do not exist
+        encoding = "iso-8859-1"
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
+        try:
+            main(args)
+        except ConversionError:
+            pass
+        else:
+            self.fail("ConversionError not raised")
 
 
 class TestProvider(AbstractProvider):

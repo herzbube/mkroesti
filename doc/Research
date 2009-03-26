@@ -98,9 +98,12 @@ About each of the functions:
     However, with LANG=de_CH.ISO8859-1, there was no such error. It appears that
     Python 3 tries to interpret the command line arguments so that it can
     convert them to string to store them in sys.argv. It fails if any argument
-    cannot be converted using the default encoding (in the above example, I am
-    providing an ISO8859-1 input, but the default encoding is UTF-8 due to the
-    LANG variable).
+    cannot be converted using the locale-based encoding (in the above example,
+    I am providing an ISO8859-1 input, but the locale-based encoding is UTF-8
+    due to the LANG variable). If no locale is available (e.g. LANG is unset),
+    Python seems to guess the encoding of the command line argument: In another
+    experiment with undefined LANG, Python correctly detects, for instance, an
+    ISO8859-1 encoded argument, but fails to detect an UTF-16 encoded argument.
   - Python 2.6: In an experiment I was able to confirm that the arguments are
     stored in the sys.argv strings raw and uninterpreted. The experiment works
     like this: The two following command line invocations result in two
