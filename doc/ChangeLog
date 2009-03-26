@@ -1,3 +1,9 @@
+Thu Mar 26 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- cleanup handling of --codec command line argument
+  - documented design decisions about handling of encodings in the DESIGN file
+  - clarified ENCODINGS section in MANUAL
+  - added various warnings to main function
+
 Wed Mar 25 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - added --codec command line option
 - the --version command line option now prints out the default encoding for

@@ -39,7 +39,7 @@ OPTIONS
   Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at the time when **mkroesti** is run.
 
 -c CODEC, --codec CODEC
-  Interpret the input using the character encoding named CODEC. See **ENCODINGS** below.
+  If necessary, use the character encoding named CODEC for internal conversion between binary and string data. See **ENCODINGS** below.
 
 -d, --duplicate-hashes
   Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
@@ -60,7 +60,7 @@ OPTIONS
   Exclude built-in algorithms from the operation of **mkroesti**. This is useful if you want to test your own algorithm providing modules without interference from built-in algorithms.
 
 -V, --version
-  Print the version number.
+  Print the version number and some diagnostic data.
 
 -h, --help
   Show a short usage summary.       
@@ -94,57 +94,57 @@ crypt-blowfish
 md2
   Message-Digest algorithm 2.
 md4
-  Message-Digest algorithm 4, produces a 128 bit hash.
+  Message-Digest algorithm 4, generates a 128 bit hash.
 md5
-  Message-Digest algorithm 5, produces a 128 bit hash.
+  Message-Digest algorithm 5, generates a 128 bit hash.
 sha-0
   The original SHA algorithm. Superseded by **sha-1**.
 sha-1
-  SHA-1 algorithm, produces a 160 bit hash. Supersedes **sha-0**.
+  SHA-1 algorithm, generates a 160 bit hash. Supersedes **sha-0**.
 sha-224
-  SHA-2 algorithm, produces a 224 bit hash.
+  SHA-2 algorithm, generates a 224 bit hash.
 sha-256
-  SHA-2 algorithm, produces a 256 bit hash.
+  SHA-2 algorithm, generates a 256 bit hash.
 sha-384
-  SHA-2 algorithm, produces a 384 bit hash.
+  SHA-2 algorithm, generates a 384 bit hash.
 sha-512
-  SHA-2 algorithm, produces a 512 bit hash.
+  SHA-2 algorithm, generates a 512 bit hash.
 ripemd-original
   The original RIPEMD algorithm. Superseded by **ripemd-160**.
 ripemd-128
-  RIPEMD algorithm, produces a 128 bit hash.
+  RIPEMD algorithm, generates a 128 bit hash.
 ripemd-160
-  RIPEMD algorithm, produces a 160 bit hash. Supersedes **ripemed**.
+  RIPEMD algorithm, generates a 160 bit hash. Supersedes **ripemed**.
 ripemd-256
-  RIPEMD algorithm, produces a 256 bit hash.
+  RIPEMD algorithm, generates a 256 bit hash.
 ripemd-320
-  RIPEMD algorithm, produces a 320 bit hash.
+  RIPEMD algorithm, generates a 320 bit hash.
 haval-128-[345]
-  HAVAL algorithm, produces a 128 bit hash. The number of rounds is either 3, 4 or 5.
+  HAVAL algorithm, generates a 128 bit hash. The number of rounds is either 3, 4 or 5.
 haval-160-[345]
-  HAVAL algorithm, produces a 160 bit hash. The number of rounds is either 3, 4 or 5.
+  HAVAL algorithm, generates a 160 bit hash. The number of rounds is either 3, 4 or 5.
 haval-192-[345]
-  HAVAL algorithm, produces a 192 bit hash. The number of rounds is either 3, 4 or 5.
+  HAVAL algorithm, generates a 192 bit hash. The number of rounds is either 3, 4 or 5.
 haval-224-[345]
-  HAVAL algorithm, produces a 224 bit hash. The number of rounds is either 3, 4 or 5.
+  HAVAL algorithm, generates a 224 bit hash. The number of rounds is either 3, 4 or 5.
 haval-256-[345]
-  HAVAL algorithm, produces a 256 bit hash. The number of rounds is either 3, 4 or 5.
+  HAVAL algorithm, generates a 256 bit hash. The number of rounds is either 3, 4 or 5.
 whirlpool
   WHIRLPOOL algorithm.
 tiger-128
-  Tiger algorithm, produces a 128 bit hash.
+  Tiger algorithm, generates a 128 bit hash.
 tiger-160
-  Tiger algorithm, produces a 160 bit hash.
+  Tiger algorithm, generates a 160 bit hash.
 tiger-192
-  Tiger algorithm, produces a 192 bit hash. This is the variant commonly used, and commonly referred to as "Tiger".
+  Tiger algorithm, generates a 192 bit hash. This is the variant commonly used, and commonly referred to as "Tiger".
 tiger2
   .. empty definition
 snefru-128
-  Snefru algorithm, produces a 128 bit hash.
+  Snefru algorithm, generates a 128 bit hash.
 snefru-256
-  Snefru algorithm, produces a 256 bit hash.
+  Snefru algorithm, generates a 256 bit hash.
 gost
-  GOST algorithm, produces a 256 bit hash.
+  GOST algorithm, generates a 256 bit hash.
 windows-lm
   The Windows LanManager password hash.
 windows-nt
@@ -161,11 +161,11 @@ ALIASES
 all
   All algorithms known to **mkroesti**. The default if **--algorithms** is not specified.
 chksum
-  All algorithms that produce a checksum instead of a hash.
+  All algorithms that generate a checksum instead of a hash.
 encoding
-  All algorithms that produce an encoding instead of a hash.
+  All algorithms that generate an encoding instead of a hash.
 crypt
-  All algorithms that produce a hash based on crypt().
+  All algorithms that generate a hash based on crypt().
 sha
   All algorithms of the SHA (Secure Hash Algorithm) family.
 ripemd
@@ -195,13 +195,22 @@ For the gritty details, use **pydoc** to view the API documentation inside the m
 ENCODINGS
 =========
 
-Depending on the circumstances, **mkroesti** may need to convert the input data it is operating on from binary into string data, or vice versa. For instance, if you specify a file as input data **mkroesti** will read that file into memory as binary data. If you then request a hash algorithm that requires its input data to be a string (e.g. **crypt-system**), **mkroesti** will be forced to convert from binary to string data.
+**mkroesti** treats the input data specified by the user either as binary data, or as string data. The input method that the user choses determines how the input data is treated:
 
-Conversion between binary and string data, or vice versa, forces **mkroesti** to interpret the input data. The **--codec** command line argument may be used to specify which character encoding should be employed by **mkroesti** when it interprets the data. The encoding is specified as a "codec name", which can be the name of any codec registered via the Python Standard Library module "codecs". See the module's documentation for an extensive list of possible names. Often used encodings would be "utf-8", "latin_1" (equivalent to "iso8859-1") or "mac_roman".
+- Reading from a file (i.e. using **--file**): Input data is treated as binary data.
+- Reading from stdin, when stdin is not a tty (i.e. piping the input into **mkroesti**, or redirecting stdin): Input data is treated as binary data.
+- Reading from the command line (i.e. using **--batch**): Input data is treated as string data.
+- Specifying the input interactively (with or without echo mode): Input data is treated as string data.
 
-If **--codec** is not used to explicitly specify an encoding, **mkroesti** implicitly uses Python's default encoding to perform the conversion. The default encoding is usually determined by the content of the *LANG* environment variable. Invoke **mkroesti** with the **--version** argument to see which default encoding is in use right now.
+While most hash algorithms require their input to be binary data, some algorithms require their input to be string data (**crypt-system** is a notable case). Whenever an algorithm requires its input to be of a type that is different from the type how **mkroesti** treats its input data, **mkroesti** is forced to convert between the two types. So if, for instance, the user specifies a file (input data is binary data) and selects the **crypt-system** algorithm (requires string data), **mkroesti** needs to convert from binary to string data. Another example would be if the user specifies the input on the command line using **--batch** (input data is string data), and selects the **md5** algorithm (requires binary data), **mkroesti** needs to convert from string to binary data.
 
-Note: Please be aware that if you specify the input data on the command line (i.e. in batch mode), or enter the input data interactively (it does not matter whether echo mode is on or off), the Python interpreter will use its default encoding (i.e. the one determined by *LANG*) to interpret the input data. If you then use **--codec** to specify a different encoding, that encoding will be used to re-interpret the input data before it is given to the hash algorithm! The final byte sequence given to the hash algorithm may therefore very well be different from the original byte sequence that you typed on the command line, which will result in a different hash than the one you may have expected.
+Because strings are involved in converting from binary to string data, or vice versa, **mkroesti** must employ a character encoding (e.g. UTF-8, Latin-1) to interpret the data. Without any special measures, **mkroesti** implicitly uses Python's default character encoding to perform the conversion. The default encoding is usually determined by the user's locale, for instance the content of the *LANG* environment variable. Invoke **mkroesti** with the **--version** argument to see which default encoding would be used right now.
+
+The **--codec** command line argument tells **mkroesti** to use the specified encoding instead of Python's default encoding. The encoding is specified as a "codec name", which can be the name of any codec registered via the Python Standard Library module "codecs". See the module's documentation for an extensive list of possible names. Often used encodings would be "utf-8", "latin_1" (equivalent to "iso8859-1") or "mac_roman".
+
+**NOTE 1:** If you specify the input data on the command line (i.e. use **--batch**), or enter the input data interactively (with or without echo mode), the Python interpreter will use its default encoding (i.e. the one determined by *LANG*) to interpret the input data before it passes on the data to **mkroesti** for further processing. This means that if you use **--codec** in such a situation, and you specify an encoding different from Python's default encoding, that new encoding will be used to re-interpret the input data before it is given to the hash algorithm! The final byte sequence given to the hash algorithm may therefore very well be different from the original byte sequence that you typed on the command line, which will result in a different hash than the one you may have expected.
+
+**NOTE 2:** If **mkroesti** does not need to convert between binary and string data, it will ignore the **--codec** command line argument! If **mkroesti** generates multiple hashes, it will use the specified encoding for those algorithms that require conversion, but ignore it for all others.
 
 
 EXAMPLES
@@ -260,7 +269,9 @@ BUGS
 
 Not all hash algorithms advertised in this manual are actually provided. Use "**mkroesti** **--list**" to find out which algorithms are actually available on your system.
 
-**mkroesti** is not good at handling large files, because it tries to read its entire input into memory.
+**mkroesti** is not good at handling large files, because it tries to read a file's entire content into memory before hash generation commences.
+
+The handling of encodings is probably incomplete, and certainly awkward in some situations. You may find it easier to ignore encodings in **mkroesti** altogether, and instead use a different tool that is better at handling encodings, to pre-process your input data.
 
 If you find any other bugs, please report them to <herzbube@herzbube.ch>.
 

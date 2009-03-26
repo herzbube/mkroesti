@@ -215,28 +215,51 @@ def main(args = None):
     else:
         raise MKRoestiError("Hash input object has unsupported type: " + str(hashInputType))
 
+    # Find out what kind of input data we need to make all algorithms happy
+    needBytesInput = False
+    needStrInput = False
+    for algorithm in algorithms:
+        if algorithm.needBytesInput():
+            needBytesInput = True
+        else:
+            needStrInput = True
+
+    # Perform the actual conversion
+    conversionRequired = False
+    if needBytesInput:
+        if hashInputAsBytes is None:
+            conversionRequired = True
+            try:
+                hashInputAsBytes = hashInputAsStr.encode(encoding)
+            except UnicodeEncodeError:
+                # This happens, for instance, if we try to encode a
+                # character that does not exist in the encoding's target
+                # character set (e.g. "β" does not exist in "iso-8859-1")
+                raise ConversionError("Cannot convert input to binary data (the encoding used was '" + encoding + "')")
+    if needStrInput:
+        if hashInputAsStr is None:
+            conversionRequired = True
+            try:
+                hashInputAsStr = hashInputAsBytes.decode(encoding)
+            except UnicodeDecodeError:
+                # This happens, for instance, if we try to decode binary
+                # data, because no encoding can sensibly decode binary data
+                raise ConversionError("Cannot convert input to string data (the encoding used was '" + encoding + "')")
+
+    # Issue final warnings before we start generating hashes
+    # Note: Only warn if the user explicitly specified --codec.
+    if not conversionRequired and options.codec:
+        print("Warning: Ignoring --codec because no conversion was required", file = sys.stderr)
+    if hashInputType is type(str()) and needBytesInput and options.codec:
+        print("Warning: Re-interpreting input data using your encoding '" + encoding + "' (see man page for details)", file = sys.stderr)
+
     # Create hashes
     algorithmCount = len(algorithms)
     for algorithm in algorithms:
         algorithmName = algorithm.getName()
         if algorithm.needBytesInput():
-            if hashInputAsBytes is None:
-                try:
-                    hashInputAsBytes = hashInputAsStr.encode(encoding)
-                except UnicodeEncodeError:
-                    # This happens, for instance, if we try to encode a
-                    # character that does not exist in the encoding's target
-                    # character set (e.g. "β" does not exist in "iso-8859-1")
-                    raise ConversionError("Cannot convert input to binary data (algorithm = " + algorithmName + ", encoding = " + encoding + ")")
             hash = algorithm.getHash(hashInputAsBytes)
         else:
-            if hashInputAsStr is None:
-                try:
-                    hashInputAsStr = hashInputAsBytes.decode(encoding)
-                except UnicodeDecodeError:
-                    # This happens, for instance, if we try to decode binary
-                    # data, because no encoding can sensibly decode binary data
-                    raise ConversionError("Cannot convert input to string data (algorithm = " + algorithmName + ", encoding = " + encoding + ")")
             hash = algorithm.getHash(hashInputAsStr)
         if algorithmCount == 1:
             print(hash)

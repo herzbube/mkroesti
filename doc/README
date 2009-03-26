@@ -164,8 +164,21 @@ Not all hash algorithms advertised on the man page are actually provided. Use
 "mkroesti --list" to find out which algorithms are actually available on your
 system.
 
-mkroesti is not good at handling large files, because it tries to read its
-entire input into memory.
+mkroesti is not good at handling large files, because it tries to read a file's
+entire content into memory before hash generation commences.
+
+The handling of encodings is probably incomplete, and certainly awkward in some
+situations. You may find it easier to ignore encodings in mkroesti altogether,
+and instead use a different tool that is better at handling encodings, to
+pre-process your input data. The --codec option was added mainly to handle the
+border case where binary input needs to be converted into string data to satisfy
+algorithms such as crypt-system, which take string data as their input. The
+--codec option was also added to enable unit tests to specify an encoding for
+the input they provide to mkroesti.main.main(), to cover the case where the
+default encoding of the user who runs the tests differs from the encoding of the
+file that contains the string literal used by the test. Now that --codec has
+been implemented, it proves to be a major nuisance, because its usage remains
+obscure in many situations.
 
 
 Why mkroesti (the motivation)?

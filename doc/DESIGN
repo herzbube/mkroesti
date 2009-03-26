@@ -1,6 +1,6 @@
 Purpose of this document
 ------------------------
-This document contains some design notes for mkroesti.
+This document contains design notes and decisions for mkroesti.
 
 
 Design notes
@@ -64,3 +64,22 @@ Design notes
     * to this end, the factory assumes that the name is an alias and tries to resolve the alias using mkroesti.registry.ProviderRegistry
     * if resolution is successful, create requests are spawned in a recursive manner for each of the names obtained by alias resolution
     * if resolution is not successful, the create request proceeds as normal
+
+
+Design decisions
+----------------
+Encodings
+- Currently --codec is ignored if input data is read in binary form and given
+  to an algorithm in binary form, i.e. if no conversion is required. This may
+  not make sense to everybody, but I have decided to keep it that way because
+  it keeps usage more simple, and I believe that it is not the job of mkroesti
+  to recode text files - which would be the only conceivable use case of **NOT**
+  ignoring --codec in the binary->binary case (it make no sense to interpret
+  **REAL** binary files).
+- The --codec argument is ignored as well if input data is read in string form
+  and given to an algorithm in string form. This probably makes not sense to
+  everybody, either - from a technical point of view, though, there is no way
+  how this behaviour could be changed. Because regardless of how many
+  re-interpretations we make, the input data always ends up in a string in
+  Unicode format, and is given to the algorithm as such.
+

@@ -10,33 +10,6 @@ the Roadmap document.
 
 Priority 1 (important)
 ----------------------
-- the --codec option was added mainly to handle the border case where binary
-  input needs to be converted to string for algorithms like crypt-system (which
-  is unfortunate in the first place, the algorithms mkroesti uses should always
-  use binary data as input); the --codec option was also added to enable unit
-  tests to specify an encoding for their input; now that --codec has been
-  implemented, it proves to be a major nuisance, because its usage remains
-  unclear in certain situations:
-  - currently --codec is ignored if input data is read in binary form and given
-    to an algorithm in binary form; this probably does not make sense to a user,
-    although it makes sense to me, as I believe that it is not the job of
-    mkroesti to recode text files
-  - the option is ignored as well if input data is read in string form and
-    given to an algorithm in string form; to a user, this probably makes no
-    sense, either; from a technical point of view, though, there is no way how
-    we can fix this, because regardless of how many re-interpretations we make,
-    the input data always ends up in a string in unicode format, and is given
-    to the algorithm as such
-  - Conclusion: This situation needs to be fixed, somehow. Possible solutions
-    1) Remove --codec
-    2) Leave the implementation as it is and document the problems sufficiently
-    3) Change the implementation so that binary data is re-interpreted when
-       --codec is specified; this needs thorough documentation, as well as
-       the str->str situation where no conversion is taking place, ever
-    4) Add yet another command line argument, --force. This still does not help
-       the str->str situation.
-  - Before the problem is tackled, the Python 2.6 implementation should be
-    revisited, fixed and tested. 
 - test with Python 2.6 what works and what doesn't after Python 3 changes have
   been implemented; things that probably need fixing: handling of text vs. data
   (i.e. usage of the Python 3 type "bytes"); things that should be ok: absolute
