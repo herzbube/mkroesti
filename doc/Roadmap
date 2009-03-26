@@ -36,11 +36,12 @@ Version 0.4
 
 Version 0.3
 - implement missing hash crypt-md5
+- implement missing hash crypt-apr1
 
 Version 0.2
-- implement missing hash crypt-apr1
 - add Python 3 support to mkroesti (keeping backward compatibility with
-  Python 2.5 and 2.6)
+  Python 2.6)
+- add support for specifying the input encoding
 
 Version 0.1 (Mar 23 2009)
 - first version suitable for public release

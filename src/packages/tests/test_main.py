@@ -59,7 +59,7 @@ class MainTest(unittest.TestCase):
     """Exercise mkroesti.main.main()"""
 
     def setUp(self):
-        self.thisModule = sys.modules["tests.test_main"]
+        self.thisModule = sys.modules[__name__]
         self.stdoutOriginal = sys.stdout
         self.stdoutReplacement = StandardOutputReplacement()
         sys.stdout = self.stdoutReplacement
@@ -67,21 +67,6 @@ class MainTest(unittest.TestCase):
         # Note 1: We use an algorithm that is normally available on all systems
         # Note 2: We include some special non-ASCII characters in the input to
         # make life more interesting :-)
-        #
-        # TODO: In Python 3, tests using self.hashInput to generate a hash will
-        # fail if the user runs them with a default encoding that is not UTF-8.
-        # The reason is that the file you are reading is UTF-8 encoded, which
-        # means that the literal stored in self.hashInput is also UTF-8 encoded.
-        # When the user runs tests e.g. with LANG set to something containing
-        # ISO8859-1, the default encoding will be set to ISO8859-1 and
-        # mkroesti.main.main() will try to convert the literal using ISO8859-1.
-        # Conversion will probably fail entirely, raising an exception, but even
-        # if it appears to "succeed", the generated hash will certainly not be
-        # what we expect. We can fix this problem only when mkroesti starts to
-        # support the specification of the input encoding. Any test case using
-        # self.hashInput to generate a hash will have to be fixed so that it
-        # specifies UTF-8 as the input encoding. Note: There is a large entry
-        # in the TODO file that talks about this issue.
         self.hashAlgorithmName = "md5"
         self.hashInput = "foo-äöü-αβγ-⅓⅙⅞"
         self.hashExpectedOutput = "3f920874c43f9aee62346ee6543f7c2c" 
@@ -109,19 +94,20 @@ class MainTest(unittest.TestCase):
     def testVersion(self):
         """Exercise the --version option"""
 
-        # Asserts that the version string printed to stdout ends with the
-        # current mkroesti version.
+        # Asserts that the first line printed to stdout ends with the current
+        # mkroesti version.
         args = ["-V"]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         versionLength = len(mkroesti.version)
-        strippedMessage = self.stdoutReplacement.getStdoutBuffer().strip()
-        self.assertEqual(strippedMessage[-versionLength:], mkroesti.version)
+        messageLines = self.stdoutReplacement.getStdoutBuffer().splitlines()
+        firstMessageLine = messageLines[0]
+        self.assertEqual(firstMessageLine[-versionLength:], mkroesti.version)
 
     def testBatchMode(self):
         """Exercise the --batch option"""
 
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput]
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", "utf-8"]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
@@ -162,7 +148,8 @@ class MainTest(unittest.TestCase):
         (fileHandle, absPathName) = tempfile.mkstemp()
         os.write(fileHandle, self.hashInput.encode("utf-8"))
         os.close(fileHandle)
-        # Generate the hash
+        # Generate the hash. We don't need to specify the encoding because the
+        # file will be read as binary data.
         args = ["-a", self.hashAlgorithmName, "-f", absPathName]
         main(args)
         actualOutput = self.stdoutReplacement.getStdoutBuffer().strip()
@@ -175,7 +162,7 @@ class MainTest(unittest.TestCase):
 
         algorithmName = "SomeUniqueAlgorithmName"
         self.thisModule.provider = TestProvider(algorithmName)
-        args = ["-a", algorithmName, "-b", self.hashInput, "-p", "tests.test_main"]
+        args = ["-a", algorithmName, "-b", self.hashInput, "-c", "utf-8", "-p", __name__]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
@@ -189,7 +176,7 @@ class MainTest(unittest.TestCase):
         # used to provide the hash value. We know that this has happened if we
         # get the real valid hash value instead of the bogus fixed hash value.
         self.thisModule.provider = TestProvider(self.hashAlgorithmName)
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-p", "tests.test_main"]
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", "utf-8", "-p", __name__]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
@@ -204,7 +191,7 @@ class MainTest(unittest.TestCase):
         # kick in. We know that this has happened if we get the bogus fixed
         # hash value instead of the real valid hash value.
         self.thisModule.provider = TestProvider(self.hashAlgorithmName)
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-p", "tests.test_main", "-x"]
+        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", "utf-8", "-p", __name__, "-x"]
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
@@ -237,7 +224,7 @@ class TestProvider(AbstractProvider):
         AbstractProvider.__init__(self, [algorithmName])
 
     def getAlgorithmSource(self, algorithmName):
-        return "tests.test_main.py"
+        return __name__
 
     def createAlgorithm(self, algorithmName):
         return TestAlgorithmFixedHashValue(algorithmName, self)
@@ -263,7 +250,7 @@ def getProviders():
 
     # Return a provider instance that must have been prepared previously by the
     # test case which triggers this method call.
-    return [sys.modules["tests.test_main"].provider]
+    return [sys.modules[__name__].provider]
 
 
 if __name__ == "__main__":

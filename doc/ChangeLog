@@ -1,3 +1,10 @@
+Wed Mar 25 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- added --codec command line option
+- the --version command line option now prints out the default encoding for
+  diagnostic purposes
+- tests/test_main.py: now uses __name__ attribute to reference the module
+  (instead of a hardcoded module name)
+
 Tue Mar 24 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - changes for compatibility with Python 3
   - change all relative import statements to be absolute; this is due to the

@@ -26,6 +26,7 @@ import sys
 import os
 from optparse import OptionParser
 import getpass
+import codecs
 
 # mkroesti
 import mkroesti   # import stuff from __init__.py (e.g. mkroesti.version)
@@ -35,22 +36,32 @@ from mkroesti.errorhandling import MKRoestiError, ConversionError
 
 
 def main(args = None):
-    """Run the main() function.
+    """Run the main() function of the mkrosti program.
 
-    args is the list of command line arguments that should be used (default is
-    sys.argv[1:]). This is mainly intended for testing purposes.
+    This function is intended to be called by different clients: The mkroesti
+    front-end script (usually invoked from the command line), an automated
+    testing environment (e.g. tests/test_main.py), another third-party python
+    program, etc.
 
-    Writes output to sys.stdout. Output can be captured by replacing sys.stdout
-    with a custom object. See tests.test_main.StandardOutputReplacement for an
-    example.
+    This function is driven by command line arguments. It looks for them either
+    in sys.argv[1:] (if args is None, which is the default), or in the args
+    parameter itself. If sys.argv is used, this function assumes that it runs
+    in a true command line environment, which means that in certain situations
+    it may write a warning message to sys.stderr in order to notify the user
+    that something fishy is going on :-)
 
-    Does not return a value. If no error has been raised, a command line program
-    should now return with exit code 0.
+    Regular output (i.e. the hash) is always written to sys.stdout. This output
+    can be captured by replacing sys.stdout with a custom object. See
+    tests.test_main.StandardOutputReplacement for an example.
 
-    Potentially raises all errors defined in mkroesti.errorhandling.
+    This function does not return a value. If no error has been raised, a
+    command line program should now terminate with exit code 0.
 
-    As a special case, if the command line argument "-h" or "--version" is
-    specified, sys.exit(0) is called, which raises SystemExit.
+    This function potentially raises all errors defined in
+    mkroesti.errorhandling.
+
+    As a special case, if the command line argument "-h" is specified,
+    sys.exit(0) is called, which raises SystemExit.
     """
 
     # Set python2 to True or False, depending on which version of the
@@ -58,18 +69,25 @@ def main(args = None):
     (major, minor, micro, releaselevel, serial) = sys.version_info
     python2 = (major == 2)
 
+    # Determine whether we are running in a true command line argument. We
+    # assume that this is the case if the caller of this function does not
+    # specify any arguments in args, but lets us use sys.argv instead.
+    cmdlineEnvironment = (args is None)
+
     # Create and set up the option parser
     parser = setupOptionParser()
 
-    # Start processing options
+    # Start processing options. If args is None (the default), the option parser
+    # will use sys.argv as the source for command line arguments.
     # Note: The order in which arguments are checked is important!
     (options, args) = parser.parse_args(args = args)
     hashInput = None
     if options.version:
         print(os.path.basename(sys.argv[0]) + " " + mkroesti.version)
+        print("Default encoding: " + sys.getdefaultencoding())
         return
 
-    # Registers providers with the registry; must do this early because
+    # Register providers with the registry; must do this early because
     # processing some of the options relies on providers already being present.
     providerModuleNames = list()
     if not options.excludeBuiltins:
@@ -77,6 +95,22 @@ def main(args = None):
     if options.providers:
         providerModuleNames.extend(options.providers.split(","))
     registerProviders(providerModuleNames)
+
+    # Determine the encoding that should be used to convert between binary and
+    # string data (or vice versa).
+    # Note: There is a check further down to prevent character encoding
+    # specification when the input is read interactively via sys.stdin.
+    encoding = sys.getdefaultencoding()
+    if options.codec is not None:
+        if options.list:
+            raise MKRoestiError("Cannot specify a character encoding in list mode")
+        encoding = options.codec
+        try:
+            # We are not interested in the codec object returned by lookup(),
+            # we just want to know if the name specified by --codec exists
+            codecs.lookup(encoding)
+        except LookupError:
+            raise MKRoestiError("Unknown encoding: " + encoding)
 
     # Check for different modes (batch, file, list, stdin)
     if options.batch:
@@ -90,6 +124,8 @@ def main(args = None):
             parser.error("missing input for batch processing")
         elif len(args) > 1:
             parser.error("too many input arguments for batch processing")
+        # In Python 3, hashInput is of type str (not bytes). It has already
+        # been interpreted using the default encoding.
         hashInput = args[0]
     elif options.file is not None:
         if options.echo:
@@ -137,8 +173,8 @@ def main(args = None):
             # TODO: Check if this works for Python 2.6.
             hashInput = sys.stdin.buffer.read()
         else:
-            # Get a single line of input (newline is stripped). The input is
-            # of type str for both functions.
+            # Get a single line of input (newline is stripped). In Python 3, the
+            # input is of type str for both functions.
             prompt = "Enter text to hash: "
             if options.echo:
                 if python2:
@@ -168,11 +204,7 @@ def main(args = None):
     # requires conversion to str, the result will be an error. If we were to
     # perform conversion up front, we would therefore *always* have an error.
     #
-    # TODO 1: Find out how we can make this work for Python 2.6
-    # TODO 2: At the moment we are using the current default encoding (which is
-    # probably determined by the LANG environment variable) for converting
-    # between str and bytes. We should use a user specified encoding, though.
-    # Change this as soon as the feature has been implemented.
+    # TODO: Find out how we can make this work for Python 2.6
     hashInputType = type(hashInput)
     if hashInputType is type(str()):
         hashInputAsStr = hashInput
@@ -181,26 +213,34 @@ def main(args = None):
         hashInputAsStr = None
         hashInputAsBytes = hashInput
     else:
-        raise MKRoestiError("Unsupported type for hash input: " + str(hashInputType))
+        raise MKRoestiError("Hash input object has unsupported type: " + str(hashInputType))
 
     # Create hashes
     algorithmCount = len(algorithms)
     for algorithm in algorithms:
+        algorithmName = algorithm.getName()
         if algorithm.needBytesInput():
             if hashInputAsBytes is None:
-                hashInputAsBytes = hashInputAsStr.encode()
+                try:
+                    hashInputAsBytes = hashInputAsStr.encode(encoding)
+                except UnicodeEncodeError:
+                    # This happens, for instance, if we try to encode a
+                    # character that does not exist in the encoding's target
+                    # character set (e.g. "β" does not exist in "iso-8859-1")
+                    raise ConversionError("Cannot convert input to binary data (algorithm = " + algorithmName + ", encoding = " + encoding + ")")
             hash = algorithm.getHash(hashInputAsBytes)
         else:
             if hashInputAsStr is None:
                 try:
-                    hashInputAsStr = hashInputAsBytes.decode()
+                    hashInputAsStr = hashInputAsBytes.decode(encoding)
                 except UnicodeDecodeError:
-                    raise ConversionError("Cannot convert input to string using encoding '" + sys.getdefaultencoding() + "'")
+                    # This happens, for instance, if we try to decode binary
+                    # data, because no encoding can sensibly decode binary data
+                    raise ConversionError("Cannot convert input to string data (algorithm = " + algorithmName + ", encoding = " + encoding + ")")
             hash = algorithm.getHash(hashInputAsStr)
         if algorithmCount == 1:
             print(hash)
         else:
-            algorithmName = algorithm.getName()
             if not options.duplicateHashes:
                 print(algorithmName + ": " + str(hash))
             else:
@@ -285,10 +325,10 @@ def listAlgorithms():
 
 def setupOptionParser():
     usage = """
-    %prog [-e] [-a LIST] [-d]
-    %prog -b [-a LIST] [-d] input
-    %prog -f file [-a LIST] [-d]
-    %prog -l
+    %prog [-a LIST] [-d] [-x] [-p LIST] [-c CODEC] [-e]
+    %prog [-a LIST] [-d] [-x] [-p LIST] [-c CODEC] -b input
+    %prog [-a LIST] [-d] [-x] [-p LIST] [-c CODEC] -f file
+    %prog -l [-x] [-p LIST]
     %prog -V
     %prog -h"""
 
@@ -304,6 +344,9 @@ def setupOptionParser():
     parser.add_option("-b", "--batch",
                       action="store_true", dest="batch", default=False,
                       help="use batch mode; i.e., get the input from the command line rather than prompting for it; this option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at the time when mkroesti is run")
+    parser.add_option("-c", "--codec",
+                      action="store", dest="codec", metavar="CODEC", default=None,
+                      help="interpret the input using the character encoding named CODEC; see man page for details")
     parser.add_option("-d", "--duplicate-hashes",
                       action="store_true", dest="duplicateHashes", default=False,
                       help="allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation")

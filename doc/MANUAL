@@ -9,10 +9,10 @@ NAME
 SYNOPSIS
 ========
 
-| **mkroesti** [**-e**] [**-a** *LIST*] [**-d**]
-| **mkroesti** **-b** [**-a** *LIST*] [**-d**] *input*
-| **mkroesti** **-f** *FILE* [**-a** *LIST*] [**-d**]
-| **mkroesti** **-l**
+| **mkroesti** [**-a** *LIST*] [**-d**] [**-x**] [**-p LIST**] [**-c** CODEC] [**-e**]
+| **mkroesti** [**-a** *LIST*] [**-d**] [**-x**] [**-p LIST**] [**-c** CODEC] **-b** *input*
+| **mkroesti** [**-a** *LIST*] [**-d**] [**-x**] [**-p LIST**] [**-c** CODEC] **-f** *FILE*
+| **mkroesti** **-l** [**-x**] [**-p LIST**]
 | **mkroesti** **-V**
 | **mkroesti** **-h**
 
@@ -37,6 +37,9 @@ OPTIONS
 
 -b, --batch
   Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at the time when **mkroesti** is run.
+
+-c CODEC, --codec CODEC
+  Interpret the input using the character encoding named CODEC. See **ENCODINGS** below.
 
 -d, --duplicate-hashes
   Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
@@ -189,6 +192,18 @@ Every module must contain a callable named "getProviders"; this will usually be 
 For the gritty details, use **pydoc** to view the API documentation inside the modules **mkroesti.algorithm** and **mkroesti.provider**. It might also be useful to have a look at an example, a good one would be **mkroesti.algorithm.Base64Algorithms** and **mkroesti.provider.Base64Provider**.
 
 
+ENCODINGS
+=========
+
+Depending on the circumstances, **mkroesti** may need to convert the input data it is operating on from binary into string data, or vice versa. For instance, if you specify a file as input data **mkroesti** will read that file into memory as binary data. If you then request a hash algorithm that requires its input data to be a string (e.g. **crypt-system**), **mkroesti** will be forced to convert from binary to string data.
+
+Conversion between binary and string data, or vice versa, forces **mkroesti** to interpret the input data. The **--codec** command line argument may be used to specify which character encoding should be employed by **mkroesti** when it interprets the data. The encoding is specified as a "codec name", which can be the name of any codec registered via the Python Standard Library module "codecs". See the module's documentation for an extensive list of possible names. Often used encodings would be "utf-8", "latin_1" (equivalent to "iso8859-1") or "mac_roman".
+
+If **--codec** is not used to explicitly specify an encoding, **mkroesti** implicitly uses Python's default encoding to perform the conversion. The default encoding is usually determined by the content of the *LANG* environment variable. Invoke **mkroesti** with the **--version** argument to see which default encoding is in use right now.
+
+Note: Please be aware that if you specify the input data on the command line (i.e. in batch mode), or enter the input data interactively (it does not matter whether echo mode is on or off), the Python interpreter will use its default encoding (i.e. the one determined by *LANG*) to interpret the input data. If you then use **--codec** to specify a different encoding, that encoding will be used to re-interpret the input data before it is given to the hash algorithm! The final byte sequence given to the hash algorithm may therefore very well be different from the original byte sequence that you typed on the command line, which will result in a different hash than the one you may have expected.
+
+
 EXAMPLES
 ========
 
@@ -202,9 +217,9 @@ EXAMPLES
   **mkroesti** **-f** *foo* **-a** **md5**,**sha-1**,**haval-128-4**
 
 
-(3) Take the input from standard input and generate a single hash using the local crypt() system function.
+(3) Take the input from standard input and generate a single hash using the local crypt() system function. Make sure that the input (i.e. the content of file *foo*) is interpreted using the *mac_roman* character encoding. 
 
-  **cat** foo | **mkroesti** **-a** **crypt-system**
+  **cat** *foo* | **mkroesti** **-a** **crypt-system** **-c** *mac_roman*
 
 
 (4) Use the string *secret* as input and generate hashes for all algorithms of the SHA and RIPEMD family.
@@ -225,6 +240,11 @@ EXAMPLES
 (7) Use the string *secret* as input and generate hashes for all algorithms provided by the Python module *mymodule*.
 
   **mkroesti** **-b** **-x** **-p** *mymodule* *secret*
+
+
+(8) Use the string *αβγ* as input and generate a single hash using the **md5** algorithm. Make sure that the input string is re-interpreted using the *utf_16* character encoding before it is passed to the hash algorithm.
+
+  **mkroesti** **-b** **-a** **md5** **-c** *utf_16* *αβγ*
 
 
 EXIT CODES
