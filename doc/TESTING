@@ -1,10 +1,16 @@
 Purpose of this document
 ------------------------
-This document contains information about the proejct's automated test suite.
+This document contains information about the project's testing facilities.
+
+In a nutshell, the following facilities exist:
+- automated unit test suite using Python's unittest module; this test suite can
+  be run on the command line or from within the Eclipse IDE
+- automated end-to-end test suite that can be run on the command line
+- manual tests by running mkroesti on the command line
 
 
-Run automated tests from the command line
----------------------------------------
+Run unit tests from the command line
+------------------------------------
 The following command runs all automated tests from the command line, from
 within the git working tree:
 
@@ -15,8 +21,8 @@ To run tests from only one module (test.algorithm.py in this example):
   setup.py test --suite=tests.test_algorithm
 
 
-Run automated tests from within Eclipse
----------------------------------------
+Run unit tests from within Eclipse
+----------------------------------
 There are two types of run configuration that can be used to run mkroesti's
 automated test suite from within Eclipse:
 
@@ -45,19 +51,38 @@ Set up a run configuration of type "Python Run":
   - on the "Arguments" tab: program arguments = "test" 
 
 
+Run end-to-end test suite from the command line
+-----------------------------------------------
+The end-to-end test suite is a shell script that exercises the mkroesti
+front-end. The goals of this test suite are:
+- Have a black-box oriented end-to-end test suite (as opposed to the more
+  detailed, white-box oriented unit tests)
+- Exercises *all* algorithms available in the current environment
+- Exercise *all* input methods
+
+To run the test suite from within a git working tree, do the following:
+
+  cd src/scripts
+  PYTHONPATH=../packages ./mkroesti-test
+
+Documentation of the test suite:
+- command line usage: run the script using --help
+- test data: read the file packages/tests/testdata/README
+
+
 Run mkroesti from the command line
 ----------------------------------
-The mkroesti shell script can be run on the command line to execute an
+The mkroesti shell script can be run on the command line to execute a manual
 end-to-end test, e.g. to compare the script's output with predefined hashes.
 
-From within a git working tree, do the following:
+To run mkroesti from within a git working tree, do the following:
 
   cd src/scripts
   PYTHONPATH=../packages ./mkroesti --batch foo
 
 
-Writing new tests
------------------
+Writing new unit tests
+----------------------
 New test modules must be placed into the "tests" package. If the module is
 intended to be run by setup.py, it must also be added to the callable
 

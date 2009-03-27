@@ -10,6 +10,8 @@ the Roadmap document.
 
 Priority 1 (important)
 ----------------------
+- use third-party source and check whether the test result files in
+  tests/testdata/result contain the correct hash values
 - test with Python 2.6 what works and what doesn't after Python 3 changes have
   been implemented; things that probably need fixing: handling of text vs. data
   (i.e. usage of the Python 3 type "bytes"); things that should be ok: absolute
@@ -29,15 +31,6 @@ Priority 1 (important)
   way as in Python 3 to read binary data
 - fix TODOs in the code
 - add more tests
-  - write a command line driven test suite that checks whether each algorithm
-    produces the expected hash for a well-known input, regardless of the input
-    method; there are several goals involved:
-    1) Have a test suite that exercises *all* of the supported algorithms at
-       least one time
-    2) Have a test suite that exercises *all* input methods at least one time
-       (use expect for interactive entry)
-    3) Last but not least: Have an end-to-end test suite (as opposed to the
-       more detailed automated unit tests)
   - write a test case class that accepts a provider in its __init__ and then
     goes on to exercise the provider to make sure that its implementation is
     valid

@@ -336,8 +336,6 @@ def listAlgorithms():
             lineList.append((algorithmName, sourceString, availableString))
     # Second pass: print output
     columnSeparator = " ".ljust(columnSeparatorWidth)
-    print("Algorithm".ljust(algorithmColumnWidth), columnSeparator, "Source".ljust(sourceColumnWidth), columnSeparator, "Available (reason)".ljust(availableColumnWidth))
-    print("---------".ljust(algorithmColumnWidth), columnSeparator, "------".ljust(sourceColumnWidth), columnSeparator, "------------------".ljust(availableColumnWidth))
     for (algorithmName, sourceString, availableString) in lineList:
         print(algorithmName.ljust(algorithmColumnWidth), \
               columnSeparator, \

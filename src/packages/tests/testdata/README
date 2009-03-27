@@ -1,0 +1,25 @@
+This directory contains data that can be used to perform end-to-end tests on
+mkroesti.
+
+The files in the folder "input" are used as input to mkroesti. Unless noted
+otherwise at the end of this document, each file contains UTF-8 encoded data.
+
+The files in the folder "result" contain the expected hash values.
+
+Each file in the folder "input" has a corresponding file of the same name in
+the folder "result". Each file name in both the "input" and "result" folder
+must correspond to the name of an algorithm.
+
+The special file "EXCLUDE" contains names of algorithms that should be
+excluded from the end-to-end test. The format of the file is this:
+- lines starting with # are treated as comments and are ignored
+- empty lines, or lines that contain only whitespace, are ignored
+- all other lines are treated as an algorithm lines
+- an algorithm line contains exactly one algorithm name
+- whitespace at the beginning and end of an algorithm line is ignored
+
+----------------------------------------------------------------------
+
+Description of the content of those input data files that do ***NOT*** contain
+UTF-8 encoded text data.
+

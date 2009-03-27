@@ -1,3 +1,8 @@
+Fri Mar 27 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- added end-to-end test suite
+  - test script in src/scripts/mkroesti-test
+  - test data in src/packages/tests/testdata
+
 Thu Mar 26 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - cleanup handling of --codec command line argument
   - documented design decisions about handling of encodings in the DESIGN file

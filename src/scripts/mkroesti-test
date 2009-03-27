@@ -1,0 +1,458 @@
+#!/usr/bin/env bash
+
+# This is a test script that exercises the mkroesti front-end script. It
+# performs the following end-to-end tests:
+# - exercise all algorithms available in the current configuration
+# - exercise all input methods
+# - exercise all supported Python interpreters
+#
+# Command line arguments and exit codes of this test script: See the
+# printHelp() function.
+
+# ----------------------------------------------------------------------
+# Function that generates the expect script that is used to control mkroesti
+# when input data needs to be entered interactively.
+#
+# Parameters:
+# - script file name
+# - mkroesti binary
+# - algorithm name
+# - hash input
+#
+# Return values:
+#  0 = success
+#  1 = error
+# ----------------------------------------------------------------------
+
+generateExpectScript()
+{
+  if test $# -ne 4; then
+    return 1
+  fi
+  local SCRIPT_FILE="$1"
+  local MKROESTI_BIN="$2"
+  local ALGORITHM_NAME="$3"
+  local HASH_INPUT="$4"
+
+  cat << EOF >"$SCRIPT_FILE"
+# Disable logging of the send/expect dialogue. We only
+# want to see our own final output.
+log_user 0
+
+# Launch mkroesti
+spawn -noecho "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME"
+
+# Enable this command to debug, then use "tail -f /tmp/xxx"
+# to watch how expect is processing this script
+#exp_internal -f /tmp/xxx 0
+
+# Wait until we get the prompt, then wait again and gobble
+# up any characters (e.g. spaces) after the prompt signature.
+# We do this so that the final expect statement further down 
+# that is waiting for the hash does not get these characters.
+expect "Enter text to hash:"
+expect -re ".*"
+
+# Send the hash input, followed by "\r" which simulates
+# the user pressing Enter.
+send "$HASH_INPUT\r"
+
+# We wait until we get a line that contains
+# - the hash: matched by "(.+)"
+# - line termination: matched by "\r\n" (it is not clear why
+#   there is an "\r"; debugging mkroesti clearly shows that
+#   none is printed out, so we must assume that expect
+#   somehow fabricates it)
+#
+# The second pattern is intented to gobble up any empty
+# lines we might receive **BEFORE** we get the hash. In
+# this case we continue with the expect statement until we
+# finally get the hash we are looking for.
+expect {
+  -re "(.+)\r\n" { set theHash \$expect_out(1,string) }
+      "\r\n" exp_continue
+}
+
+# Wait until the process has finished and we can safely
+# print the hash we got from mkroesti to stdout
+wait
+send_user "\$theHash\n"
+EOF
+  if test $? -eq 0; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# ----------------------------------------------------------------------
+# Prints usage information to stdout.
+# ----------------------------------------------------------------------
+
+printHelp()
+{
+  cat << EOF
+Usage:
+  $MY_NAME [--python-bin=<path_to_python>]
+           [--testdata-dir=<path_to_testdata_directory]
+           [--mkroesti-bin=<path_to_mkroesti>]
+           [--report-level=level]
+  $MY_NAME --help
+
+Command line arguments:  
+  --help: Print this help summary.
+  --python-bin: Path to the Python interpreter binary. If this is not specified,
+     use the binary found in the PATH.
+  --testdata-dir: Path to the directory that contains the test data. If not
+     specified, the relative location "../packages/tests/testdata" is used,
+     assuming that this script and the test data directory are both located in
+     a git working tree that has a fixed directory layout.
+  --mkroesti-bin: Path to the mkroesti binary. If not specified, it is assumed
+     that the binary is located in the same directory as this test script.
+  --report-level: Level of verbosity of the test report. Possible values are
+     0 = silent, no output; this does not prevent error messages (e.g. errors
+         during command line arguments processing) from being printed
+     1 = short; this is the default; a single character is printed for each
+         algorithm that is exercised; "." denotes success, "F" denotes failure
+     2 = detailed
+     3 = insane
+
+Exit codes of this test script:
+  0: All tests successful
+  1: One or more tests were not successful
+  2: Error while processing command line arguments
+  3: Other runtime error
+EOF
+}
+
+# ----------------------------------------------------------------------
+# Initialization
+# ----------------------------------------------------------------------
+
+# Determine the absolute directory that this test script is located in
+MY_BIN="$(pwd)/$0"
+MY_DIR="$(dirname "$MY_BIN")"
+MY_NAME="$(basename "$MY_BIN")"
+
+# (Hopefully) Unique name for temporary file
+TMP_DIR=/tmp
+TMP_FILE="$TMP_DIR/$MY_NAME.$$"
+
+# Test whether we have certain essential utilities
+ESSENTIAL_BINS="awk diff grep"
+for ESSENTIAL_BIN in $ESSENTIAL_BINS
+do
+  which "$ESSENTIAL_BIN" >/dev/null 2>&1
+  if test $? -ne 0; then
+    echo "$MY_NAME: Could not find $ESSENTIAL_BIN on this system" >/dev/stderr
+    exit 3
+  fi
+done
+
+# Test whether we have expect
+unset HAVE_EXPECT
+which expect >/dev/null 2>&1
+if test $? -eq 0; then
+  HAVE_EXPECT=1
+  EXPECT_FILE="$TMP_FILE.EXPECT"
+fi
+
+# ----------------------------------------------------------------------
+# Process command line arguments
+# ----------------------------------------------------------------------
+
+if test $# -eq 1 -a "$1" == "--help"; then
+  printHelp
+  exit 0
+fi
+
+unset PYTHON_BIN TESTDATA_DIR MKROESTI_BIN REPORT_LEVEL
+while test $# -gt 0
+do
+  OPT="$1"
+  shift
+  if test $# -eq 0; then
+    echo "$MY_NAME: Missing argument for command line option $OPT" >/dev/stderr
+    exit 2
+  fi
+  OPTARG="$1"
+  shift
+  case "$OPT" in
+    --python-bin)
+      PYTHON_BIN="$OPTARG"
+      ;;
+    --testdata-dir)
+      TESTDATA_DIR="$OPTARG"
+      ;;
+    --mkroesti-bin)
+      MKROESTI_BIN="$OPTARG"
+      ;;
+    --report-level)
+      REPORT_LEVEL="$OPTARG"
+      ;;
+    *)
+      echo "$MY_NAME: Unknown command line argument $OPT" >/dev/stderr
+      exit 2
+      ;;
+  esac
+done
+
+# By default, use the Python interpreter binary found in the PATH
+if test -z "$PYTHON_BIN"; then
+  PYTHON_BIN="$(which python)"
+fi
+if test ! -x "$PYTHON_BIN"; then
+  echo "$MY_NAME: Python binary does not exist or is not executable: $PYTHON_BIN" >/dev/stderr
+  exit 2
+fi
+
+# By default, assume that the test data directory is in a fixed relative
+# location to this test script.
+if test -z "$TESTDATA_DIR"; then
+  TESTDATA_DIR="$MY_DIR/../packages/tests/testdata"
+fi
+if test ! -d "$TESTDATA_DIR"; then
+  echo "$MY_NAME: Test data directory does not exist or is not a directory: $TESTDATA_DIR" >/dev/stderr
+  exit 2
+fi
+INPUTDATA_DIR="$TESTDATA_DIR/input"
+RESULTDATA_DIR="$TESTDATA_DIR/result"
+if test ! -d "$INPUTDATA_DIR"; then
+  echo "$MY_NAME: Input test data directory does not exist or is not a directory: $INPUTDATA_DIR" >/dev/stderr
+  exit 2
+fi
+if test ! -d "$RESULTDATA_DIR"; then
+  echo "$MY_NAME: Result test data directory does not exist or is not a directory: $RESULTDATA_DIR" >/dev/stderr
+  exit 2
+fi
+
+# By default, assume that the mkroesti binary is located in the same directory
+# as this test script
+if test -z "$MKROESTI_BIN"; then
+  MKROESTI_BIN="$MY_DIR/mkroesti"
+fi
+if test ! -x "$MKROESTI_BIN"; then
+  echo "$MY_NAME: mkroesti binary does not exist or is not executable: $MKROESTI_BIN" >/dev/stderr
+  exit 2
+fi
+
+# By default use report level 1
+if test -z "$REPORT_LEVEL"; then
+  REPORT_LEVEL=1
+fi
+case "$REPORT_LEVEL" in
+  0|1|2|3)
+    ;;
+  *)
+    echo "$MY_NAME: Unknown report level: $REPORT_LEVEL" >/dev/stderr
+    exit 2
+    ;;
+esac
+
+# ----------------------------------------------------------------------
+# Determine algorithms that are available
+# ----------------------------------------------------------------------
+
+cat << EOF >"$TMP_FILE"
+{
+  algorithmName = \$1
+  source = \$2
+  available = \$3
+  if      (available == "yes") { print algorithmName }
+  else if (available == "no")  { next }
+  else                         { exit(1) }   # unexpected status in the "available" column
+}
+EOF
+
+# Remove duplicate algorithms since we can't select the source
+ALGORITHM_NAMES="$("$MKROESTI_BIN" --list 2>/dev/null | awk -f "$TMP_FILE" 2>/dev/null | sort | uniq)"
+RETVAL=$?
+rm -f "$TMP_FILE"
+if test $RETVAL -ne 0; then
+  echo "$MY_NAME: Error while determining which algorithms to exercise" >/dev/stderr
+  exit 3
+fi
+
+# ----------------------------------------------------------------------
+# Parse EXCLUDE file
+# ----------------------------------------------------------------------
+
+EXCLUDE_FILE="$TESTDATA_DIR/EXCLUDE"
+PARSED_EXCLUDE_FILE="$TMP_FILE.EXCLUDE"
+if test -f "$EXCLUDE_FILE"; then
+  cat "$EXCLUDE_FILE" | \
+    grep -v "^#" | \
+    awk '{gsub(/^[ \\t]/, "", $0); print $0}' | \
+    awk '{gsub(/[ \\t]$/, "", $0); print $0}' | \
+    grep -v "^$" \
+    >"$PARSED_EXCLUDE_FILE"
+else
+  touch $PARSED_EXCLUDE_FILE
+fi
+
+# ----------------------------------------------------------------------
+# Run tests
+# ----------------------------------------------------------------------
+if test "$HAVE_EXPECT"; then
+  MAX_NUMBER_OF_INPUT_METHODS=4
+else
+  MAX_NUMBER_OF_INPUT_METHODS=3
+fi
+
+OVERALL_TEST_RESULT=0
+for ALGORITHM_NAME in $ALGORITHM_NAMES
+do
+  if test -n "$(grep "^$ALGORITHM_NAME$" "$PARSED_EXCLUDE_FILE")"; then
+    continue
+  fi  
+  case "$REPORT_LEVEL" in
+    2|3)
+      echo "Exercising algorithm $ALGORITHM_NAME..."
+      ;;
+  esac
+  unset ALGORITHM_TEST_RESULT ALGORITHM_TEST_RESULT_MSG
+  INPUTDATA_FILE="$INPUTDATA_DIR/$ALGORITHM_NAME"
+  RESULTDATA_FILE="$RESULTDATA_DIR/$ALGORITHM_NAME"
+  if test ! -f "$INPUTDATA_FILE"; then
+    ALGORITHM_TEST_RESULT=1
+    ALGORITHM_TEST_RESULT_MSG="input data file is missing"
+  else
+    if test ! -f "$RESULTDATA_FILE"; then
+      ALGORITHM_TEST_RESULT=1
+      ALGORITHM_TEST_RESULT_MSG="result data file is missing"
+    else
+      ALGORITHM_TEST_RESULT=0
+      NUMBER_OF_INPUT_METHODS_WITH_FAILURE=0
+      INPUT_METHOD=0
+      while test $INPUT_METHOD -lt $MAX_NUMBER_OF_INPUT_METHODS
+      do
+        INPUT_METHOD=$(expr $INPUT_METHOD + 1)
+        unset INPUT_METHOD_TEST_RESULT INPUT_METHOD_TEST_RESULT_MSG
+        case $INPUT_METHOD in
+          1) INPUT_METHOD_NAME="--file" ;;
+          2) INPUT_METHOD_NAME="stdin/pipe" ;;
+          3) INPUT_METHOD_NAME="--batch" ;;
+          4) INPUT_METHOD_NAME="interactive" ;;
+        esac 
+        if test "$REPORT_LEVEL" -ge 3; then
+          echo "  Testing input method $INPUT_METHOD_NAME..."
+        fi
+        case $INPUT_METHOD in
+          1)
+            "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--file=$INPUTDATA_FILE" >"$TMP_FILE" 2>/dev/null
+            ;;
+          2)
+            cat "$INPUTDATA_FILE" | "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" >"$TMP_FILE" 2>/dev/null
+            ;;
+          3)
+            "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--batch" "$(cat $INPUTDATA_FILE)" >"$TMP_FILE" 2>/dev/null
+            ;;
+          4)
+            generateExpectScript "$EXPECT_FILE" "$MKROESTI_BIN" "$ALGORITHM_NAME" "$(cat $INPUTDATA_FILE)"
+            expect "$EXPECT_FILE" >"$TMP_FILE" 2>/dev/null
+            ;;
+        esac
+        if test $? -ne 0; then
+          INPUT_METHOD_TEST_RESULT=1
+          INPUT_METHOD_TEST_RESULT_MSG="error executing mkroesti"
+        else
+          if test "$REPORT_LEVEL" -ge 3; then
+            echo "    Actual hash value:   $(cat "$TMP_FILE")"
+            echo "    Expected hash value: $(cat "$RESULTDATA_FILE")"
+          fi
+          diff "$TMP_FILE" "$RESULTDATA_FILE" >/dev/null 2>/dev/null
+          RETVAL=$?
+          rm -f "$TMP_FILE"
+          case $RETVAL in
+            0)
+              INPUT_METHOD_TEST_RESULT=0
+              ;;
+            1)
+              INPUT_METHOD_TEST_RESULT=1
+              INPUT_METHOD_TEST_RESULT_MSG="actual hash value did not match expected hash value"
+              ;;
+            *)
+              INPUT_METHOD_TEST_RESULT=1
+              INPUT_METHOD_TEST_RESULT_MSG="error comparing actual hash value to expected hash value"
+              ;;
+          esac
+          case "$INPUT_METHOD_TEST_RESULT" in
+            0)
+              case "$REPORT_LEVEL" in
+                3)
+                  echo "    Input method test result: success"
+                  ;;
+              esac
+              ;;
+            1)
+              ALGORITHM_TEST_RESULT=1
+              NUMBER_OF_INPUT_METHODS_WITH_FAILURE=$(expr $NUMBER_OF_INPUT_METHODS_WITH_FAILURE + 1)
+              ALGORITHM_TEST_RESULT_MSG="$ALGORITHM_TEST_RESULT_MSG, $INPUT_METHOD_NAME"
+              case "$REPORT_LEVEL" in
+                3)
+                  echo "    Input method test result: failure ($INPUT_METHOD_TEST_RESULT_MSG)"
+                  ;;
+              esac
+              ;;
+          esac
+        fi
+      done
+      if test $NUMBER_OF_INPUT_METHODS_WITH_FAILURE -gt 0; then
+        ALGORITHM_TEST_RESULT_MSG=$(echo "$ALGORITHM_TEST_RESULT_MSG" | awk '{gsub(/^, /, "", $0); print $0}')
+        ALGORITHM_TEST_RESULT_MSG="$NUMBER_OF_INPUT_METHODS_WITH_FAILURE input methods failed: $ALGORITHM_TEST_RESULT_MSG"
+      fi
+    fi
+  fi
+  case "$ALGORITHM_TEST_RESULT" in
+    0)
+      case "$REPORT_LEVEL" in
+        1)
+          echo -n "."
+          ;;
+        2|3)
+          echo "  Algorithm test result: success"
+          ;;
+      esac
+      ;;
+    1)
+      OVERALL_TEST_RESULT=1
+      case "$REPORT_LEVEL" in
+        1)
+          echo -n "F"
+          ;;
+        2|3)
+          echo "  Algorithm test result: failure ($ALGORITHM_TEST_RESULT_MSG)"
+          ;;
+      esac
+      ;;
+  esac
+done
+
+# Print a newline to conclude the short report (which consists of one line
+# with a single character denoting the result of each test)
+if test "$REPORT_LEVEL" = "1"; then
+  echo ""
+fi
+
+# ----------------------------------------------------------------------
+# Cleanup and terminate with appropriate exit code
+# ----------------------------------------------------------------------
+
+rm -f "$TMP_FILE" "$PARSED_EXCLUDE_FILE" "$EXPECT_FILE"
+
+case "$REPORT_LEVEL" in
+  2|3)
+    echo -en "\nOverall test result: "
+    if test $OVERALL_TEST_RESULT -eq 0; then
+      echo "success"
+    else
+      echo "failure"
+    fi
+    ;;
+esac
+
+if test $OVERALL_TEST_RESULT -eq 0; then
+  exit 0
+else
+  exit 1
+fi
