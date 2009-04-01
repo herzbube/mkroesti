@@ -1,5 +1,7 @@
 # Build products
 *.pyc
+*.o
+*.so
 # Source distribution products
 MANIFEST
 dist/

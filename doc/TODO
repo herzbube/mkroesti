@@ -10,6 +10,16 @@ the Roadmap document.
 
 Priority 1 (important)
 ----------------------
+- mkroesti.aprutil extension module
+  - find a way how to use the system version of apr-util on my Mac; the custom
+    installed version of Python 3 (/Library/Frameworks/Python.framework/Versions/3.0)
+    adds the argument "-isysroot /Developer/SDKs/MacOSX10.4u.sdk" to the gcc
+    command line, which makes the regular system apr-util (header files in
+    /usr/include/apr-1, library file in /usr/lib) invisible to the build
+    process
+  - specify dependency from apr-util in README
+  - fix aprutil.c so that it conforms to the Python 2.6 interface; see the
+    HOWTO "Porting Extension Modules to 3.0" in the Python 3.0 docs
 - use third-party source and check whether the test result files in
   tests/testdata/result contain the correct hash values
 - test with Python 2.6 what works and what doesn't after Python 3 changes have
