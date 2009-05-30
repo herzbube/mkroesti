@@ -8,27 +8,23 @@ For a broader view of how the project will develop over time, you should see
 the Roadmap document.
 
 
+Release blockers
+----------------
+- Python 2.6 and Python 3 produce different results for the adler32 algorithm;
+  mkroesti-test fails for this resason if it run under Python 2.6, because the
+  expected value that is stored is the value produced by the Python 3 version
+  of adler32. Check whether Python 3 version of adler32 produces correct result.
+  If so, document in README/Limitations that Python 2.6 produces wrong results.
+  Somehow fix mkroesti-test so that it runs under Python 2.6. If Python 3 still
+  produces wrong results for adler32, document this as well under
+  README/Limitations, or remove the algorithm altogether.
+
+
 Priority 1 (important)
 ----------------------
 - use third-party source and check whether the test result files in
   tests/testdata/result contain the correct hash values
-- test with Python 2.6 what works and what doesn't after Python 3 changes have
-  been implemented; things that probably need fixing: handling of text vs. data
-  (i.e. usage of the Python 3 type "bytes"); things that should be ok: absolute
-  imports; new "except as" syntax (should have been backported to Python 2.6; to
-  which version? specify that version in the minimum requirements section in
-  README); print() as a function (we use "from __future import"); handling of
-  dict.keys(); replacement of callable() by hasattr()
 - check if all algorithms return the correct value for needBytesInput()
-- experiment how getpass.getpass() interprets the user input; it is currently
-  assumed that it uses the current default encoding; an interesting experiment
-  would be one where the default encoding is different from what user input
-  actually provides, e.g. user input provides UTF-8 but default encoding is
-  something like ISO8859-1; write down the results in the Research
-- add support for encodings in Python 2.6; if not possible, find the
-  limitations and specify them in README and MANUAL
-- check if in Python 2.6 sys.stdin.buffer exists and can be used in the same
-  way as in Python 3 to read binary data
 - fix TODOs in the code
 
 

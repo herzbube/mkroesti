@@ -130,12 +130,12 @@ class MainTest(unittest.TestCase):
         returnValue = main(args)
         self.assertEqual(returnValue, None)
         # Collect the algorithm names printed by the list command. Assume that
-        # 1) the first two lines of the output can be skipped, and that
+        # 1) no lines of the output can be skipped, and that
         # 2) each line contains whitespace-separated columns where the first
         #    column contains the algorithm name 
         outputLines = self.stdoutReplacement.getStdoutBuffer().splitlines()
         outputAlgorithmNames = dict()
-        skipLines = 2
+        skipLines = 0
         for outputLine in outputLines:
             if skipLines > 0:
                 skipLines -= 1
@@ -147,7 +147,7 @@ class MainTest(unittest.TestCase):
         # at least once in the output of the list command
         registryAlgorithmNames = ProviderRegistry.getInstance().getAlgorithmNames()
         for registryAlgorithmName in registryAlgorithmNames:
-            self.assertTrue(registryAlgorithmName in outputAlgorithmNames)
+            self.assertTrue(registryAlgorithmName in outputAlgorithmNames, registryAlgorithmName)
 
     def testFileMode(self):
         """Exercise the --file option"""
@@ -157,7 +157,10 @@ class MainTest(unittest.TestCase):
         # UTF-8 encoded.
         encoding = "utf-8"
         (fileHandle, absPathName) = tempfile.mkstemp()
-        os.write(fileHandle, self.hashInput.encode(encoding))
+        if mkroesti.python2:
+            os.write(fileHandle, self.hashInput)
+        else:
+            os.write(fileHandle, self.hashInput.encode(encoding))
         os.close(fileHandle)
         # Generate the hash. We don't need to specify the encoding because the
         # file will be read as binary data.
@@ -212,26 +215,32 @@ class MainTest(unittest.TestCase):
     def testCodecValid(self):
         """Exercise the --codec option using a valid encoding"""
 
-        encoding = "utf-16"
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
-        returnValue = main(args)
-        self.assertEqual(returnValue, None)
-        actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
-        self.assertEqual(actualHash, self.hashExpectedOutput[encoding])
+        # This test is not relevant for Python 2.6 because there the --codec
+        # argument is ignored
+        if not mkroesti.python2:
+            encoding = "utf-16"
+            args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
+            returnValue = main(args)
+            self.assertEqual(returnValue, None)
+            actualHash = self.stdoutReplacement.getStdoutBuffer().strip()
+            self.assertEqual(actualHash, self.hashExpectedOutput[encoding])
 
     def testCodecInvalid(self):
         """Exercise the --codec option using an invalid encoding"""
 
-        # Conversion to this encoding will fail because self.hashInput contains
-        # characters that do not exist
-        encoding = "iso-8859-1"
-        args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
-        try:
-            main(args)
-        except ConversionError:
-            pass
-        else:
-            self.fail("ConversionError not raised")
+        # This test is not relevant for Python 2.6 because there the --codec
+        # argument is ignored
+        if not mkroesti.python2:
+            # Conversion to this encoding will fail because self.hashInput contains
+            # characters that do not exist in the target encoding
+            encoding = "iso-8859-1"
+            args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
+            try:
+                main(args)
+            except ConversionError:
+                pass
+            else:
+                self.fail("ConversionError not raised")
 
 
 class TestProvider(AbstractProvider):

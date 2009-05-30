@@ -42,7 +42,7 @@ modes:
 ---------------------------------------------------------------------------------------------------------
 1) File mode                           bytes          open() + file.read()        open() + file.read()
 2) Batch mode                          str            sys.argv                    sys.argv
-3) stdin mode, not a tty               bytes          sys.stdin.buffer.read()     sys.stdin.buffer.read()  
+3) stdin mode, not a tty               bytes          sys.stdin.buffer.read()     sys.stdin.read()
 4) stdin mode, tty + echo mode on      str            input()                     raw_input()
 5) stdin mode, tty + echo mode off     str            getpass.getpass()           getpass.getpass()
 ---------------------------------------------------------------------------------------------------------
@@ -57,13 +57,16 @@ section "The standard type hierarchy", entry about sequences/strings:
 
 About each of the functions:
 - For case 1, the file object is created using the built-in function open(),
-  using binary mode. data is then read from the file object using the function
+  using binary mode. Data is then read from the file object using the function
   read(); both for Python 3 and Python 2.6.1, the built-in type "file" as well
   as the type's function read() are documented in "The Python Standard Library",
   document "Built-in Types", section "File Objects"
-- For case 3, the file object sys.stdin already exists and is read using its
-  underlying binary buffer (as recommended by the Python 3 docs for sys.stdin).
-  The effect is the same as when reading binary data in case 1. 
+- For case 3, the file object sys.stdin already exists and is read a) for
+  Python 3 by using its underlying binary buffer (as recommended by the Python 3
+  docs for sys.stdin), and b) for Python 2.6 by directly using the file object
+  (in Python 2.6 the sys.stdin has no underlying binary buffer). For both
+  versions of Python, the effect is the same as when reading binary data in
+  case 1.
 - raw_input() (case 4, Python 2.6): The function documentation says that the
   function "reads a line from input [and] converts it to a string". The
   documentation does not specify, however, what exactly that conversion is
@@ -76,24 +79,28 @@ About each of the functions:
 - getpass.getpass() (case 5): How exactly that method reads and interprets the
   user input is not specified in the module's documentation
   - Python 3: An experiment shows that the result is stored in an object of
-    type str. Lacking the ability to specify an encoding, the function must
-    obviously use the default encoding to interpret the user input. This still
-    needs confirmation by experiment, though.
+    type str. Lacking the ability to programmatically specify an encoding, the
+    function must obviously use an encoding that somehow the Python interpreter
+    provides. An experiment confirms that the encoding is based on the locale:
+    setting different values for LANG yields different results, and unsetting
+    LANG even produces an error for an input such as "ä" (because, lacking a
+    locale, Python tries to interpret the input using the default ASCII
+    encoding)
   - Python 2.6: The same experiment as with raw_input() also yields a 2-byte
     string, indicating that the function stores the user input inside the
     string raw and uninterpreted 
 - sys.argv: The only mention I found in the Python documentation about how
   exactly the strings in sys.argv are generated, was the following paragraph
   in the "What's New in Python 3.0" document of the Python 3 documentation:
-  
+
      "Some system APIs like os.environ and sys.argv can also present problems
       when the bytes made available by the system is not interpretable using
       the default encoding. Setting the LANG variable and rerunning the
       program is probably the best approach."
 
   - Python 3: An experiment shows that, with LANG=de_CH.UTF-8, the following
-    input gives Python a headache: it immediately aborts with this error: "Could
-    not convert argument <x> to string".
+    input gives Python 3 a headache: it immediately aborts with this error:
+    "Could not convert argument <x> to string".
         PYTHONPATH=../packages /Library/Frameworks/Python.framework/Versions/3.0/bin/python mkroesti -a md5 -b $(cat ~/winlatin1.txt)  
     However, with LANG=de_CH.ISO8859-1, there was no such error. It appears that
     Python 3 tries to interpret the command line arguments so that it can
@@ -101,8 +108,8 @@ About each of the functions:
     cannot be converted using the locale-based encoding (in the above example,
     I am providing an ISO8859-1 input, but the locale-based encoding is UTF-8
     due to the LANG variable). If no locale is available (e.g. LANG is unset),
-    Python seems to guess the encoding of the command line argument: In another
-    experiment with undefined LANG, Python correctly detects, for instance, an
+    Python 3 seems to guess the encoding of the command line argument: In another
+    experiment with undefined LANG, Python 3 correctly detects, for instance, an
     ISO8859-1 encoded argument, but fails to detect an UTF-16 encoded argument.
   - Python 2.6: In an experiment I was able to confirm that the arguments are
     stored in the sys.argv strings raw and uninterpreted. The experiment works
@@ -119,20 +126,19 @@ Conclusions:
   Python 2.6.
 - Experiments seem to indicate that for both Python 3 and Python 2.6, input
   coming from the keyboard is read by all the functions involved in a
-  faithful manner. In Python 3, the input is interpreted in some cases (e.g.
-  sys.argv) and therefore dependent on the interpreter's default encoding.
-  In Python 2.6, keyboard input never seems to be interpreted, but stored
-  in its raw byte stream form. Of course, how exactly that byte stream looks
-  always depends on the user's input scheme, i.e. the encoding that is produced
-  by her typing on the keyboard.
+  faithful manner. In Python 3, the input is interpreted in some cases (sys.argv
+  and interactive input, both with and without echo mode) and therefore
+  dependent on the locale detected by the interpreter (***NOT*** on the default
+  encoding returned by sys.getdefaultencoding()). In Python 2.6, keyboard input
+  never seems to be interpreted, but stored in its raw byte stream form. Of
+  course, how exactly that byte stream looks always depends on the user's input
+  scheme, i.e. the encoding that is produced by her typing on the keyboard.
 - For Python 3, it is clearly necessary that the user be able to specify the
-  encoding of the input, in case the default encoding used by the Python
-  interpreter (which often depends on the LANG environment variable) is the
-  wrong one, for whatever reasons. This necessity exists mostly for input read
-  as binary data, because some of mkroesti's algorithms (e.g. crypt-system)
-  require string input, which means that the byte stream, i.e. the file's
-  content, needs to be converted and therefore interpreted with a certain
-  encoding.
+  encoding of the input, in case the locale-based encoding chosen by the
+  interpreter is the wrong one. This necessity exists mostly for input read as
+  binary data, because some of mkroesti's algorithms (e.g. crypt-system) require
+  string input, which means that the byte stream, i.e. the file's content, needs
+  to be converted and therefore interpreted with a certain encoding.
 - For Python 2.6, specification of input encoding is not strictly necessary for
   the bare operation of the program. However, without information on the
   encoding the program might produce the wrong result, which is clearly

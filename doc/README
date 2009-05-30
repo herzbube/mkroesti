@@ -151,8 +151,8 @@ The module "bcrypt" [4]
 
 Python versions
 ---------------
-The minimum requirement for running a current version of mkroesti is Python 2.6.
-It should also run fine with Python 3.
+The minimum requirement for running a current version of mkroesti is Python 2.6
+(tests were made with Python 2.6.2). It should also run fine with Python 3.
 
 Older versions:
 - mkroesti 0.1 requires Python 2.5 but does not run with Python 3
@@ -172,13 +172,13 @@ situations. You may find it easier to ignore encodings in mkroesti altogether,
 and instead use a different tool that is better at handling encodings, to
 pre-process your input data. The --codec option was added mainly to handle the
 border case where binary input needs to be converted into string data to satisfy
-algorithms such as crypt-system, which take string data as their input. The
---codec option was also added to enable unit tests to specify an encoding for
-the input they provide to mkroesti.main.main(), to cover the case where the
-default encoding of the user who runs the tests differs from the encoding of the
-file that contains the string literal used by the test. Now that --codec has
-been implemented, it proves to be a major nuisance, because its usage remains
-obscure in many situations.
+algorithms such as crypt-system, which in Python 3 take string data as their
+input. The --codec option was also added to enable unit tests to specify an
+encoding for the input they provide to mkroesti.main.main(), to cover the case
+where the locale-based encoding of the user who runs the tests differs from the
+encoding of the file that contains the string literal used by the test. Now that
+--codec has been implemented, it proves to be a major nuisance, because its
+usage remains obscure in many situations.
 
 
 Why mkroesti (the motivation)?

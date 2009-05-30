@@ -64,11 +64,6 @@ def main(args = None):
     sys.exit(0) is called, which raises SystemExit.
     """
 
-    # Set python2 to True or False, depending on which version of the
-    # interpreter we are running
-    (major, minor, micro, releaselevel, serial) = sys.version_info
-    python2 = (major == 2)
-
     # Determine whether we are running in a true command line argument. We
     # assume that this is the case if the caller of this function does not
     # specify any arguments in args, but lets us use sys.argv instead.
@@ -79,7 +74,6 @@ def main(args = None):
 
     # Start processing options. If args is None (the default), the option parser
     # will use sys.argv as the source for command line arguments.
-    # Note: The order in which arguments are checked is important!
     (options, args) = parser.parse_args(args = args)
     hashInput = None
     if options.version:
@@ -98,21 +92,27 @@ def main(args = None):
 
     # Determine the encoding that should be used to convert between binary and
     # string data (or vice versa).
-    # Note: There is a check further down to prevent character encoding
+    # Note 1: There is a check further down to prevent character encoding
     # specification when the input is read interactively via sys.stdin.
+    # Note 2: Encodings are ignored in Python 2.6 because Python 2.6 has no
+    # binary data type that might require converting.
     encoding = sys.getdefaultencoding()
     if options.codec is not None:
         if options.list:
             raise MKRoestiError("Cannot specify a character encoding in list mode")
         encoding = options.codec
-        try:
-            # We are not interested in the codec object returned by lookup(),
-            # we just want to know if the name specified by --codec exists
-            codecs.lookup(encoding)
-        except LookupError:
-            raise MKRoestiError("Unknown encoding: " + encoding)
+        if mkroesti.python2:
+            print("Warning: Ignoring --codec because it has no meaning for Python 2.6", file = sys.stderr)
+        else:
+            try:
+                # We are not interested in the codec object returned by lookup(),
+                # we just want to know if the name specified by --codec exists
+                codecs.lookup(encoding)
+            except LookupError:
+                raise MKRoestiError("Unknown encoding: " + encoding)
 
     # Check for different modes (batch, file, list, stdin)
+    # Note: The order in which arguments are checked is important!
     if options.batch:
         if options.echo:
             parser.error("batch mode cannot be combined with echo mode")
@@ -131,7 +131,7 @@ def main(args = None):
         if options.echo:
             parser.error("echo mode cannot be combined with reading from file")
         elif options.list:
-            parser.error("batch mode cannot be combined with list mode")
+            parser.error("list mode cannot be combined with reading from file")
         try:
             # Explicitly use "binary" mode. If omitted, Python 3 would open the
             # file in text mode and interpret the file's content using the
@@ -164,20 +164,26 @@ def main(args = None):
             # input with, for instance, multiple lines, or an entire file. We
             # don't use input() or raw_input() because these are line oriented.
             #
-            # Note: sys.stdin is in text mode, so reading from it would cause
+            # Python 3: sys.stdin is in text mode, so reading from it would cause
             # Python 3 to interpret the data using the current default encoding.
             # To prevent that, we are using the underlying binary buffer of
             # sys.stdin to read binary data (this is recommended by the Python 3
             # docs for sys.stdin)
             #
-            # TODO: Check if this works for Python 2.6.
-            hashInput = sys.stdin.buffer.read()
+            # Python 2.6: We perform the read operation directly on the
+            # sys.stdin object because Python 2.6 does not have the bytes data
+            # type, so read() will give us a str object with raw, uninterpreted
+            # data.
+            if mkroesti.python2:
+                hashInput = sys.stdin.read()
+            else:
+                hashInput = sys.stdin.buffer.read()
         else:
             # Get a single line of input (newline is stripped). In Python 3, the
             # input is of type str for both functions.
             prompt = "Enter text to hash: "
             if options.echo:
-                if python2:
+                if mkroesti.python2:
                     hashInput = raw_input(prompt)
                 else:
                     hashInput = input(prompt)
@@ -194,73 +200,78 @@ def main(args = None):
         # problem...
         algorithms.extend(factory.AlgorithmFactory.createAlgorithms(name, options.duplicateHashes))
 
-    # In Python 3 only: The input might be present as either type str or bytes.
-    # We might need to convert from one to the other, depending on the
-    # requirements of each algorithm. We delay such conversion until it becomes
-    # really necessary. Reason 1: Efficiency. For instance, it makes no sense
-    # to convert a large file to type str, when we will never need that str.
-    # Reason 2 (the real reason :-): It is actually impossible to convert
-    # *binary* files into str. Should the user request an algorithm that
-    # requires conversion to str, the result will be an error. If we were to
-    # perform conversion up front, we would therefore *always* have an error.
-    #
-    # TODO: Find out how we can make this work for Python 2.6
-    hashInputType = type(hashInput)
-    if hashInputType is type(str()):
-        hashInputAsStr = hashInput
-        hashInputAsBytes = None
-    elif hashInputType == type(bytes()):
-        hashInputAsStr = None
-        hashInputAsBytes = hashInput
+    if mkroesti.python2:
+        # Hash input type handling is not required for Python 2.6
+        pass
     else:
-        raise MKRoestiError("Hash input object has unsupported type: " + str(hashInputType))
-
-    # Find out what kind of input data we need to make all algorithms happy
-    needBytesInput = False
-    needStrInput = False
-    for algorithm in algorithms:
-        if algorithm.needBytesInput():
-            needBytesInput = True
+        # In Python 3 only: The input might be present as either type str or bytes.
+        # We might need to convert from one to the other, depending on the
+        # requirements of each algorithm. We delay such conversion until it becomes
+        # really necessary. Reason 1: Efficiency. For instance, it makes no sense
+        # to convert a large file to type str, when we will never need that str.
+        # Reason 2 (the real reason :-): It is actually impossible to convert
+        # *binary* files into str. Should the user request an algorithm that
+        # requires conversion to str, the result will be an error. If we were to
+        # perform conversion up front, we would therefore *always* have an error.
+        hashInputType = type(hashInput)
+        if hashInputType is type(str()):
+            hashInputAsStr = hashInput
+            hashInputAsBytes = None
+        elif hashInputType == type(bytes()):
+            hashInputAsStr = None
+            hashInputAsBytes = hashInput
         else:
-            needStrInput = True
+            raise MKRoestiError("Hash input object has unsupported type: " + str(hashInputType))
 
-    # Perform the actual conversion
-    conversionRequired = False
-    if needBytesInput:
-        if hashInputAsBytes is None:
-            conversionRequired = True
-            try:
-                hashInputAsBytes = hashInputAsStr.encode(encoding)
-            except UnicodeEncodeError:
-                # This happens, for instance, if we try to encode a
-                # character that does not exist in the encoding's target
-                # character set (e.g. "β" does not exist in "iso-8859-1")
-                raise ConversionError("Cannot convert input to binary data (the encoding used was '" + encoding + "')")
-    if needStrInput:
-        if hashInputAsStr is None:
-            conversionRequired = True
-            try:
-                hashInputAsStr = hashInputAsBytes.decode(encoding)
-            except UnicodeDecodeError:
-                # This happens, for instance, if we try to decode binary
-                # data, because no encoding can sensibly decode binary data
-                raise ConversionError("Cannot convert input to string data (the encoding used was '" + encoding + "')")
+        # Find out what kind of input data we need to make all algorithms happy
+        needBytesInput = False
+        needStrInput = False
+        for algorithm in algorithms:
+            if algorithm.needBytesInput():
+                needBytesInput = True
+            else:
+                needStrInput = True
 
-    # Issue final warnings before we start generating hashes
-    # Note: Only warn if the user explicitly specified --codec.
-    if not conversionRequired and options.codec:
-        print("Warning: Ignoring --codec because no conversion was required", file = sys.stderr)
-    if hashInputType is type(str()) and needBytesInput and options.codec:
-        print("Warning: Re-interpreting input data using encoding '" + encoding + "' (Python has already interpreted your input using a locale-based encoding)", file = sys.stderr)
+        # Perform the actual conversion
+        conversionRequired = False
+        if needBytesInput:
+            if hashInputAsBytes is None:
+                conversionRequired = True
+                try:
+                    hashInputAsBytes = hashInputAsStr.encode(encoding)
+                except UnicodeEncodeError:
+                    # This happens, for instance, if we try to encode a
+                    # character that does not exist in the encoding's target
+                    # character set (e.g. "β" does not exist in "iso-8859-1")
+                    raise ConversionError("Cannot convert input to binary data (the encoding used was '" + encoding + "')")
+        if needStrInput:
+            if hashInputAsStr is None:
+                conversionRequired = True
+                try:
+                    hashInputAsStr = hashInputAsBytes.decode(encoding)
+                except UnicodeDecodeError:
+                    # This happens, for instance, if we try to decode binary
+                    # data, because no encoding can sensibly decode binary data
+                    raise ConversionError("Cannot convert input to string data (the encoding used was '" + encoding + "')")
+
+        # Issue final warnings before we start generating hashes
+        # Note: Only warn if the user explicitly specified --codec.
+        if not conversionRequired and options.codec:
+            print("Warning: Ignoring --codec because no conversion was required", file = sys.stderr)
+        if hashInputType is type(str()) and needBytesInput and options.codec:
+            print("Warning: Re-interpreting input data using encoding '" + encoding + "' (Python has already interpreted your input using a locale-based encoding)", file = sys.stderr)
 
     # Create hashes
     algorithmCount = len(algorithms)
     for algorithm in algorithms:
         algorithmName = algorithm.getName()
-        if algorithm.needBytesInput():
-            hash = algorithm.getHash(hashInputAsBytes)
+        if mkroesti.python2:
+            hash = algorithm.getHash(hashInput)
         else:
-            hash = algorithm.getHash(hashInputAsStr)
+            if algorithm.needBytesInput():
+                hash = algorithm.getHash(hashInputAsBytes)
+            else:
+                hash = algorithm.getHash(hashInputAsStr)
         if algorithmCount == 1:
             print(hash)
         else:

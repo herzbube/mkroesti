@@ -62,6 +62,7 @@ except ImportError:
 
 # mkroesti
 from mkroesti.names import * #@UnusedWildImport
+import mkroesti   # import stuff from __init__.py (e.g. mkroesti.python2)
 
 
 class AlgorithmInterface:
@@ -180,11 +181,23 @@ class Base64Algorithms(AbstractAlgorithm):
     def getHash(self, input):
         algorithmName = self.getName()
         if ALGORITHM_BASE16 == algorithmName:
-            return base64.b16encode(input)
+            result = base64.b16encode(input)
+            if mkroesti.python2:
+                return result
+            else:
+                return result.decode("ascii")
         elif ALGORITHM_BASE32 == algorithmName:
-            return base64.b32encode(input)
+            result = base64.b32encode(input)
+            if mkroesti.python2:
+                return result
+            else:
+                return result.decode("ascii")
         elif ALGORITHM_BASE64 == algorithmName:
-            return base64.b64encode(input)
+            result = base64.b64encode(input)
+            if mkroesti.python2:
+                return result
+            else:
+                return result.decode("ascii")
         else:
             return AbstractAlgorithm.getHash(self, input)
 

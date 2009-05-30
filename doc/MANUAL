@@ -39,7 +39,7 @@ OPTIONS
   Use batch mode; i.e., get the input from the command line rather than prompting for it. This option should be used with extreme care, since if the input is a password, it will be visible to any program or user looking at the system's list of processes at the time when **mkroesti** is run.
 
 -c CODEC, --codec CODEC
-  If necessary, use the character encoding named CODEC for internal conversion between binary and string data. See **ENCODINGS** below.
+  If necessary, use the character encoding named CODEC for internal conversion between binary and string data. See **ENCODINGS** below. This option has no effect if **mkroesti** is run under Python 2.6.
 
 -d, --duplicate-hashes
   Allow duplicate hashes; i.e. if the same algorithm is available from multiple implementation sources, generate a hash for each implementation.
@@ -195,18 +195,20 @@ For the gritty details, use **pydoc** to view the API documentation inside the m
 ENCODINGS
 =========
 
-**mkroesti** treats the input data specified by the user either as binary data, or as string data. The input method that the user choses determines how the input data is treated:
+This section is not relevant if **mkroesti** is run under Python 2.6, because Python 2.6 does not have a binary data type. If **mkroesti** is run under Python 2.6, it always stores the raw, uninterpreted input data inside a string object and passes that string object directly to algorithms - without any conversion. Because no conversion is necessary, the **--codec** command line argument is always ignored.
+
+From Python 3 onwards, **mkroesti** treats the input data specified by the user either as binary data, or as string data, depending on the input method that the user chooses:
 
 - Reading from a file (i.e. using **--file**): Input data is treated as binary data.
 - Reading from stdin, when stdin is not a tty (i.e. piping the input into **mkroesti**, or redirecting stdin): Input data is treated as binary data.
 - Reading from the command line (i.e. using **--batch**): Input data is treated as string data.
 - Specifying the input interactively (with or without echo mode): Input data is treated as string data.
 
-While most hash algorithms require their input to be binary data, some algorithms require their input to be string data (**crypt-system** is a notable case). Whenever an algorithm requires its input to be of a type that is different from the type how **mkroesti** treats its input data, **mkroesti** is forced to convert between the two types. So if, for instance, the user specifies a file (input data is binary data) and selects the **crypt-system** algorithm (requires string data), **mkroesti** needs to convert from binary to string data. Another example would be if the user specifies the input on the command line using **--batch** (input data is string data), and selects the **md5** algorithm (requires binary data), **mkroesti** needs to convert from string to binary data.
+While most hash algorithms require their input to be binary data, some algorithms require their input to be string data (**crypt-system** is a notable case). Whenever an algorithm requires its input to be of a type that is different from the type how **mkroesti** treats its input data, **mkroesti** is forced to convert between the two types. So if, for instance, the user specifies a file (input data is binary data) and selects the **crypt-system** algorithm (requires string data), **mkroesti** needs to convert from binary to string data. Another example would be if the user specifies the input on the command line using **--batch** (input data is string data), and selects the **md5** algorithm (requires binary data): In this case **mkroesti** needs to convert from string to binary data.
 
 Because strings are involved in converting from binary to string data, or vice versa, **mkroesti** must employ a character encoding (e.g. UTF-8, Latin-1) to interpret the data. Without any special measures, **mkroesti** implicitly uses Python's default character encoding to perform the conversion. Invoke **mkroesti** with the **--version** argument to see which default encoding would be used right now.
 
-The **--codec** command line argument tells **mkroesti** to use the specified encoding instead of Python's default encoding. The encoding is specified as a "codec name", which can be the name of any codec registered via the Python Standard Library module "codecs". See the module's documentation for an extensive list of possible names. Often used encodings would be "utf-8", "latin_1" (equivalent to "iso8859-1") or "mac_roman".
+The **--codec** command line argument tells **mkroesti** to use the specified encoding instead of Python's default encoding. The encoding is specified as a "codec name", which can be the name of any codec registered via the Python Standard Library module "codecs". See the module's documentation for an extensive list of possible names. Often used encodings would be "utf-8", "latin_1" or "iso8859-1" (both equivalent), and "mac_roman".
 
 **NOTE 1:** We have already seen that in some cases **mkroesti** initially gets its input data from the Python interpreter as string data (i.e. when using **--batch**, or entering the input data interactively). In those cases, the raw input data has already been converted into (Unicode) string data, before **mkroesti** gets any chance to do something with the data. This initial conversion is performed by the Python interpreter; to determine the encoding to be used in the conversion, the interpreter looks at the user's locale (e.g. the content of the *LANG* environment variable). If you use **--codec** in such a situation, and you specify a new encoding that is different from the initial locale-based encoding, **mkroesti** will use your new encoding to convert the string input data into binary input data. Due to this re-interpretation, the final byte sequence given to the hash algorithm may therefore very well be different from the original byte sequence that you typed on the command line, which will result in a different hash than the one you may have expected.
 

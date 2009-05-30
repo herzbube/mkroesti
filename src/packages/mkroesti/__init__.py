@@ -18,6 +18,9 @@
 # along with mkroesti. If not, see <http://www.gnu.org/licenses/>.
 
 
+# PSL
+import sys
+
 # mkroesti
 from mkroesti.registry import ProviderRegistry
 
@@ -29,6 +32,12 @@ __all__ = (["algorithm", "errorhandling", "factory", "main", "names",
 
 # The package version; this is used by "mkroesti --version"
 version = "0.2"
+
+
+# Set python2 to True or False, depending on which version of the
+# interpreter we are running
+(major, minor, micro, releaselevel, serial) = sys.version_info
+python2 = (major == 2)
 
 
 def registerProvider(provider):

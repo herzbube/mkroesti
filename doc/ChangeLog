@@ -1,3 +1,25 @@
+Sat May 30 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- updated notes in Research document
+- moved check for Python 2.6 / Python 3 to __init__.py of the mkroesti package,
+  so that unit tests also have access to the test
+- Python 3: base64, base32 and base16 algorithms now correctly return a string
+  object (previously they returned a bytes object)
+- fixed error in expect script in mkroesti-test that occurred if a generated
+  hash started with a "-"
+
+Fri May 29 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- fixed unit tests for Python 2.6
+- mkroesti-test
+  - fixed error handling
+  - fixed environment variable handling in expect script
+
+Mon May 21 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- fixed problems in mkroesti-test that were exposed by switching from Python 3
+  to Python 2.6
+- option --codec is now ignored if mkroesti is run under Python 2.6
+- renamed attribute used by various exception classes in errorhandling.py
+  from "message" to "args" (according to PEP 352)
+
 Fri Mar 27 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - added end-to-end test suite
   - test script in src/scripts/mkroesti-test

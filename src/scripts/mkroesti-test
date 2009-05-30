@@ -34,12 +34,19 @@ generateExpectScript()
   local ALGORITHM_NAME="$3"
   local HASH_INPUT="$4"
 
+  if test -z "$PYTHONPATH"; then
+    unset SET_PYTHONPATH_ENVVAR
+  else
+    SET_PYTHONPATH_ENVVAR="set env(PYTHONPATH) $PYTHONPATH"
+  fi
+
   cat << EOF >"$SCRIPT_FILE"
 # Disable logging of the send/expect dialogue. We only
 # want to see our own final output.
 log_user 0
 
-# Launch mkroesti
+# Launch mkroesti. Use PYTHONPATH if it is set
+$SET_PYTHONPATH_ENVVAR
 spawn -noecho "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME"
 
 # Enable this command to debug, then use "tail -f /tmp/xxx"
@@ -76,7 +83,8 @@ expect {
 # Wait until the process has finished and we can safely
 # print the hash we got from mkroesti to stdout
 wait
-send_user "\$theHash\n"
+# Use "--" in case the value of $theHash starts with a "-"
+send_user -- "\$theHash\n"
 EOF
   if test $? -eq 0; then
     return 0
@@ -100,7 +108,7 @@ Usage:
   $MY_NAME --help
 
 Command line arguments:  
-  --help: Print this help summary.
+  -h|--help: Print this help summary.
   --python-bin: Path to the Python interpreter binary. If this is not specified,
      use the binary found in the PATH.
   --testdata-dir: Path to the directory that contains the test data. If not
@@ -161,9 +169,11 @@ fi
 # Process command line arguments
 # ----------------------------------------------------------------------
 
-if test $# -eq 1 -a "$1" == "--help"; then
-  printHelp
-  exit 0
+if test $# -eq 1; then
+  if test "$1" == "-h" -o "$1" == "--help"; then
+    printHelp
+    exit 0
+  fi
 fi
 
 unset PYTHON_BIN TESTDATA_DIR MKROESTI_BIN REPORT_LEVEL
@@ -340,19 +350,23 @@ do
         case $INPUT_METHOD in
           1)
             "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--file=$INPUTDATA_FILE" >"$TMP_FILE" 2>/dev/null
+            RETVAL=$?
             ;;
           2)
             cat "$INPUTDATA_FILE" | "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" >"$TMP_FILE" 2>/dev/null
+            RETVAL=$?
             ;;
           3)
             "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--batch" "$(cat $INPUTDATA_FILE)" >"$TMP_FILE" 2>/dev/null
+            RETVAL=$?
             ;;
           4)
             generateExpectScript "$EXPECT_FILE" "$MKROESTI_BIN" "$ALGORITHM_NAME" "$(cat $INPUTDATA_FILE)"
             expect "$EXPECT_FILE" >"$TMP_FILE" 2>/dev/null
+            RETVAL=$?
             ;;
         esac
-        if test $? -ne 0; then
+        if test $RETVAL -ne 0; then
           INPUT_METHOD_TEST_RESULT=1
           INPUT_METHOD_TEST_RESULT_MSG="error executing mkroesti"
         else
@@ -376,26 +390,26 @@ do
               INPUT_METHOD_TEST_RESULT_MSG="error comparing actual hash value to expected hash value"
               ;;
           esac
-          case "$INPUT_METHOD_TEST_RESULT" in
-            0)
-              case "$REPORT_LEVEL" in
-                3)
-                  echo "    Input method test result: success"
-                  ;;
-              esac
-              ;;
-            1)
-              ALGORITHM_TEST_RESULT=1
-              NUMBER_OF_INPUT_METHODS_WITH_FAILURE=$(expr $NUMBER_OF_INPUT_METHODS_WITH_FAILURE + 1)
-              ALGORITHM_TEST_RESULT_MSG="$ALGORITHM_TEST_RESULT_MSG, $INPUT_METHOD_NAME"
-              case "$REPORT_LEVEL" in
-                3)
-                  echo "    Input method test result: failure ($INPUT_METHOD_TEST_RESULT_MSG)"
-                  ;;
-              esac
-              ;;
-          esac
         fi
+        case "$INPUT_METHOD_TEST_RESULT" in
+          0)
+            case "$REPORT_LEVEL" in
+              3)
+                echo "    Input method test result: success"
+                ;;
+            esac
+            ;;
+          1)
+            ALGORITHM_TEST_RESULT=1
+            NUMBER_OF_INPUT_METHODS_WITH_FAILURE=$(expr $NUMBER_OF_INPUT_METHODS_WITH_FAILURE + 1)
+            ALGORITHM_TEST_RESULT_MSG="$ALGORITHM_TEST_RESULT_MSG, $INPUT_METHOD_NAME"
+            case "$REPORT_LEVEL" in
+              3)
+                echo "    Input method test result: failure ($INPUT_METHOD_TEST_RESULT_MSG)"
+                ;;
+            esac
+            ;;
+        esac
       done
       if test $NUMBER_OF_INPUT_METHODS_WITH_FAILURE -gt 0; then
         ALGORITHM_TEST_RESULT_MSG=$(echo "$ALGORITHM_TEST_RESULT_MSG" | awk '{gsub(/^, /, "", $0); print $0}')
