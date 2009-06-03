@@ -29,16 +29,16 @@ Version 0.6
   http://www.theserverpages.com/php/manual/en/ref.mhash.php)
 
 Version 0.5
-- implement web front-end
+- implement a Mac OS X GUI front-end
 
 Version 0.4
-- implement a Mac OS X GUI front-end
+- implement web front-end
 
 Version 0.3
 - implement missing hash crypt-md5
 - implement missing hash crypt-apr1
 
-Version 0.2
+Version 0.2 (Jun 03 2009)
 - add Python 3 support to mkroesti (keeping backward compatibility with
   Python 2.6)
 - add support for specifying the input encoding

@@ -74,7 +74,7 @@ Encodings
   not make sense to everybody, but I have decided to keep it that way because
   it keeps usage more simple, and I believe that it is not the job of mkroesti
   to recode text files - which would be the only conceivable use case of **NOT**
-  ignoring --codec in the binary->binary case (it make no sense to interpret
+  ignoring --codec in the binary->binary case (it makes no sense to interpret
   **REAL** binary files).
 - The --codec argument is ignored as well if input data is read in string form
   and given to an algorithm in string form. This probably makes not sense to
@@ -82,4 +82,8 @@ Encodings
   how this behaviour could be changed. Because regardless of how many
   re-interpretations we make, the input data always ends up in a string in
   Unicode format, and is given to the algorithm as such.
-
+- Finally, the --codec argument is ignored under Python 2.6 because there is no
+  necessity for it under Python 2.6: Input data is always stored in a string
+  object in raw, uninterpreted form, and that string object is then passed to
+  algorithms without any conversion. Again, if recoding is required, this is not
+  the job of mkroesti, a pre-processing tool should be used for that purpose.

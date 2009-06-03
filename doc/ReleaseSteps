@@ -21,8 +21,6 @@ Before the release
   - mkroesti/__init__.py
 - make sure that the copyright year is up to date in the following files:
   - *.py
-- add the new version number to the bug tracker so that issues can be reported
-  once the release has been made public
 - run automated tests, both for Python 2.6 and Python 3, either in the IDE or
   on the command line, by issuing the following commands:
     cd <projectdir>
@@ -52,6 +50,8 @@ Make the release
   cd <projectdir>
   git push
 - make source distribution tar ball available on the project website
+- add the new version number to the bug tracker so that issues can be reported
+  once the release has been made public
 - update the website to announce the new release
 
 

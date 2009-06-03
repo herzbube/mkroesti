@@ -34,6 +34,14 @@ Changes in this release
 -----------------------
 This is mkroesti 0.2.
 
+Important changes in this release:
+- Python 3 support (keeping backward compatibility with Python 2.6)
+- added --codec command line option (usable only when mkroesti is run under
+  Python 3)
+- adler32 and crc32 algorithms now return a hexadecimal instead of a decimal
+  result
+- added end-to-end test suite
+
 For more details see the ChangeLog document.
 
 
