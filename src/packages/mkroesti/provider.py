@@ -418,7 +418,31 @@ class MHashProvider(AliasAbstractProvider):
         return algorithm.MHashAlgorithms(algorithmName, self)
 
 
+class AprUtilProvider(AliasAbstractProvider):
+    """Provides hashes available from the extension module mkroesti.aprutil."""
+
+    def __init__(self):
+        namesDictionary = {
+            None : [ALGORITHM_MD5],
+            ALIAS_CRYPT : [ALGORITHM_CRYPT_APR1]
+            }
+        AliasAbstractProvider.__init__(self, namesDictionary)
+
+    def isAlgorithmAvailable(self, algorithmName):
+        (isAvailable, moduleName) = algorithm.AprUtilAlgorithms.isAvailable()
+        if not isAvailable:
+            return (False, moduleName + " module not found")
+        return (True, None)
+
+    def getAlgorithmSource(self, algorithmName):
+        return "mkroesti.aprutil"
+
+    def createAlgorithm(self, algorithmName):
+        return algorithm.AprUtilAlgorithms(algorithmName, self)
+
+
 def getProviders():
     providers = HashlibProvider(), Base64Provider(), ZlibProvider(), \
-        CryptProvider(), WindowsHashProvider(), MHashProvider()
+        CryptProvider(), WindowsHashProvider(), MHashProvider(), \
+        AprUtilProvider()
     return providers

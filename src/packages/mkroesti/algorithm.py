@@ -63,6 +63,11 @@ except ImportError:
 # mkroesti
 from mkroesti.names import * #@UnusedWildImport
 import mkroesti   # import stuff from __init__.py (e.g. mkroesti.python2)
+try:
+    from mkroesti import aprutil
+    availableModules.append("aprutil")
+except ImportError:
+    pass
 
 
 class AlgorithmInterface:
@@ -397,3 +402,40 @@ class MHashAlgorithms(AbstractAlgorithm):
             return mhash.MHASH_MD5
         else:
             return None
+
+class AprUtilAlgorithms(AbstractAlgorithm):
+    """Implements all algorithms available from the extension module mkroesti.aprutil."""
+
+    @staticmethod
+    def isAvailable():
+        moduleName = "aprutil"
+        isAvailable = moduleName in availableModules
+        return (isAvailable, moduleName)
+
+    def __init__(self, algorithmName, provider):
+        AbstractAlgorithm.__init__(self, algorithmName, provider)
+
+    def needBytesInput(self):
+        algorithmName = self.getName()
+        if ALGORITHM_MD5 == algorithmName:
+            return True
+        elif ALGORITHM_CRYPT_APR1 == algorithmName:
+            return False
+        else:
+            return AbstractAlgorithm.needBytesInput(self)
+
+    def getHash(self, input):
+        algorithmName = self.getName()
+        if ALGORITHM_MD5 == algorithmName:
+            return aprutil.md5(input)
+        elif ALGORITHM_CRYPT_APR1 == algorithmName:
+            # Use an 8-character salt to mimick the behavior of the htpasswd
+            # command line tool. For details about salt construction, see the
+            # comments in CryptAlgorithm.
+            salt = str()
+            for i in range(8): #@UnusedVariable
+                salt += CryptAlgorithm.salt_chars[randint(0, 63)]
+            return aprutil.md5_encode(input, salt)
+        else:
+            return AbstractAlgorithm.getHash(self, input)
+

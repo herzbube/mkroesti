@@ -1,10 +1,17 @@
 Wed Jun 03 2009   "Patrick Näf" <herzbube@herzbube.ch>
-- final doc changes for release of version 0.2
-- adler32 algorithm now returns the same result for both Python 2.6 and 3.0
-- adler32 and crc32 algorithms now return a hexadecimal instead of a decimal
-  result
-- document that mkroesti-test does not reliably test the interactive input
-  method
+- work for version 0.3: added extension module mkroesti.aprutil
+  - module contains prototype implementations that wrap apr_md5() and
+    apr_md5_encode()
+  - added build support to setup.py
+  - added algorithm and provider implementations
+  - added crypt-apr1 to exclude list for end-to-end test
+- work for version 0.2
+  - final doc changes for release of version 0.2
+  - adler32 algorithm now returns the same result for both Python 2.6 and 3.0
+  - adler32 and crc32 algorithms now return a hexadecimal instead of a decimal
+    result
+  - document that mkroesti-test does not reliably test the interactive input
+    method
 
 Sat May 30 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - updated notes in Research document

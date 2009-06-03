@@ -17,7 +17,44 @@ Research on hash algorithm sources
     - ./setup.py build
     - ./setup.py install
   - what does the library/python module provide?
-- details about the Apache-specific md5 algorithm can be found here [3]; the page mentions that OpenSSL knows the algorithm, therefore I try to use a python wrapper for OpenSSL to get at the algorithm
+- crypt-apr1 (MD5-based crypt, Apache variant)
+  - details can be found here [3]; the page mentions that OpenSSL knows the algorithm, therefore it might be useful to try and use a Python wrapper for OpenSSL to get at the algorithm
+  - the following C program is an implementation that uses the algorithm as
+    implemented in the apr-util library; on my Mac with apr-util available from
+    the system, I compile the program like this:
+
+        gcc main.c -o myaprtest -laprutil-1
+
+    #include <stdio.h>
+    #include <apr-1/apr_md5.h>
+
+    int main(int argc, char** argv)
+    {
+      // Declare variables
+      apr_status_t status;
+      unsigned char digest[APR_MD5_DIGESTSIZE];
+      const void* input = "foo";
+      apr_size_t inputLen = 3;
+      const char* salt = "mYJd83wW";
+      char result[100];
+      apr_size_t nbytes = 100;
+
+      // Generate a real MD5 hash; for input "foo", the result is this:
+      // "acbd18db4cc2f85cedef654fccc4a4d8"
+      status = apr_md5(digest, input, inputLen);
+      int i;
+      for (i = 0; i < APR_MD5_DIGESTSIZE; ++i)
+        printf("%x", digest[i]);
+      printf("\n");
+
+      // Generate salted crypt-style hash (crypt-apr1); for input "foo" and salt
+      // "mYJd83wW", the result is this: "$apr1$mYJd83wW$IO.6aK3G0d4mHxcImhPX50"
+      status = apr_md5_encode(input, salt, result, nbytes);
+      printf("%s\n", result);
+      printf("%d\n", strlen(result));
+
+      return 0;
+    }
 
 [1] http://chandlerproject.org/Projects/MeTooCrypto
 [2] http://labix.org/python-mcrypt
