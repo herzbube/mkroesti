@@ -215,12 +215,24 @@ class ZlibAlgorithms(AbstractAlgorithm):
 
     def getHash(self, input):
         algorithmName = self.getName()
-        if ALGORITHM_ADLER32 == algorithmName:
-            # TODO: should return an unsigned hex value
-            return zlib.adler32(input)
-        elif ALGORITHM_CRC32 == algorithmName:
-            # TODO: should return an unsigned hex value
-            return zlib.crc32(input)
+        if ALGORITHM_ADLER32 == algorithmName or ALGORITHM_CRC32 == algorithmName:
+            if ALGORITHM_ADLER32 == algorithmName:
+                result = zlib.adler32(input)
+            elif ALGORITHM_CRC32 == algorithmName:
+                result = zlib.crc32(input)
+            # Python 2: Result for both algorithms is in the range
+            # [-2**31, 2**31-1], the &= operation makes it unsigned  and in the
+            # range [0, 2**32-1] (same as in Python 3).
+            if mkroesti.python2:
+                result &= 0xffffffff
+            # Convert decimal into hexadecimal value, and remove the "0x" prefix
+            result = hex(result)[2:]
+            # Python 2: Because result stores a long value, its string
+            # representation has an "L" suffix. hex() does not strip that
+            # suffix, so we have to do the stripping ourselves
+            if mkroesti.python2:
+                return result[:-1]
+            return result
         else:
             return AbstractAlgorithm.getHash(self, input)
 

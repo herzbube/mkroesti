@@ -1,3 +1,10 @@
+Wed Jun 03 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- adler32 algorithm now returns the same result for both Python 2.6 and 3.0
+- adler32 and crc32 algorithms now return a hexadecimal instead of a decimal
+  result
+- document that mkroesti-test does not reliably test the interactive input
+  method
+
 Sat May 30 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - updated notes in Research document
 - moved check for Python 2.6 / Python 3 to __init__.py of the mkroesti package,

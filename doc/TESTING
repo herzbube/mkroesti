@@ -69,6 +69,12 @@ Documentation of the test suite:
 - command line usage: run the script using --help
 - test data: read the file packages/tests/testdata/README
 
+Note: Unfortunately, the test of the interactive input method sometimes fails.
+The problem is that, for some unknown reason, the expect utility sometimes fails
+to properly run the script that exercises the interactive input method. For the
+moment, the only workaround for this is to re-run "mkroesti-test" and hope for
+the best.
+
 
 Run mkroesti from the command line
 ----------------------------------

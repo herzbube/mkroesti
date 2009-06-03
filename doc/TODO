@@ -10,14 +10,7 @@ the Roadmap document.
 
 Release blockers
 ----------------
-- Python 2.6 and Python 3 produce different results for the adler32 algorithm;
-  mkroesti-test fails for this resason if it run under Python 2.6, because the
-  expected value that is stored is the value produced by the Python 3 version
-  of adler32. Check whether Python 3 version of adler32 produces correct result.
-  If so, document in README/Limitations that Python 2.6 produces wrong results.
-  Somehow fix mkroesti-test so that it runs under Python 2.6. If Python 3 still
-  produces wrong results for adler32, document this as well under
-  README/Limitations, or remove the algorithm altogether.
+None
 
 
 Priority 1 (important)
@@ -26,6 +19,10 @@ Priority 1 (important)
   tests/testdata/result contain the correct hash values
 - check if all algorithms return the correct value for needBytesInput()
 - fix TODOs in the code
+- fix mkroesti-test so that the test of the interactive input method always
+  succeeds (currently the test fails sometimes); this is important because an
+  unreliable test suite does not inspire very much confidence; remove comment
+  in TESTING document if this is fixed
 
 
 Priority 2 (nice to have)
