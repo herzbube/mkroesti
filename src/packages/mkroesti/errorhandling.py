@@ -25,53 +25,53 @@ class MKRoestiError(Exception):
     """General runtime error triggered by mkroesti."""
 
     def __init__(self, message):
-        self.args = message
+        Exception.__init__(self, message)
 
 
 class UnknownAlgorithmError(Exception):
     """Is raised if a given algorithm is not known."""
 
     def __init__(self, algorithmName):
-        self.args = "unknown algorithm: " + str(algorithmName)
+        Exception.__init__(self, "unknown algorithm: " + str(algorithmName))
 
 
 class UnavailableAlgorithmError(Exception):
     """Is raised if a given algorithm is not available."""
 
     def __init__(self, algorithmName):
-        self.args = "algorithm is not available: " + str(algorithmName)
+        Exception.__init__(self, "algorithm is not available: " + str(algorithmName))
 
 
 class DuplicateAlgorithmError(Exception):
     """Is raised if a provider tries to provide the same algorithm multiple times."""
 
     def __init__(self, message):
-        self.args = message
+        Exception.__init__(self, message)
 
 
 class UnknownAliasError(Exception):
     """Is raised if a given alias is not known."""
 
     def __init__(self, aliasName):
-        self.args = "unknown alias: " + str(aliasName)
+        Exception.__init__(self, "unknown alias: " + str(aliasName))
 
 
 class DuplicateAliasError(Exception):
     """Is raised if a provider tries to provide the same alias multiple times."""
 
     def __init__(self, message):
-        self.args = message
+        Exception.__init__(self, message)
 
 
 class DuplicateProviderError(Exception):
     """Is raised if the same provider is added to the registry multiple times."""
 
     def __init__(self, message):
-        self.args = message
+        Exception.__init__(self, message)
 
 
 class ConversionError(Exception):
     """Is raised if conversion from str to bytes, or vice versa, fails."""
 
     def __init__(self, message):
-        self.args = message
+        Exception.__init__(self, message)

@@ -20,7 +20,7 @@
 
 
 # PSL
-from distutils.core import setup, Extension
+from distutils.core import setup
 from distutils.cmd import Command
 import unittest
 import sys
@@ -29,21 +29,6 @@ import sys
 # "tests" package and its modules.
 PACKAGES_BASEDIR = "src/packages"
 sys.path.append(PACKAGES_BASEDIR)
-
-
-# Assume that includes and libraries can be found in the system directories.
-# For gcc, include and/or library directories can be added by setting the
-# environment variables CPATH and/or LIBRARY_PATH. For instance, on my Mac OS X
-# system with apr-util installed through fink, I would invoke setup.py like
-# this:
-#   CPATH=/sw/include LIBRARY_PATH=/sw/lib ./setup.py build
-#
-# To build the extension module right inside the git working tree, use this
-# command line:
-#   ./setup.py build_ext --inplace
-aprutil = Extension('mkroesti.aprutil',
-                    libraries = ['aprutil-0'],
-                    sources = [PACKAGES_BASEDIR + '/mkroesti/aprutil/aprutil.c'])
 
 
 class test(Command):
@@ -128,7 +113,5 @@ details.
       package_dir = {"": PACKAGES_BASEDIR},
       packages = ["mkroesti"],
       # Listing scripts
-      scripts = ["src/scripts/mkroesti"],
-      # List extension modules
-      ext_modules= [aprutil]
+      scripts = ["src/scripts/mkroesti"]
      )

@@ -1,3 +1,14 @@
+Thu Jun 04 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- removed extension module mkroesti.aprutil from project; instead use third
+  party module aprmd5
+- Pydev project now uses Python 3 grammar
+- errorhandling.py now uses initializer of Exception base class instead of
+  assigning to self.args directly (this resulted in improper conversion of
+  error message string into a tuple consisting of the string's characters)
+- mkroesti front-end script now converts exception objects into string (relying
+  on the Exception class defining __str__()) instead of accessing the object's
+  internal attributes
+
 Wed Jun 03 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - work for version 0.3: added extension module mkroesti.aprutil
   - module contains prototype implementations that wrap apr_md5() and
