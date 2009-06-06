@@ -334,21 +334,32 @@ class ZlibProvider(AliasAbstractProvider):
 
 
 class CryptProvider(AliasAbstractProvider):
-    """Provides crypt() based hashes."""
+    """Provides crypt(3) based hashes."""
 
     def __init__(self):
-        namesDictionary = { ALIAS_CRYPT : [ALGORITHM_CRYPT_SYSTEM, ALGORITHM_CRYPT_BLOWFISH] }
+        namesDictionary = {
+            ALIAS_CRYPT : [ALGORITHM_CRYPT_DES, ALGORITHM_CRYPT_MD5,
+                           ALGORITHM_CRYPT_SHA_256, ALGORITHM_CRYPT_SHA_512,
+                           ALGORITHM_CRYPT_BLOWFISH]
+            }
         AliasAbstractProvider.__init__(self, namesDictionary)
 
     def isAlgorithmAvailable(self, algorithmName):
-        if ALGORITHM_CRYPT_BLOWFISH == algorithmName:
+        if algorithmName in (ALGORITHM_CRYPT_DES, ALGORITHM_CRYPT_MD5,
+                             ALGORITHM_CRYPT_SHA_256, ALGORITHM_CRYPT_SHA_512):
+            isAvailable = algorithm.CryptAlgorithm.isAvailable(algorithmName)
+            if not isAvailable:
+                return (False, "not supported by this sytem's crypt(3)")
+            return (True, None)
+        elif ALGORITHM_CRYPT_BLOWFISH == algorithmName:
             (isAvailable, moduleName) = algorithm.CryptBlowfishAlgorithm.isAvailable()
             if not isAvailable:
                 return (False, moduleName + " module not found")
         return (True, None)
 
     def getAlgorithmSource(self, algorithmName):
-        if ALGORITHM_CRYPT_SYSTEM == algorithmName:
+        if algorithmName in (ALGORITHM_CRYPT_DES, ALGORITHM_CRYPT_MD5,
+                             ALGORITHM_CRYPT_SHA_256, ALGORITHM_CRYPT_SHA_512):
             return "crypt"
         elif ALGORITHM_CRYPT_BLOWFISH == algorithmName:
             return "bcrypt"
@@ -356,7 +367,8 @@ class CryptProvider(AliasAbstractProvider):
             raise MKRoestiError("Unknown algorithm " + algorithmName)
 
     def createAlgorithm(self, algorithmName):
-        if ALGORITHM_CRYPT_SYSTEM == algorithmName:
+        if algorithmName in (ALGORITHM_CRYPT_DES, ALGORITHM_CRYPT_MD5,
+                             ALGORITHM_CRYPT_SHA_256, ALGORITHM_CRYPT_SHA_512):
             return algorithm.CryptAlgorithm(algorithmName, self)
         elif ALGORITHM_CRYPT_BLOWFISH == algorithmName:
             return algorithm.CryptBlowfishAlgorithm(algorithmName, self)

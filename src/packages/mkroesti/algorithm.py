@@ -243,9 +243,70 @@ class ZlibAlgorithms(AbstractAlgorithm):
 
 
 class CryptAlgorithm(AbstractAlgorithm):
-    """Implements the crypt-system algorithm."""
+    """Implements all crypt-based algorithms that can be accessed using the
+    system's crypt(3) routine.
+
+    Which algorithms are available from this class entirely depends on the
+    implementation of the system's crypt(3) routine. The crypt-des algorithm
+    should always be available. On any system with a reasonably modern glibc,
+    at least crypt-md5 should be available. On a Debian 5.0.1 (lenny) system,
+    crypt-sha-256 and crypt-sha-512 are also available.
+
+    getHash() will blithely try to generate a hash for any one of the algorithms
+    supported by this class, even if the algorithm is not available from the
+    sytem's crypt(3) routine. The resulting hash will probably be a crypt-des
+    hash, although this cannot be guaranteed and entirely depends on the
+    behaviour of the system's crypt(3).
+
+    The proper approach is to first call the static method isAvailable() to find
+    out whether the desired algorithm is available. Only if isAvailable()
+    returns True should you instantiate a CryptAlgorithm object and call its
+    getHash() method.
+    """
 
     salt_chars = './' + string.ascii_letters + string.digits
+    availableAlgorithms = None
+
+    @staticmethod
+    def isAvailable(algorithmName):
+        if CryptAlgorithm.availableAlgorithms is None:
+            CryptAlgorithm.availableAlgorithms = list()
+            # The basic crypt-des algorithm is always available
+            CryptAlgorithm.availableAlgorithms.append(ALGORITHM_CRYPT_DES)
+            # Each of the optional algorithms is available if we can generate a
+            # hash that starts with the expected signature (e.g. "$1$")
+            cryptAlgorithmDictionary = {ALGORITHM_CRYPT_MD5 : "$1$",
+                                        ALGORITHM_CRYPT_SHA_256 : "$5$",
+                                        ALGORITHM_CRYPT_SHA_256 : "$6$"
+                                        }
+            for (cryptAlgorithmName, signature) in cryptAlgorithmDictionary.items():
+                cryptAlgorithmObject = CryptAlgorithm(cryptAlgorithmName, None)
+                hash = cryptAlgorithmObject.getHash("foo")
+                if hash[:len(signature)] == signature:
+                    CryptAlgorithm.availableAlgorithms.append(cryptAlgorithmName)
+        return (algorithmName in CryptAlgorithm.availableAlgorithms)
+
+    @staticmethod
+    def getSalt(length):
+        # As described in the docs of the crypt module:
+        #   salt is usually a random two-character string which will be used
+        #   to perturb the DES algorithm in one of 4096 ways. The characters
+        #   in salt must be in the set [./a-zA-Z0-9].
+        # The following implementation of generating the salt is a modified
+        # version of the code presented in this mailing list post (modification
+        # includes fixing a typo :-):
+        #   http://mail.python.org/pipermail/python-list/2004-March/252058.html
+        # os.urandom() would be better than randint() because it is explicitly
+        # suitable for cryptographic use, but as the mailing list post points
+        # out:
+        #   [...] we don't need cryptographically strong random numbers. No
+        #   attack on crypt() depends on guessing the salt, the salt is in
+        #   the output anyway.
+        salt = ""
+        while length > 0:
+            salt += CryptAlgorithm.salt_chars[randint(0, 63)]
+            length -= 1
+        return salt
 
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
@@ -254,23 +315,33 @@ class CryptAlgorithm(AbstractAlgorithm):
         return False
 
     def getHash(self, input):
-        if ALGORITHM_CRYPT_SYSTEM != self.getName():
+        algorithmName = self.getName()
+        if ALGORITHM_CRYPT_DES == algorithmName:
+            return crypt.crypt(input, CryptAlgorithm.getSalt(2))
+        elif ALGORITHM_CRYPT_MD5 == algorithmName:
+            # We select the MD5-based algorithm by passing in a salt that starts
+            # with "$1". From the glibc manual:
+            #   For the MD5-based algorithm, the salt should consist of the
+            #   string $1$, followed by up to 8 characters, terminated by
+            #   either another $ or the end of the string. The result of crypt
+            #   will be the salt, followed by a $ if the salt didn't end with
+            #   one, followed by 22 characters from the alphabet ./0-9A-Za-z,
+            #   up to 34 characters total. Every character in the key is
+            #   significant.
+            salt = "$1$" + CryptAlgorithm.getSalt(8) + "$"
+            return crypt.crypt(input, salt)
+        elif ALGORITHM_CRYPT_SHA_256 == algorithmName:
+            # I have found experimentally that signature $5$ selects the crypt
+            # algorithm based on SHA-256. Also by experiment, I have found that
+            # the salt may consist of up to 16 characters.
+            salt = "$5$" + CryptAlgorithm.getSalt(16) + "$"
+            return crypt.crypt(input, salt)
+        elif ALGORITHM_CRYPT_SHA_512 == algorithmName:
+            # SHA-512 details also found out experimentally.
+            salt = "$6$" + CryptAlgorithm.getSalt(16) + "$"
+            return crypt.crypt(input, salt)
+        else:
             return AbstractAlgorithm.getHash(self, input)
-        # As described in the docs of the crypt module:
-        #   salt is usually a random two-character string which will be used
-        #   to perturb the DES algorithm in one of 4096 ways. The characters
-        #   in salt must be in the set [./a-zA-Z0-9].
-        # The following implementation of generating the salt is taken verbatim
-        # (with the exception of fixing a typo) from this mailing list post:
-        #   http://mail.python.org/pipermail/python-list/2004-March/252058.html
-        # os.urandom() would be better than randint() because it is explicitly
-        # suitable for cryptographic use, but as the mailing list post points
-        # out:
-        #   [...] we don't need cryptographically strong random numbers. No
-        #   attack on crypt() depends on guessing the salt, the salt is in
-        #   the output anyway.
-        salt = CryptAlgorithm.salt_chars[randint(0, 63)] + CryptAlgorithm.salt_chars[randint(0, 63)]
-        return crypt.crypt(input, salt)
 
 
 class CryptBlowfishAlgorithm(AbstractAlgorithm):

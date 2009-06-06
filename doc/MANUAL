@@ -83,14 +83,18 @@ crc32
   CRC-32 checksum. Strictly speaking, this is not a hash but a checksum.
 crc32b
   .. empty definition
-crypt-system
-  Local crypt() system call. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
+crypt-des
+  Local crypt(3) system call using the traditional DES-based algorithm. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-md5
-  MD5-based crypt (hash starts with **$1$**). Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
+  Local crypt(3) system call using an MD5-based algorithm, generates a hash that starts with **$1$**. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
+crypt-sha-256
+  Local crypt(3) system call using an SHA-256-based algorithm, generates a hash that starts with **$5$**. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
+crypt-sha-512
+  Local crypt(3) system call using an SHA-512-based algorithm, generates a hash that starts with **$6$**. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-apr1
-  MD5-based crypt, Apache variant (hash starts with **$apr1$**). Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
+  MD5-based crypt, Apache variant, generates a hash that starts with **$apr1$**. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-blowfish
-  blowfish-based crypt (hash starts with **$2a$**). Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
+  blowfish-based crypt, generates a hash that starts with **$2a$**. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 md2
   Message-Digest algorithm 2.
 md4
@@ -165,7 +169,7 @@ chksum
 encoding
   All algorithms that generate an encoding instead of a hash.
 crypt
-  All algorithms that generate a hash based on crypt().
+  All algorithms that generate a hash based on crypt(3).
 sha
   All algorithms of the SHA (Secure Hash Algorithm) family.
 ripemd
@@ -204,7 +208,7 @@ From Python 3 onwards, **mkroesti** treats the input data specified by the user 
 - Reading from the command line (i.e. using **--batch**): Input data is treated as string data.
 - Specifying the input interactively (with or without echo mode): Input data is treated as string data.
 
-While most hash algorithms require their input to be binary data, some algorithms require their input to be string data (**crypt-system** is a notable case). Whenever an algorithm requires its input to be of a type that is different from the type how **mkroesti** treats its input data, **mkroesti** is forced to convert between the two types. So if, for instance, the user specifies a file (input data is binary data) and selects the **crypt-system** algorithm (requires string data), **mkroesti** needs to convert from binary to string data. Another example would be if the user specifies the input on the command line using **--batch** (input data is string data), and selects the **md5** algorithm (requires binary data): In this case **mkroesti** needs to convert from string to binary data.
+While most hash algorithms require their input to be binary data, some algorithms require their input to be string data (**crypt-des** is a notable case). Whenever an algorithm requires its input to be of a type that is different from the type how **mkroesti** treats its input data, **mkroesti** is forced to convert between the two types. So if, for instance, the user specifies a file (input data is binary data) and selects the **crypt-des** algorithm (requires string data), **mkroesti** needs to convert from binary to string data. Another example would be if the user specifies the input on the command line using **--batch** (input data is string data), and selects the **md5** algorithm (requires binary data): In this case **mkroesti** needs to convert from string to binary data.
 
 Because strings are involved in converting from binary to string data, or vice versa, **mkroesti** must employ a character encoding (e.g. UTF-8, Latin-1) to interpret the data. Without any special measures, **mkroesti** implicitly uses Python's default character encoding to perform the conversion. Invoke **mkroesti** with the **--version** argument to see which default encoding would be used right now.
 
@@ -228,9 +232,9 @@ EXAMPLES
   **mkroesti** **-f** *foo* **-a** **md5**,**sha-1**,**haval-128-4**
 
 
-(3) Take the input from standard input and generate a single hash using the local crypt() system function. Make sure that the input (i.e. the content of file *foo*) is interpreted using the *mac_roman* character encoding (because **crypt-system** requires string input data). 
+(3) Take the input from standard input and generate a single hash using the local crypt(3) system function. Make sure that the input (i.e. the content of file *foo*) is interpreted using the *mac_roman* character encoding (because **crypt-des** requires string input data). 
 
-  **cat** *foo* | **mkroesti** **-a** **crypt-system** **-c** *mac_roman*
+  **cat** *foo* | **mkroesti** **-a** **crypt-des** **-c** *mac_roman*
 
 
 (4) Use the string *secret* as input and generate hashes for all algorithms of the SHA and RIPEMD family.

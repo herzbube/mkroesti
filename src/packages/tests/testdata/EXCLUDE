@@ -1,5 +1,5 @@
 # The crypt-* algorithms cannot be tested because their output is different
 # each time they are run (due to the random salt which is added to the input
 # data before hashing).
-crypt-system
+crypt-des
 crypt-apr1

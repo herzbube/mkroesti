@@ -173,7 +173,7 @@ Conclusions:
 - For Python 3, it is clearly necessary that the user be able to specify the
   encoding of the input, in case the locale-based encoding chosen by the
   interpreter is the wrong one. This necessity exists mostly for input read as
-  binary data, because some of mkroesti's algorithms (e.g. crypt-system) require
+  binary data, because some of mkroesti's algorithms (e.g. crypt-des) require
   string input, which means that the byte stream, i.e. the file's content, needs
   to be converted and therefore interpreted with a certain encoding.
 - For Python 2.6, specification of input encoding is not strictly necessary for

@@ -123,7 +123,7 @@ The Python Standard Library
       OpenSSL: ripemd-160, sha-0, md2, md4
 - provides a couple of encoding (i.e. not cryptographic) modules 
   - "base64" module: provides base16, base32, base64
-- provides the "crypt" module with access to the system's crypt() function
+- provides the "crypt" module with access to the system's crypt(3) function
 
 The module "smbpasswd" [2]
 - Debian package "python-smbpasswd"
@@ -179,7 +179,7 @@ situations. You may find it easier to ignore encodings in mkroesti altogether,
 and instead use a different tool that is better at handling encodings, to
 pre-process your input data. The --codec option was added mainly to handle the
 border case where binary input needs to be converted into string data to satisfy
-algorithms such as crypt-system, which in Python 3 take string data as their
+algorithms such as crypt-des, which in Python 3 take string data as their
 input. The --codec option was also added to enable unit tests to specify an
 encoding for the input they provide to mkroesti.main.main(), to cover the case
 where the locale-based encoding of the user who runs the tests differs from the

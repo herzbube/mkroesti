@@ -1,3 +1,8 @@
+Sat Jun 06 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- implemented two new algorithms crypt-sha-256 and crypt-sha-512
+- implemented crypt-md5
+- renamed crypt-system to crypt-des
+
 Thu Jun 04 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - removed extension module mkroesti.aprutil from project; instead use third
   party module aprmd5
