@@ -31,14 +31,10 @@ a plan for implementing a Mac OS X GUI front end.
 
 Release notes
 -------------
-This is mkroesti 0.3.
+This is mkroesti 0.4.
 
 Changes in this release:
-- [feature] implemented the following new algorithms: crypt-sha-256,
-  crypt-sha-512, crypt-md5, crypt-apr1 (the system on which mkroesti is
-  installed must provide the appropriate dependencies)
-- [clarification] renamed crypt-system to crypt-des
-- [bugfix] improved errorhandling
+- TODO
 
 For more details see the ChangeLog document.
 
