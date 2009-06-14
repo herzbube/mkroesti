@@ -10,9 +10,7 @@ the Roadmap document.
 
 Release blockers
 ----------------
-- test whether crypt-md5, crypt-sha-256 and crypt-sha-512 really work on a Linux
-  system
-- specify dependency from python-aprmd5 in README (and MANUAL?)
+None
 
 
 Priority 1 (important)
@@ -25,6 +23,7 @@ Priority 1 (important)
   succeeds (currently the test fails sometimes); this is important because an
   unreliable test suite does not inspire very much confidence; remove comment
   in TESTING document if this is fixed
+- write a script that performs pre-release tests (see ReleaseSteps for ideas)
 
 
 Priority 2 (nice to have)

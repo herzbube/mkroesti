@@ -277,7 +277,7 @@ class CryptAlgorithm(AbstractAlgorithm):
             # hash that starts with the expected signature (e.g. "$1$")
             cryptAlgorithmDictionary = {ALGORITHM_CRYPT_MD5 : "$1$",
                                         ALGORITHM_CRYPT_SHA_256 : "$5$",
-                                        ALGORITHM_CRYPT_SHA_256 : "$6$"
+                                        ALGORITHM_CRYPT_SHA_512 : "$6$"
                                         }
             for (cryptAlgorithmName, signature) in cryptAlgorithmDictionary.items():
                 cryptAlgorithmObject = CryptAlgorithm(cryptAlgorithmName, None)

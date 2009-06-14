@@ -181,3 +181,28 @@ Conclusions:
   encoding the program might produce the wrong result, which is clearly
   undesirable. If possible, specification of input encoding should therefore
   be possible for Python 2.6 as well.
+
+
+Research on how to make a Debian package
+----------------------------------------
+Documents
+- Debian's Python policy: /usr/share/doc/python/python-policy.txt.gz
+
+Excerpts from the Python policy document:
+- /usr/bin/python refers to the default version of Python installed on the system
+- /usr/bin/python<X>.<Y> refers to a specific version of Python
+- some modules of the upstream Python distribution are factored out of the main
+  Python package into separate packages; this happens when the module depends on
+  another package that is not *required* by the Python package itself 
+- scripts that refer to the interpreter should not use /usr/bin/env because the
+  script package might use an unexpected Python interpreter (e.g. from an
+  incomplete local/manual installation of Python)
+- public modules should be packaged using a name of "python-<foo>" 
+
+TODO for Debian'ifyng:
+- change /usr/bin/env to /usr/bin/python
+- name the Debian package "python-mkroesti"
+- write a "control file"; don't know yet what that is, but inside that file
+  I can specify the version of Python that the module runs with (see chapter 2.3
+  in the Python policy document)
+- 

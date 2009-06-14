@@ -1,7 +1,7 @@
 Table of Contents
 -----------------
 1. Introduction
-2. Changes in this release
+2. Release notes
 3. License and source code
 4. How to test mkroesti
 5. How to generate the documentation
@@ -29,17 +29,16 @@ next versions will allow mkroesti to be run as a web application. There is also
 a plan for implementing a Mac OS X GUI front end.
 
 
-Changes in this release
------------------------
-This is mkroesti 0.2.
+Release notes
+-------------
+This is mkroesti 0.3.
 
-Important changes in this release:
-- Python 3 support (keeping backward compatibility with Python 2.6)
-- added --codec command line option (usable only when mkroesti is run under
-  Python 3)
-- adler32 and crc32 algorithms now return a hexadecimal instead of a decimal
-  result
-- added end-to-end test suite
+Changes in this release:
+- [feature] implemented the following new algorithms: crypt-sha-256,
+  crypt-sha-512, crypt-md5, crypt-apr1 (the system on which mkroesti is
+  installed must provide the appropriate dependencies)
+- [clarification] renamed crypt-system to crypt-des
+- [bugfix] improved errorhandling
 
 For more details see the ChangeLog document.
 
@@ -150,10 +149,17 @@ The module "bcrypt" [4]
 - Debian package "python-bcrypt"
 - the module provides this algorithm: crypt-blowfish
 
+The module "aprmd5" [5]
+- Debian package "python-aprmd5"
+- the module is a wrapper around the MD5 routines that are part of the aprutil
+  library
+- the module provides this algorithm: crypt-apr1
+
 [1] http://www.python.org/doc/current/library/crypto.html
 [2] http://barryp.org/software/py-smbpasswd/
 [3] http://labix.org/python-mhash
 [4] http://www.mindrot.org/projects/py-bcrypt/
+[5] http://www.herzbube.ch/python-aprmd5
 
 
 Python versions

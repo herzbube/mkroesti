@@ -2,4 +2,8 @@
 # each time they are run (due to the random salt which is added to the input
 # data before hashing).
 crypt-des
+crypt-md5
+crypt-sha-256
+crypt-sha-512
 crypt-apr1
+crypt-blowfish

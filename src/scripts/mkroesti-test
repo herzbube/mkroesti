@@ -15,6 +15,7 @@
 #
 # Parameters:
 # - script file name
+# - Python binary
 # - mkroesti binary
 # - algorithm name
 # - hash input
@@ -26,13 +27,14 @@
 
 generateExpectScript()
 {
-  if test $# -ne 4; then
+  if test $# -ne 5; then
     return 1
   fi
   local SCRIPT_FILE="$1"
-  local MKROESTI_BIN="$2"
-  local ALGORITHM_NAME="$3"
-  local HASH_INPUT="$4"
+  local PYTHON_BIN="$2"
+  local MKROESTI_BIN="$3"
+  local ALGORITHM_NAME="$4"
+  local HASH_INPUT="$5"
 
   if test -z "$PYTHONPATH"; then
     unset SET_PYTHONPATH_ENVVAR
@@ -47,7 +49,7 @@ log_user 0
 
 # Launch mkroesti. Use PYTHONPATH if it is set
 $SET_PYTHONPATH_ENVVAR
-spawn -noecho "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME"
+spawn -noecho "$PYTHON_BIN" "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME"
 
 # Enable this command to debug, then use "tail -f /tmp/xxx"
 # to watch how expect is processing this script
@@ -275,7 +277,7 @@ cat << EOF >"$TMP_FILE"
 EOF
 
 # Remove duplicate algorithms since we can't select the source
-ALGORITHM_NAMES="$("$MKROESTI_BIN" --list 2>/dev/null | awk -f "$TMP_FILE" 2>/dev/null | sort | uniq)"
+ALGORITHM_NAMES="$("$PYTHON_BIN" "$MKROESTI_BIN" --list 2>/dev/null | awk -f "$TMP_FILE" 2>/dev/null | sort | uniq)"
 RETVAL=$?
 rm -f "$TMP_FILE"
 if test $RETVAL -ne 0; then
@@ -349,19 +351,19 @@ do
         fi
         case $INPUT_METHOD in
           1)
-            "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--file=$INPUTDATA_FILE" >"$TMP_FILE" 2>/dev/null
+            "$PYTHON_BIN" "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--file=$INPUTDATA_FILE" >"$TMP_FILE" 2>/dev/null
             RETVAL=$?
             ;;
           2)
-            cat "$INPUTDATA_FILE" | "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" >"$TMP_FILE" 2>/dev/null
+            cat "$INPUTDATA_FILE" | "$PYTHON_BIN" "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" >"$TMP_FILE" 2>/dev/null
             RETVAL=$?
             ;;
           3)
-            "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--batch" "$(cat $INPUTDATA_FILE)" >"$TMP_FILE" 2>/dev/null
+            "$PYTHON_BIN" "$MKROESTI_BIN" "--algorithms=$ALGORITHM_NAME" "--batch" "$(cat $INPUTDATA_FILE)" >"$TMP_FILE" 2>/dev/null
             RETVAL=$?
             ;;
           4)
-            generateExpectScript "$EXPECT_FILE" "$MKROESTI_BIN" "$ALGORITHM_NAME" "$(cat $INPUTDATA_FILE)"
+            generateExpectScript "$EXPECT_FILE" "$PYTHON_BIN" "$MKROESTI_BIN" "$ALGORITHM_NAME" "$(cat $INPUTDATA_FILE)"
             expect "$EXPECT_FILE" >"$TMP_FILE" 2>/dev/null
             RETVAL=$?
             ;;

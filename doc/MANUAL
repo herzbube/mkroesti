@@ -303,6 +303,8 @@ mhash
   See http://labix.org/python-mhash
 bcrypt
   See http://www.mindrot.org/projects/py-bcrypt/
+aprmd5
+  See http://www.herzbube.ch/python-aprmd5
 
 
 SEE ALSO
@@ -326,4 +328,4 @@ GPLv3
 VERSION
 =======
 
-0.2 (Jun 03 2009)
+0.3 (Jun 14 2009)

@@ -31,7 +31,7 @@ __all__ = (["algorithm", "errorhandling", "factory", "main", "names",
 
 
 # The package version; this is used by "mkroesti --version"
-version = "0.2"
+version = "0.3"
 
 
 # Set python2 to True or False, depending on which version of the

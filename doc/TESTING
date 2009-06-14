@@ -20,6 +20,11 @@ To run tests from only one module (test.algorithm.py in this example):
 
   setup.py test --suite=tests.test_algorithm
 
+To run the tests with a specific version of Python (version 2.6 in this example,
+installed in /usr/bin such as on a Debian system):
+
+  /usr/bin/python2.6 setup.py test
+
 
 Run unit tests from within Eclipse
 ----------------------------------
@@ -64,6 +69,12 @@ To run the test suite from within a git working tree, do the following:
 
   cd src/scripts
   PYTHONPATH=../packages ./mkroesti-test
+
+To run the test suite with a specific version of Python (version 2.6 in this
+example, installed in /usr/bin such as on a Debian system):
+
+  cd src/scripts
+  PYTHONPATH=../packages ./mkroesti-test --python-bin /usr/bin/python2.6
 
 Documentation of the test suite:
 - command line usage: run the script using --help

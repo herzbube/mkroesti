@@ -7,9 +7,8 @@ Before the release
 ------------------
 - if necessary, update the TODO file
 - update the ChangeLog file (should have been done continuously, anyway)
-- replace the "Changes in this release" section in the README file with a
-  collection of the most important entries from the ChangeLog file and/or the
-  git log
+- update the "Release notes" section in the README file with a collection of
+  the most important entries from the ChangeLog file and/or the git log
 - change the release date in the following files:
   - MANUAL
   - Roadmap
@@ -24,20 +23,32 @@ Before the release
 - run automated tests, both for Python 2.6 and Python 3, either in the IDE or
   on the command line, by issuing the following commands:
     cd <projectdir>
-    ./setup.py test
+    for VER in 2.6 3.0; do
+      PYTHON_BIN=/Library/Frameworks/Python.framework/Versions/$VER/bin/python
+      $PYTHON_BIN ./setup.py test
+      cd src/scripts
+      PYTHONPATH=../packages ./mkroesti-test --python-bin $PYTHON_BIN
+      cd ../..
+    done
 - make the source distribution tar ball by issuing the following commands (check
   the command's output for suspicious warnings, although you can ignore warnings
   about missing README, .DS_Store and *.pyc files):
     cd <projectdir>
     ./setup.py sdist
 - take the source distribution tar ball to another system, install it on that
-  system and try to run mkroesti:
+  system, perform unit and end-to-end tests, and finally try to run mkroesti:
     cd ~
     tar xfvz mkroesti-x.y.tar.gz
     cd mkroesti-x.y
-    ./setup.py test
     ./setup.py install --home=~
-    PYTHONPATH=~/lib/python ~/bin/mkroesti -ba all foo
+    for VER in 2.6 3.0; do
+      PYTHON_BIN=/usr/bin/python$VER
+      $PYTHON_BIN setup.py test
+      cd src/scripts
+      PYTHONPATH=../packages ./mkroesti-test --python-bin $PYTHON_BIN
+      cd ../..
+      PYTHONPATH=~/lib/python $PYTHON_BIN ~/bin/mkroesti -ba all foo
+    done
 - commit final changes (check with "git status" that nothing was forgotten)
 
 

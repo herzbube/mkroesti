@@ -34,7 +34,7 @@ Version 0.5
 Version 0.4
 - implement web front-end
 
-Version 0.3
+Version 0.3 (Jun 14 2009)
 - implement missing hash crypt-md5
 - implement missing hash crypt-apr1
 
