@@ -296,6 +296,12 @@ class HashlibProvider(AliasAbstractProvider):
             }
         AliasAbstractProvider.__init__(self, namesDictionary)
 
+    def isAlgorithmAvailable(self, algorithmName):
+        isAvailable = algorithm.HashlibAlgorithms.isAvailable(algorithmName)
+        if not isAvailable:
+            return (False, "not supported by this sytem's OpenSSL library")
+        return (True, None)
+
     def getAlgorithmSource(self, algorithmName):
         return "hashlib"
 

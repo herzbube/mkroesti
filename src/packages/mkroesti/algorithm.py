@@ -129,6 +129,35 @@ class HashlibAlgorithms(AbstractAlgorithm):
     module hashlib.
     """
 
+    availableAlgorithms = None
+
+    @staticmethod
+    def isAvailable(algorithmName):
+        if HashlibAlgorithms.availableAlgorithms is None:
+            HashlibAlgorithms.availableAlgorithms = list()
+            # The documentation of hashlib says that these algorithms are
+            # guaranteed to be present
+            HashlibAlgorithms.availableAlgorithms.extend([ALGORITHM_MD5,
+                                                          ALGORITHM_SHA_1,
+                                                          ALGORITHM_SHA_224,
+                                                          ALGORITHM_SHA_256,
+                                                          ALGORITHM_SHA_384,
+                                                          ALGORITHM_SHA_512])
+            # Each of the optional algorithms is available if hashlib's new()
+            # function is capable of creating a hash object for that algorithm
+            hashlibAlgorithmList = [ALGORITHM_RIPEMD_160, ALGORITHM_SHA_0,
+                                    ALGORITHM_MD2, ALGORITHM_MD4]
+            for hashlibAlgorithmName in hashlibAlgorithmList:
+                opensslAlgorithmName = HashlibAlgorithms.mapAlgorithmName(hashlibAlgorithmName)
+                if opensslAlgorithmName is not None:
+                    try:
+                        hashlib.new(opensslAlgorithmName)
+                    except(ValueError):
+                        pass
+                    else:
+                        HashlibAlgorithms.availableAlgorithms.append(hashlibAlgorithmName)
+        return (algorithmName in HashlibAlgorithms.availableAlgorithms)
+
     def __init__(self, algorithmName, provider):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
 
