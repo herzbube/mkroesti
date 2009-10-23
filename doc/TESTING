@@ -16,7 +16,7 @@ within the git working tree:
 
   ./setup.py test
 
-To run tests from only one module (test.algorithm.py in this example):
+To run tests from only one module (test_algorithm.py in this example):
 
   setup.py test --suite=tests.test_algorithm
 

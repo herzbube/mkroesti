@@ -1,4 +1,4 @@
-#Tue Nov 11 01:49:41 CET 2008
+#Fri Oct 23 13:02:28 CEST 2009
 eclipse.preferences.version=1
 encoding//src/packages/mkroesti/__init__.py=UTF-8
 encoding//src/packages/mkroesti/algorithm.py=UTF-8
@@ -11,4 +11,4 @@ encoding//src/packages/mkroesti/registry.py=UTF-8
 encoding//src/packages/tests/__init__.py=UTF-8
 encoding//src/packages/tests/stubs.py=UTF-8
 encoding//src/packages/tests/test_algorithm.py=UTF-8
-encoding/setup.py=UTF-8
+encoding/setup.py=utf-8

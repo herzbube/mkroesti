@@ -38,7 +38,7 @@ Before the release
 - take the source distribution tar ball to another system, install it on that
   system, perform unit and end-to-end tests, and finally try to run mkroesti:
     cd ~
-    tar xfvz mkroesti-x.y.tar.gz
+    tar xfvzo mkroesti-x.y.tar.gz
     cd mkroesti-x.y
     ./setup.py install --home=~
     for VER in 2.6 3.0; do

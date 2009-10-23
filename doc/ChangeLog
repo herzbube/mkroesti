@@ -1,3 +1,7 @@
+Fri Oct 23 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [test] setup.py returns with exit status 1 if unit tests fail
+- [doc] minor doc fixes
+
 Sun Jun 14 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [bugfix] mkroesti-test did not properly use the Python interpreter provided
   with a command line argument

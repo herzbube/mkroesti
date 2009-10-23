@@ -74,7 +74,7 @@ root
 
 Content description
 -------------------
-src/pacakges/mkroesti
+src/packages/mkroesti
 - contains the source files that are intended to go into the built distribution
 - the "mkroesti" package's final destination is somewhere within the PYTHONPATH
   (e.g. /usr/lib/python2.5 on a Debian system)
@@ -92,7 +92,7 @@ src/scripts
   in the PATH (e.g. /usr/bin)
 
 doc
-- contains documentation files such as this README document
+- contains documentation files such as this INSTALL document
 - some of these files should probably go into the built distribution (e.g.
   README, LICENSE), whereas others are of minor interest and can be omitted
   (e.g. Roadmap, TODO)
