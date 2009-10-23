@@ -1,4 +1,5 @@
 Fri Oct 23 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [feature] added mkroesti.cgi
 - [bugfix] optional hashlib algorithms are now checked for availability
 - [test] setup.py returns with exit status 1 if unit tests fail
 - [doc] minor doc fixes

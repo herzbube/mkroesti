@@ -6,6 +6,7 @@ This document lists the steps needed to make a project release.
 Before the release
 ------------------
 - if necessary, update the TODO file
+- if it is enabled, disable the "import cgitb" line in mkroesti.cgi
 - update the ChangeLog file (should have been done continuously, anyway)
 - update the "Release notes" section in the README file with a collection of
   the most important entries from the ChangeLog file and/or the git log
