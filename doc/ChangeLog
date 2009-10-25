@@ -1,3 +1,6 @@
+Sun Oct 25 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [bugfix] md5 algorithm interface change in aprmd5 module
+
 Fri Oct 23 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [feature] added mkroesti.cgi
 - [bugfix] optional hashlib algorithms are now checked for availability

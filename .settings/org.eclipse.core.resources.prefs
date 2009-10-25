@@ -1,14 +1,14 @@
-#Sat Oct 24 01:18:28 CEST 2009
+#Sun Oct 25 02:05:10 CEST 2009
 eclipse.preferences.version=1
 encoding//src/packages/mkroesti/__init__.py=utf-8
 encoding//src/packages/mkroesti/algorithm.py=utf-8
-encoding//src/packages/mkroesti/errorhandling.py=UTF-8
-encoding//src/packages/mkroesti/factory.py=UTF-8
+encoding//src/packages/mkroesti/errorhandling.py=utf-8
+encoding//src/packages/mkroesti/factory.py=utf-8
 encoding//src/packages/mkroesti/main.py=utf-8
 encoding//src/packages/mkroesti/names.py=utf-8
 encoding//src/packages/mkroesti/provider.py=utf-8
-encoding//src/packages/mkroesti/registry.py=UTF-8
-encoding//src/packages/tests/__init__.py=UTF-8
-encoding//src/packages/tests/stubs.py=UTF-8
-encoding//src/packages/tests/test_algorithm.py=UTF-8
+encoding//src/packages/mkroesti/registry.py=utf-8
+encoding//src/packages/tests/__init__.py=utf-8
+encoding//src/packages/tests/stubs.py=utf-8
+encoding//src/packages/tests/test_algorithm.py=utf-8
 encoding/setup.py=utf-8

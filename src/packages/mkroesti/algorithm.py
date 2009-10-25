@@ -527,7 +527,7 @@ class AprMD5Algorithms(AbstractAlgorithm):
     def getHash(self, input):
         algorithmName = self.getName()
         if ALGORITHM_MD5 == algorithmName:
-            return aprmd5.md5(input)
+            return aprmd5.md5(input).hexdigest()
         elif ALGORITHM_CRYPT_APR1 == algorithmName:
             # Use an 8-character salt to mimick the behavior of the htpasswd
             # command line tool. For details about salt construction, see the
