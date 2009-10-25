@@ -249,10 +249,10 @@ class ZlibAlgorithms(AbstractAlgorithm):
 
     def getHash(self, input):
         algorithmName = self.getName()
-        if ALGORITHM_ADLER32 == algorithmName or ALGORITHM_CRC32 == algorithmName:
+        if ALGORITHM_ADLER32 == algorithmName or ALGORITHM_CRC32B == algorithmName:
             if ALGORITHM_ADLER32 == algorithmName:
                 result = zlib.adler32(input)
-            elif ALGORITHM_CRC32 == algorithmName:
+            elif ALGORITHM_CRC32B == algorithmName:
                 result = zlib.crc32(input)
             # Python 2: Result for both algorithms is in the range
             # [-2**31, 2**31-1], the &= operation makes it unsigned  and in the

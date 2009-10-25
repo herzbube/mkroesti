@@ -80,9 +80,9 @@ base64
 adler32
   Adler-32 checksum. Strictly speaking, this is not a hash but a checksum.
 crc32
-  CRC-32 checksum. Strictly speaking, this is not a hash but a checksum.
+  CRC-32 checksum (like the one used in ethernet). Strictly speaking, this is not a hash but a checksum.
 crc32b
-  .. empty definition
+  CRC-32 checksum (like the one used in ZIP programs). Strictly speaking, this is not a hash but a checksum.
 crypt-des
   Local crypt(3) system call using the traditional DES-based algorithm. Note that crypt hashes are salted, i.e. repeated calls with the same input will yield different results.
 crypt-md5

@@ -20,6 +20,18 @@ excluded from the end-to-end test. The format of the file is this:
 
 ----------------------------------------------------------------------
 
+The expected hash values have been double-checked for correctness with the
+following online hashing services:
+- http://hashkiller.com
+- http://www.hashemall.com/
+
+In addition, values for the adler32, crc32 and crc32b algorithms have been
+double-checked with the cli version of PHP 5.2.11. Earlier versions of PHP
+have had bugs reported against them in regard to these algorithms. Example:
+http://bugs.php.net/bug.php?id=48284
+
+----------------------------------------------------------------------
+
 Description of the content of those input data files that do ***NOT*** contain
 UTF-8 encoded text data.
 

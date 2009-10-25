@@ -329,7 +329,7 @@ class ZlibProvider(AliasAbstractProvider):
     """Provides hashes/checksums available from the Python Standard Library module zlib."""
 
     def __init__(self):
-        namesDictionary = { ALIAS_CHKSUM : [ALGORITHM_ADLER32, ALGORITHM_CRC32] }
+        namesDictionary = { ALIAS_CHKSUM : [ALGORITHM_ADLER32, ALGORITHM_CRC32B] }
         AliasAbstractProvider.__init__(self, namesDictionary)
 
     def getAlgorithmSource(self, algorithmName):
