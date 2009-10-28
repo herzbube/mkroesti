@@ -396,7 +396,6 @@ class CryptBlowfishAlgorithm(AbstractAlgorithm):
 
 
 class WindowsHashAlgorithms(AbstractAlgorithm):
-    """Implements the windows-lm and windows-nt algorithms."""
 
     @staticmethod
     def isAvailable():
@@ -478,11 +477,11 @@ class MHashAlgorithms(AbstractAlgorithm):
             return mhash.MHASH_SNEFRU128
         elif ALGORITHM_SNEFRU_256 == algorithmName:
             return mhash.MHASH_SNEFRU256
-        elif ALGORITHM_TIGER_128 == algorithmName:
+        elif ALGORITHM_TIGER_128_3 == algorithmName:
             return mhash.MHASH_TIGER128
-        elif ALGORITHM_TIGER_160 == algorithmName:
+        elif ALGORITHM_TIGER_160_3 == algorithmName:
             return mhash.MHASH_TIGER160
-        elif ALGORITHM_TIGER_192 == algorithmName:
+        elif ALGORITHM_TIGER_192_3 == algorithmName:
             return mhash.MHASH_TIGER
         elif ALGORITHM_WHIRLPOOL == algorithmName:
             return mhash.MHASH_WHIRLPOOL

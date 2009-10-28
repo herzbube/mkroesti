@@ -1,3 +1,6 @@
+Wed Oct 28 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [feature] tiger algorithms now exist in variants of 3 and 4 rounds
+
 Sun Oct 25 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [bugfix] zlib module provides crc32b
 - [doc] document distinction between crc32/crc32b 

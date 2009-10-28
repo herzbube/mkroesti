@@ -135,12 +135,12 @@ haval-256-[345]
   HAVAL algorithm, generates a 256 bit hash. The number of rounds is either 3, 4 or 5.
 whirlpool
   WHIRLPOOL algorithm.
-tiger-128
-  Tiger algorithm, generates a 128 bit hash.
-tiger-160
-  Tiger algorithm, generates a 160 bit hash.
-tiger-192
-  Tiger algorithm, generates a 192 bit hash. This is the variant commonly used, and commonly referred to as "Tiger".
+tiger-128-[34]
+  Tiger algorithm, generates a 128 bit hash. The number of rounds is either 3 or 4.
+tiger-160-[34]
+  Tiger algorithm, generates a 160 bit hash. The number of rounds is either 3 or 4.
+tiger-192-[34]
+  Tiger algorithm, generates a 192 bit hash.  The number of rounds is either 3 or 4. This is the variant commonly used, and commonly referred to as "Tiger".
 tiger2
   .. empty definition
 snefru-128

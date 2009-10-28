@@ -418,8 +418,8 @@ class MHashProvider(AliasAbstractProvider):
                            ALGORITHM_HAVAL_192_3, ALGORITHM_HAVAL_224_3,
                            ALGORITHM_HAVAL_256_3],
             ALIAS_SNEFRU : [ALGORITHM_SNEFRU_128, ALGORITHM_SNEFRU_256],
-            ALIAS_TIGER : [ALGORITHM_TIGER_128, ALGORITHM_TIGER_160,
-                           ALGORITHM_TIGER_192]
+            ALIAS_TIGER : [ALGORITHM_TIGER_128_3, ALGORITHM_TIGER_160_3,
+                           ALGORITHM_TIGER_192_3]
             }
         AliasAbstractProvider.__init__(self, namesDictionary)
 
