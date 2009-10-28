@@ -1,4 +1,5 @@
 Wed Oct 28 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [bugfix] windows-nt algorithm now works for ascii input (pseudo fix for bug 84) 
 - [test] added more algorithms to end-to-end test suite
 - [feature] tiger algorithms now exist in variants of 3 and 4 rounds
 

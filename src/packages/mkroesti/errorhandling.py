@@ -71,7 +71,7 @@ class DuplicateProviderError(Exception):
 
 
 class ConversionError(Exception):
-    """Is raised if conversion from str to bytes, or vice versa, fails."""
+    """Is raised if conversion to or from unicode fails."""
 
     def __init__(self, message):
         Exception.__init__(self, message)

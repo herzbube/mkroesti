@@ -40,6 +40,7 @@ import crypt
 import hashlib
 from random import randint
 import string
+import sys
 import zlib
 
 # Third party
@@ -68,6 +69,7 @@ except ImportError:
 # mkroesti
 from mkroesti.names import * #@UnusedWildImport
 import mkroesti   # import stuff from __init__.py (e.g. mkroesti.python2)
+from mkroesti.errorhandling import ConversionError
 
 
 class AlgorithmInterface:
@@ -396,6 +398,30 @@ class CryptBlowfishAlgorithm(AbstractAlgorithm):
 
 
 class WindowsHashAlgorithms(AbstractAlgorithm):
+    """Implements the windows-lm and windows-nt algorithms.
+
+    windows-lm in theory only operates on input that is an 8-bit string. The
+    backend module py-smbpasswd does not enforce this rule, though, it allows
+    allows both str() and byte() input (the latter for Python 3). To conform
+    with theory, this class returns False for needBytesInput(), thus requiring
+    string input.
+
+    windows-nt in theory only operates on input that is a Unicode string. The
+    backend module py-smbpasswd in this case enforces the rule. To conform with
+    theory, this class returns False for needBytesInput(), thus requiring
+    string input. In Python 3, all string objects are unicode strings, therefore
+    things "just work". In Python 2.6, however, unicode string objects are
+    either literals formed with the u'' notation (not relevant here), or objects
+    created using the unicode() function. This means that in Python 2.6, the
+    string input passed into getHash() must first be converted using unicode()
+    before it can be given to py-smbpasswd for hashing. Conversion requires an
+    an encoding
+
+    Links with useful information on LanMan and NT password encryption:
+    - http://sepp.oetiker.ch/samba-3.0.25-mo/help/Samba3-Developers-Guide/pwencrypt.html
+    - http://en.wikipedia.org/wiki/LM_hash
+    - http://en.wikipedia.org/wiki/NTLM
+    """
 
     @staticmethod
     def isAvailable():
@@ -407,14 +433,27 @@ class WindowsHashAlgorithms(AbstractAlgorithm):
         AbstractAlgorithm.__init__(self, algorithmName, provider)
 
     def needBytesInput(self):
-        return True
+        return False
 
     def getHash(self, input):
         algorithmName = self.getName()
         if ALGORITHM_WINDOWS_LM == algorithmName:
-            return smbpasswd.lmhash(input)
+            return smbpasswd.lmhash(input).lower()
         elif ALGORITHM_WINDOWS_NT == algorithmName:
-            return smbpasswd.nthash(input)
+            if mkroesti.python2:
+                # nthash() requires a unicode string, therefore we must first
+                # convert input from its 8-bit string representation into
+                # unicode
+                encoding = sys.getdefaultencoding()
+                try:
+                    unicode_input = unicode(input, encoding)
+                except UnicodeDecodeError:
+                    raise ConversionError("Cannot convert input to unicode string (the encoding used was '" + encoding + "')")
+                return smbpasswd.nthash(unicode_input).lower()
+            else:
+                # nthash() requires a unicode string. Nothing needs to be done
+                # because in Python 3 all string objects are already unicode
+                return smbpasswd.nthash(input).lower()
         else:
             return AbstractAlgorithm.getHash(self, input)
 
