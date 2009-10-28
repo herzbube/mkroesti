@@ -1,4 +1,5 @@
 Wed Oct 28 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [test] added more algorithms to end-to-end test suite
 - [feature] tiger algorithms now exist in variants of 3 and 4 rounds
 
 Sun Oct 25 2009   "Patrick Näf" <herzbube@herzbube.ch>
