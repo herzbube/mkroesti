@@ -1,3 +1,6 @@
+Thu Oct 29 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [bugfix] end-to-end test suite data for windows-nt is now ASCII-only (bug 84)
+
 Wed Oct 28 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [bugfix] windows-nt algorithm now works for ascii input (pseudo fix for bug 84) 
 - [test] added more algorithms to end-to-end test suite

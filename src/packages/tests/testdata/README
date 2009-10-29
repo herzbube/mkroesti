@@ -12,11 +12,11 @@ must correspond to the name of an algorithm.
 
 The special file "EXCLUDE" contains names of algorithms that should be
 excluded from the end-to-end test. The format of the file is this:
-- lines starting with # are treated as comments and are ignored
-- empty lines, or lines that contain only whitespace, are ignored
-- all other lines are treated as an algorithm lines
-- an algorithm line contains exactly one algorithm name
-- whitespace at the beginning and end of an algorithm line is ignored
+- Lines starting with # are treated as comments and are ignored
+- Empty lines, or lines that contain only whitespace, are ignored
+- All other lines are treated as an algorithm lines
+- An algorithm line contains exactly one algorithm name
+- Whitespace at the beginning and end of an algorithm line is ignored
 
 ----------------------------------------------------------------------
 
@@ -35,3 +35,8 @@ http://bugs.php.net/bug.php?id=48284
 Description of the content of those input data files that do ***NOT*** contain
 UTF-8 encoded text data.
 
+windows-nt
+- Contains ASCII-only characters
+- At the moment, the windows-nt algorithm is not capable of handling anything
+  else but ASCII
+- See bug 84
