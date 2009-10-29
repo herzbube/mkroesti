@@ -67,7 +67,7 @@ def main(args = None):
     # Determine whether we are running in a true command line argument. We
     # assume that this is the case if the caller of this function does not
     # specify any arguments in args, but lets us use sys.argv instead.
-    cmdlineEnvironment = (args is None)
+    cmdlineEnvironment = (args is None) #@UnusedVariable
 
     # Create and set up the option parser
     parser = setupOptionParser()
@@ -147,7 +147,7 @@ def main(args = None):
             # TODO: We previously accessed exc.arg (singular), but changed this
             # to exc.args (plural). Check if this (the plural) works with
             # Python 2.6. Probably not...
-            errno, strerror = exc.args
+            errno, strerror = exc.args #@UnusedVariable
             raise MKRoestiError(strerror)   # pass on detailed error description (e.g. "no such file")
     elif options.list:
         # --list implies --duplicate-hashes
@@ -184,7 +184,7 @@ def main(args = None):
             prompt = "Enter text to hash: "
             if options.echo:
                 if mkroesti.python2:
-                    hashInput = raw_input(prompt)
+                    hashInput = raw_input(prompt) #@UndefinedVariable
                 else:
                     hashInput = input(prompt)
             else:

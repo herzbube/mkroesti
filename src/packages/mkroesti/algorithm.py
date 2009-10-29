@@ -446,7 +446,7 @@ class WindowsHashAlgorithms(AbstractAlgorithm):
                 # unicode
                 encoding = sys.getdefaultencoding()
                 try:
-                    unicode_input = unicode(input, encoding)
+                    unicode_input = unicode(input, encoding) #@UndefinedVariable
                 except UnicodeDecodeError:
                     raise ConversionError("Cannot convert input to unicode string (the encoding used was '" + encoding + "')")
                 return smbpasswd.nthash(unicode_input).lower()
