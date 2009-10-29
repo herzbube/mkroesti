@@ -25,6 +25,8 @@ from __future__ import print_function
 # PSL
 import cgi
 import math
+import os
+import sys
 # Enable this line only for debugging purposes
 import cgitb; cgitb.enable()
 
@@ -69,6 +71,9 @@ def printTable(tableData, columnCount, form):
 # Setup phase
 # ------------------------------------------------------------
 
+# Get the name that this CGI script has been executed as
+scriptName = os.path.basename(os.environ["SCRIPT_NAME"])
+
 # Get the form data. The first time this CGI script is invoked there is no
 # form data.
 form = cgi.FieldStorage()
@@ -112,7 +117,7 @@ print('')
 print('<html>')
 print('<head><title>mkroesti ' + str(mkroesti.version) + '</title></head>')
 print('<body>')
-print('<form action="mkroesti.cgi" method="post">')
+print('<form action="' + scriptName + '" method="post">')
 
 # Print available algorithms and aliases
 print('<p>Select one or more algorithms:</p>')
@@ -146,42 +151,64 @@ print('</form>')
 # If hashing is requested, generate and print hashes
 if hashMode:
     print('<hr/>')
-    print('<p>Hash results:</p>')
-    # Fill nameLists with lists of requested algorithm names; names may appear
-    # multiple names because of aliases; also because of aliases, algorithms
-    # may appear that are actually unavailable
-    reg = registry.ProviderRegistry.getInstance()
-    nameLists = [[name for name in availableAlgorithmNames if form.getfirst(name, None) is not None]]
-    nameLists.extend([reg.resolveAlias(name) for name in aliasNames if form.getfirst(name, None) is not None])
-    # Clear duplicates and algorithms that are unavailable
-    hashAlgorithmNames = list()
-    for nameList in nameLists:
-        for name in nameList:
-            if name not in hashAlgorithmNames and reg.isAlgorithmAvailable(name):
-                hashAlgorithmNames.append(name)
-    # Create algorithm objects
-    hashAlgorithms = list()
-    for name in hashAlgorithmNames:
-        hashAlgorithms.extend(factory.AlgorithmFactory.createAlgorithms(name))
-    # Generate hashes
-    hashDict = dict()
-    for algorithm in hashAlgorithms:
-        # Conversion to bytes() is done only if the algorithm requires it, and
-        # if we are running with a Python version that has the bytes() type
-        if algorithm.needBytesInput() and not mkroesti.python2:
-            # In the HTTP headers we said that the document is UTF-8 encoded,
-            # therefore it should be OK if we use that encoding here for
-            # converting to bytes
-            hashDict[algorithm.getName()] = algorithm.getHash(bytes(hashInput, "utf-8"))
-        else:
-            hashDict[algorithm.getName()] = algorithm.getHash(hashInput)
-    sortedResults = [(name, hashDict[name]) for name in sorted(hashAlgorithmNames)]
-    print('<table cellspacing="5">')
-    for name, hash in sortedResults:
-        print('<tr>')
-        print('<td>' + name + ':</td> <td>' + str(hash) + '</td>')
-        print('</tr>')
-    print('</table>')
+    try:
+        # Fill nameLists with lists of requested algorithm names; names may appear
+        # multiple names because of aliases; also because of aliases, algorithms
+        # may appear that are actually unavailable
+        reg = registry.ProviderRegistry.getInstance()
+        nameLists = [[name for name in availableAlgorithmNames if form.getfirst(name, None) is not None]]
+        nameLists.extend([reg.resolveAlias(name) for name in aliasNames if form.getfirst(name, None) is not None])
+        # Clear duplicates and algorithms that are unavailable
+        hashAlgorithmNames = list()
+        for nameList in nameLists:
+            for name in nameList:
+                if name not in hashAlgorithmNames and reg.isAlgorithmAvailable(name):
+                    hashAlgorithmNames.append(name)
+        # Create algorithm objects
+        hashAlgorithms = list()
+        for name in hashAlgorithmNames:
+            hashAlgorithms.extend(factory.AlgorithmFactory.createAlgorithms(name))
+        # Generate hashes
+        hashDict = dict()
+        for algorithm in hashAlgorithms:
+            algorithmName = algorithm.getName()
+            hashValue = None
+            try:
+                # Conversion to bytes() is done only if the algorithm requires it, and
+                # if we are running with a Python version that has the bytes() type
+                if algorithm.needBytesInput() and not mkroesti.python2:
+                    # In the HTTP headers we said that the document is UTF-8 encoded,
+                    # therefore it should be OK if we use that encoding here for
+                    # converting to bytes
+                    hashValue = algorithm.getHash(bytes(hashInput, "utf-8"))
+                else:
+                    hashValue = algorithm.getHash(hashInput)
+            except:
+                (exc_type, exc_value, exc_traceback) = sys.exc_info()
+                hashValue = ('<span style="color:red">' +
+                             str(exc_type.__name__) +
+                             ': ' +
+                             str(exc_value) +
+                             '</span>')
+            hashDict[algorithmName] = hashValue
+        sortedResults = [(name, hashDict[name]) for name in sorted(hashAlgorithmNames)]
+        print('<p>Hash results:</p>')
+        print('<table cellspacing="5">')
+        for name, hash in sortedResults:
+            print('<tr>')
+            print('<td>' + name + ':</td> <td>' + str(hash) + '</td>')
+            print('</tr>')
+        print('</table>')
+    except:
+        (exc_type, exc_value, exc_traceback) = sys.exc_info()
+        print('<div style="color:red; font-weight:bold">')
+        print('<p>Encountered unexpected error!</p>')
+        print('<dl>')
+        print('<dt>Error type</dt><dd>' + str(exc_type.__name__) + '</dd>')
+        print('<dt>Error details</dt><dd>' + str(exc_value) + '</dd>')
+        print('</dl>')
+        print('</div>')
+
 
 # Print end-of-document
 print('</body>')
