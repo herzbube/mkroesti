@@ -103,11 +103,12 @@ printHelp()
 {
   cat << EOF
 Usage:
-  $MY_NAME [--python-bin=<path_to_python>]
-           [--testdata-dir=<path_to_testdata_directory]
-           [--mkroesti-bin=<path_to_mkroesti>]
-           [--report-level=level]
-  $MY_NAME --help
+  $MY_NAME [--python-bin /path/to/python]
+           [--testdata-dir /path/to/testdata_directory]
+           [--mkroesti-bin /path/to/mkroesti]
+           [--report-level level]
+           [--algorithms algorithm1[,algorithm2,...]]
+  $MY_NAME -h|--help
 
 Command line arguments:  
   -h|--help: Print this help summary.
@@ -126,6 +127,9 @@ Command line arguments:
          algorithm that is exercised; "." denotes success, "F" denotes failure
      2 = detailed
      3 = insane
+  --algorithms: Comma separated list of algorithms to test. If not specified,
+     all algorithms known to mkroesti are tested, with the exception of those
+     listed in the EXCEPT file located in the test data directory.
 
 Exit codes of this test script:
   0: All tests successful
@@ -171,17 +175,14 @@ fi
 # Process command line arguments
 # ----------------------------------------------------------------------
 
-if test $# -eq 1; then
-  if test "$1" == "-h" -o "$1" == "--help"; then
-    printHelp
-    exit 0
-  fi
-fi
-
-unset PYTHON_BIN TESTDATA_DIR MKROESTI_BIN REPORT_LEVEL
+unset PYTHON_BIN TESTDATA_DIR MKROESTI_BIN REPORT_LEVEL ALGORITHMS
 while test $# -gt 0
 do
   OPT="$1"
+  if test "$OPT" == "-h" -o "$OPT" == "--help"; then
+    printHelp
+    exit 0
+  fi
   shift
   if test $# -eq 0; then
     echo "$MY_NAME: Missing argument for command line option $OPT" >/dev/stderr
@@ -201,6 +202,9 @@ do
       ;;
     --report-level)
       REPORT_LEVEL="$OPTARG"
+      ;;
+    --algorithms)
+      ALGORITHMS="$OPTARG"
       ;;
     *)
       echo "$MY_NAME: Unknown command line argument $OPT" >/dev/stderr
@@ -277,7 +281,7 @@ cat << EOF >"$TMP_FILE"
 EOF
 
 # Remove duplicate algorithms since we can't select the source
-ALGORITHM_NAMES="$("$PYTHON_BIN" "$MKROESTI_BIN" --list 2>/dev/null | awk -f "$TMP_FILE" 2>/dev/null | sort | uniq)"
+AVAILABLE_ALGORITHM_NAMES="$("$PYTHON_BIN" "$MKROESTI_BIN" --list 2>/dev/null | awk -f "$TMP_FILE" 2>/dev/null | sort | uniq)"
 RETVAL=$?
 rm -f "$TMP_FILE"
 if test $RETVAL -ne 0; then
@@ -303,6 +307,29 @@ else
 fi
 
 # ----------------------------------------------------------------------
+# Determine algorithms we are going to test
+# ----------------------------------------------------------------------
+
+unset ALGORITHM_NAMES
+if test -z "$ALGORITHMS"; then
+  for ALGORITHM_NAME in $AVAILABLE_ALGORITHM_NAMES
+  do
+    if test -z "$(grep "^$ALGORITHM_NAME$" "$PARSED_EXCLUDE_FILE")"; then
+      ALGORITHM_NAMES="$ALGORITHM_NAMES $ALGORITHM_NAME"
+    fi
+  done
+else
+  ALGORITHM_NAMES="$(echo "$ALGORITHMS" | awk '{split($0,parts,",");for (i in parts) {print parts[i]}}')"
+  for ALGORITHM_NAME in $ALGORITHM_NAMES
+  do
+    if test -z "$(echo "$AVAILABLE_ALGORITHM_NAMES" | grep "$ALGORITHM_NAME")"; then
+      echo "Requested algorithm $ALGORITHM_NAME is not known/available"
+      exit 1
+    fi
+  done
+fi
+
+# ----------------------------------------------------------------------
 # Run tests
 # ----------------------------------------------------------------------
 if test "$HAVE_EXPECT"; then
@@ -314,9 +341,6 @@ fi
 OVERALL_TEST_RESULT=0
 for ALGORITHM_NAME in $ALGORITHM_NAMES
 do
-  if test -n "$(grep "^$ALGORITHM_NAME$" "$PARSED_EXCLUDE_FILE")"; then
-    continue
-  fi  
   case "$REPORT_LEVEL" in
     2|3)
       echo "Exercising algorithm $ALGORITHM_NAME..."
