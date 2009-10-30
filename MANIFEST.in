@@ -1,6 +1,7 @@
 recursive-include doc *
 recursive-include src/packages/tests *
 include src/scripts/mkroesti-test
+include src/web/mkroesti.cgi
 exclude doc/ReleaseSteps
 exclude doc/DESIGN
 exclude doc/Research

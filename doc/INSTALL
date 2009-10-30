@@ -46,6 +46,16 @@ End user installation
    If you need to adjust PATH and/or PYTHONPATH, a good starting place might be
    your ~/.bashrc file (if you are using bash).
 
+7. If you want to use mkroesti as a web tool, copy the file src/web/mkroesti.cgi
+   to a folder on your web server that has CGI scripts enabled (e.g. on a
+   Debian Linux system this typically is /usr/lib/cgi-bin). If you have more
+   than one version of Python installed on the system, you may also need to
+   change the first line of the CGI script so that it refers to the proper
+   Python interpreter (e.g. /usr/bin/python2.6).
+
+   Instructions on how to configure your web server properly so that it runs
+   CGI scripts is beyond the scope of this document.
+
 
 Packager information
 --------------------
@@ -69,6 +79,7 @@ root
 |   |   +-- mkroesti
 |   |   +-- tests
 |   +-- scripts
+|   +-- web
 +-- doc
 
 
@@ -90,6 +101,13 @@ src/scripts
   command line
 - this script should go into the built distribution and should end up somewhere
   in the PATH (e.g. /usr/bin)
+
+src/web
+- contains the CGI script that can be used to invoke mkroesti through a web
+  server such as Apache
+- this script should go into the built distribution, but where it ends up on
+  the target system is up to you (a typical location for a Debian Linux system
+  is /usr/lib/cgi-bin)
 
 doc
 - contains documentation files such as this INSTALL document

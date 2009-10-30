@@ -31,7 +31,9 @@ Design notes
     * return string description of the implementation source for an algorithm with a given name (e.g. "Python Standard Library module hashlib")
     * create and return algorithm object for a given algorithm name
     * get names of provided aliases
-    * get names of algorithms that a given alias resolves to
+    * is an alias with a given name provided?
+    * is an alias with a given name available?
+    * get names of available algorithms that a given alias resolves to
   * Instances
     * are created by a module-level function getProviders(); each provider class should be instantiated exactly once
     * must implement mkroesti.provider.ProviderInterface
@@ -46,6 +48,7 @@ Design notes
     * is an algorithm with a given name available?
     * return the providers that the algorithm with a given name is available from
     * does an alias with a given name exist?
+    * is an alias with a given name available?
     * return the names of algorithms that a given alias resolves to
   * Instances
     * there is exactly one instance

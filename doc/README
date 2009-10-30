@@ -15,18 +15,21 @@ Table of Contents
 
 Introduction
 ------------
-mkroesti is a command line program written in Python that, given an input, is
-capable of generating different kinds of cryptographic and other hashes from
-that input. mkroesti takes its input either interactively from the user, or
-from any one of the following sources: standard input, the command line, any
-file. So far, mkroesti does not have its own implementation of hash algorithms.
-Instead, it relies on other Python modules to provide algorithm implementations
-and merely acts as a front end to those modules. See the section "Dependencies"
-for details.
+mkroesti is a hash generator written in Python.
 
-At the moment, mkroesti can only be run as a command line utility. One of the
-next versions will allow mkroesti to be run as a web application. There is also
-a plan for implementing a Mac OS X GUI front end.
+mkroesti can be used both as a command line utility and as a web tool. It takes
+an input (e.g. a file, or a password) and generates different kinds of hashes
+from that input. The hashes to generate are selected by naming them on the
+command line.
+
+The vanilla mkroesti package provides no hash algorithm implementations of its
+own, it is merely a front-end to hash algorithms available through modules in
+the Python Standard Library, or through third-party modules. See the section
+"Dependencies" for details.
+
+mkroesti can be extended with new hash algorithms, or new implementations of
+hash algorithms that are already known to mkroesti. For more details, please
+read the section "How to extend mkroesti".
 
 
 Release notes
