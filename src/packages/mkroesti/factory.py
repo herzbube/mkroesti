@@ -59,8 +59,9 @@ class AlgorithmFactory:
 
         If the given name refers to a known alias, the alias is resolved to
         its real algorithm names. Of these, algorithm objects are created only
-        for those algorithms that are actually available.
-        
+        for those algorithms that are actually available. If no algorithms are
+        available, an UnavailableAliasError is raised.
+
         If the given name refers to a known algorithm, but the algorithm is
         not available, an UnavailableAlgorithmError is raised.
 
@@ -71,7 +72,9 @@ class AlgorithmFactory:
         # Resolve alias (if it is one) or create the list with algorithm names
         # with a single entry
         algorithmNames = list()
-        if name in ProviderRegistry.getInstance().getAliasNames():
+        if ProviderRegistry.getInstance().isAliasKnown(name):
+            # Raises an UnavailableAliasError if all of the alias' algorithms
+            # are unavailable
             algorithmNames.extend(ProviderRegistry.getInstance().resolveAlias(name))
         elif ProviderRegistry.getInstance().isAlgorithmKnown(name):
             if ProviderRegistry.getInstance().isAlgorithmAvailable(name):
@@ -87,12 +90,6 @@ class AlgorithmFactory:
             providers = ProviderRegistry.getInstance().getProviders(algorithmName)
             algorithmsCreated = 0
             for provider in providers:
-                # Must check for availability in case the original name was an
-                # alias, in which case alias resolution has given us all known
-                # algorithms, even if they are unavailable
-                (isAvailable, reason) = provider.isAlgorithmAvailable(algorithmName) #@UnusedVariable
-                if not isAvailable:
-                    continue
                 if algorithmsCreated > 0 and not duplicateHashes:
                     break
                 algorithms.append(provider.createAlgorithm(algorithmName))
