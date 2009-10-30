@@ -155,8 +155,11 @@ class ProviderRegistry:
         return list(unifyingDict.keys())
 
     def getAvailableAliasNames(self):
-        """Returns a list of all aliases that are available from registered providers."""
-        unifyingDict = dict()
+        """Returns a list of all aliases that are available from registered providers.
+
+        The list contains the special alias ALIAS_ALL.
+        """
+        unifyingDict = { ALIAS_ALL : None }
         for provider in self.providers:
             unifyingDict.update(dict.fromkeys(provider.getAvailableAliasNames()))
         # Python 3 returns a "view" object for dict.keys(), but our interface

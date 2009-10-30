@@ -175,6 +175,15 @@ class ProviderRegistryTest(unittest.TestCase):
         self.assertEqual(self.registry.isAliasKnown(ALIAS_NAME_UNKNOWN), False)
         self.assertEqual(self.registry.isAliasKnown(None), False)
 
+    def testGetAvailableAliasNames(self):
+        expectedAliasNames = list(self.alias2ProviderDict.keys())
+        expectedAliasNames.append(ALIAS_ALL)
+        expectedAliasNames.remove(ALIAS_NAME_UNAVAILABLE)
+        expectedAliasNames.sort()
+        actualAliasNames = self.registry.getAvailableAliasNames()
+        actualAliasNames.sort()
+        self.assertEqual(actualAliasNames, expectedAliasNames)
+
     def testIsAliasAvailable(self):
         for aliasName in self.alias2ProviderDict:
             expectedResult = (aliasName is not ALIAS_NAME_UNAVAILABLE)

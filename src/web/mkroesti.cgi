@@ -46,8 +46,13 @@ from mkroesti import registry
 #   checkbox is initially checked
 def printTable(tableData, columnCount, form):
     cellCount = len(tableData)
-    # math.ceil() gives us a float, but we need an int for later calculations
-    rowCount = int(math.ceil(cellCount / columnCount))
+    # Note 1: Multiplying by 1.0 forces Python 2.6 to do a floating point
+    # division; if we don't do this, Python 2.6 will truncate the result to an
+    # integer before math.ceil() has had a chance to do something. Another
+    # variant would be to say: from future import division
+    # Note 2: math.ceil() gives us a float, but we need an int for later
+    # calculations
+    rowCount = int(math.ceil(cellCount * 1.0 / columnCount))
     print('<table cellspacing="5">')
     iterRow = 0
     while iterRow < rowCount:
@@ -98,7 +103,7 @@ else:
 providerModuleNames = ["mkroesti.provider"]
 main.registerProviders(providerModuleNames)
 availableAlgorithmNames = registry.ProviderRegistry.getInstance().getAvailableAlgorithmNames()
-aliasNames = registry.ProviderRegistry.getInstance().getAliasNames()
+availableAliasNames = registry.ProviderRegistry.getInstance().getAvailableAliasNames()
 
 # Define constants
 nrOfColumnsInAlgorithmAndAliasTables = 5
@@ -124,7 +129,7 @@ print('<p>Select one or more algorithms:</p>')
 printTable(sorted(availableAlgorithmNames), nrOfColumnsInAlgorithmAndAliasTables, form)
 print('<hr/>')
 print('<p>Select one or more aliases:</p>')
-printTable(sorted(aliasNames), nrOfColumnsInAlgorithmAndAliasTables, form)
+printTable(sorted(availableAliasNames), nrOfColumnsInAlgorithmAndAliasTables, form)
 print('<hr/>')
 
 # Print data entry part (including end-of-form)
@@ -157,7 +162,7 @@ if hashMode:
         # may appear that are actually unavailable
         reg = registry.ProviderRegistry.getInstance()
         nameLists = [[name for name in availableAlgorithmNames if form.getfirst(name, None) is not None]]
-        nameLists.extend([reg.resolveAlias(name) for name in aliasNames if form.getfirst(name, None) is not None])
+        nameLists.extend([reg.resolveAlias(name) for name in availableAliasNames if form.getfirst(name, None) is not None])
         # Clear duplicates and algorithms that are unavailable
         hashAlgorithmNames = list()
         for nameList in nameLists:

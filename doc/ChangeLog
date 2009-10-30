@@ -1,4 +1,6 @@
 Thu Oct 29 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [feature] mkroesti.cgi prints only those aliases that are available
+- [bugfix] mkroesti.cgi no longer "forgets" to print some algorithms or aliases 
 - [feature] aliases can now be unavailable, similar to algorithms
 - [feature] improved error handling in mkroesti.cgi
 - [feature] mkroesti.cgi can now be renamed

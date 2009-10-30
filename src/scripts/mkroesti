@@ -50,6 +50,9 @@ except mkroesti.errorhandling.UnavailableAlgorithmError as errorInstance:
 except mkroesti.errorhandling.UnknownAliasError as errorInstance:
     print(scriptName + ": unknown alias: " + str(errorInstance))
     exit(1)
+except mkroesti.errorhandling.UnavailableAliasError as errorInstance:
+    print(scriptName + ": " + str(errorInstance))
+    exit(1)
 except mkroesti.errorhandling.ConversionError as errorInstance:
     print(scriptName + ": conversion error: " + str(errorInstance))
 
