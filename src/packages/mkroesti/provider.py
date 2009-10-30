@@ -83,7 +83,9 @@ class ProviderInterface:
     available (and the reason if it is not). The difference between "known" and
     "available" is that sometimes a provider knows how to provide a certain
     algorithm "in theory", but is unable to do so in the current environment
-    because some third party modules are missing.
+    because some third party modules are missing. Finally, the convenience
+    method getAvailableAlgorithmNames() returns a list of known algorithms that
+    are actually available.
 
     getAlgorithmSource() returns a string description of the implementation
     source that the provider uses for the named algorithm (e.g. "Python
@@ -92,9 +94,15 @@ class ProviderInterface:
     An algorithm provider may place the algorithms it knows about into
     categories, also known as "aliases". getAliasNames() returns a list of
     aliases or categories that the provider knows about. resolveAlias()
-    resolves a given alias name to the real algorithm names. Please note that
-    providers do not need to (and in fact must not) handle the special alias
-    ALIAS_ALL.
+    resolves a given alias name to the real algorithm names. Alias resolution
+    ignores algorithms that are not available. Please note that providers must
+    not handle the special alias ALIAS_ALL in any way.
+
+    In the same way as there are known and available algorithms (see above),
+    there are also known and available aliases. The methods isAliasKnown(),
+    isAliasAvailable() and getAvailableAliasNames() support this distinction.
+    An alias is available if one or more algorithms that it resolves to is
+    available.
 
     Provider implementations may refer to constants in mkroesti.names for
     a set of predefined algorithm and alias names.
@@ -164,11 +172,29 @@ class ProviderInterface:
         """
         raise NotImplementedError
 
+    def isAliasKnown(self, aliasName):
+        """Returns True if the given alias is known to this provider."""
+        raise NotImplementedError
+
+    def getAvailableAliasNames(self):
+        """Returns a list of alias names that are available from this provider."""
+        raise NotImplementedError
+
+    def isAliasAvailable(self, aliasName):
+        """Returns True if the given alias is available from this provider.
+
+        If this provider does not know about the given alias in the first
+        place, it raises an UnknownAliasError.
+        """
+        raise NotImplementedError
+
     def resolveAlias(self, aliasName):
-        """Returns a list of algorithm names that the given alias resolves to.
+        """Returns a list of available algorithm names that the given alias
+        resolves to.
 
         If this provider does not know about the given alias, it raises an
-        UnknownAliasError.
+        UnknownAliasError. If the alias is not available, this provider raises
+        an UnavailableAliasError.
 
         The mkroesti system will never pass the alias ALIAS_ALL to this
         method, so this special alias does not need to (and in fact *must* not)
@@ -201,11 +227,7 @@ class AbstractProvider(ProviderInterface):
 
     def isAlgorithmKnown(self, algorithmName):
         """This default implementation uses the primitive getAlgorithmNames()."""
-        algorithmNames = self.getAlgorithmNames()
-        if algorithmName in algorithmNames:
-            return True
-        else:
-            return False
+        return (algorithmName in self.getAlgorithmNames())
 
     def getAvailableAlgorithmNames(self):
         """This default implementation combines the primitives
@@ -234,6 +256,12 @@ class AbstractProvider(ProviderInterface):
         this provider knows no aliases.
         """
         return list()
+
+    def isAliasKnown(self, aliasName):
+        """This default implementation returns False, assuming that this
+        provider knows no aliases.
+        """
+        return False
 
 
 class AliasAbstractProvider(AbstractProvider):
@@ -277,9 +305,42 @@ class AliasAbstractProvider(AbstractProvider):
         # object. Use list() to explicitly return a list object.
         return list(self.aliasNames)   # make a copy
 
+    def isAliasKnown(self, aliasName):
+        """This default implementation uses the primitive getAliasNames()."""
+        return (aliasName in self.getAliasNames())
+
+    def getAvailableAliasNames(self):
+        """This default implementation combines the primitives getAliasNames()
+        and isAliasAvailable().
+        """
+        availableAliasNames = list()
+        for aliasName in self.getAliasNames():
+            if self.isAliasAvailable(aliasName):
+                availableAliasNames.append(aliasName)
+        return availableAliasNames
+
+    def isAliasAvailable(self, aliasName):
+        """This default implementation combines the primitives resolveAlias()
+        and isAlgorithmAvailable().
+        """
+        isAvailable = True
+        try:
+            self.resolveAlias(aliasName)
+        except UnavailableAliasError:
+            isAvailable = False
+        return isAvailable
+
     def resolveAlias(self, aliasName):
         if aliasName in self.namesDictionary:
-            return self.namesDictionary[aliasName][:]   # make a copy
+            availableAlgorithmNames = list()
+            for algorithmName in self.namesDictionary[aliasName]:
+                # Only include algorithms that are available
+                (isAvailable, reason) = self.isAlgorithmAvailable(algorithmName) #@UnusedVariable
+                if isAvailable:
+                    availableAlgorithmNames.append(algorithmName)
+            if len(availableAlgorithmNames) is 0:
+                raise UnavailableAliasError(aliasName)
+            return availableAlgorithmNames
         # Do not handle ALIAS_ALL
         raise UnknownAliasError(aliasName)
 

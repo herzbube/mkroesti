@@ -56,6 +56,13 @@ class UnknownAliasError(Exception):
         Exception.__init__(self, "unknown alias: " + str(aliasName))
 
 
+class UnavailableAliasError(Exception):
+    """Is raised if a given alias is not available."""
+
+    def __init__(self, aliasName):
+        Exception.__init__(self, "alias is not available: " + str(aliasName))
+
+
 class DuplicateAliasError(Exception):
     """Is raised if a provider tries to provide the same alias multiple times."""
 

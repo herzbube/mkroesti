@@ -50,12 +50,6 @@ Priority 2 (nice to have)
 - use doxygen to generate man page (instead of/in addditon to pandoc); document
   how to do this in README
 - try to improve handling of large inputs
-- find out why adler32 and crc32 checksums (provided by zlib module) are not correct
-  - adler32 for "foo": expected = 45018202 (hex, i.e. dec = 1157726722), actual = 42074437 (dec)
-  - crc32 for "foo": expected = A5C4FE49 (hex, i.e. dec = 2781150793), actual = -1938594527 (dec)
-  - see issue 1202: http://bugs.python.org/issue1202
-    - as per standard, the result should always be an unsigned number
-    - python 2.x implementation always returns a signed number
 - The following has been reported as issue 6860 on the Python bugtracker
   (http://bugs.python.org/issue6860). Think about modifying setup.py as soon as a
   fix for the issue becomes available. The issue: "./setup.py test -h" uses the

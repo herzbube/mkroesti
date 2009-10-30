@@ -26,13 +26,11 @@ import unittest
 # mkroesti
 from mkroesti.registry import ProviderRegistry
 from mkroesti.errorhandling import (MKRoestiError, DuplicateProviderError,
-                                    UnknownAlgorithmError, UnknownAliasError)
+                                    UnknownAlgorithmError, UnknownAliasError,
+                                    UnavailableAliasError)
 from mkroesti.names import ALIAS_ALL
 import mkroesti
-from tests.stubs import (TestProvider, ALGORITHM_NAME_1, ALGORITHM_NAME_2,
-                         ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE,
-                         ALGORITHM_NAME_UNKNOWN, ALIAS_NAME_1, ALIAS_NAME_2,
-                         ALIAS_NAME_3, ALIAS_NAME_UNKNOWN)
+from tests.helpers import * #@UnusedWildImport
 
 
 class ProviderRegistryTest(unittest.TestCase):
@@ -46,9 +44,10 @@ class ProviderRegistryTest(unittest.TestCase):
         self.noAliasProviders.append(TestProvider({None : [ALGORITHM_NAME_1]}))
         # Setup providers with aliases
         self.aliasProviders = list()
-        self.noAliasProviders.append(TestProvider({ALIAS_NAME_1 : [ALGORITHM_NAME_1, ALGORITHM_NAME_2]}))
-        self.noAliasProviders.append(TestProvider({ALIAS_NAME_2 : [ALGORITHM_NAME_1, ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE]}))
-        self.noAliasProviders.append(TestProvider({ALIAS_NAME_3 : [ALGORITHM_NAME_1, ALGORITHM_NAME_2, ALGORITHM_NAME_3]}))
+        self.aliasProviders.append(TestProvider({ALIAS_NAME_1 : [ALGORITHM_NAME_1, ALGORITHM_NAME_2]}))
+        self.aliasProviders.append(TestProvider({ALIAS_NAME_2 : [ALGORITHM_NAME_1, ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE]}))
+        self.aliasProviders.append(TestProvider({ALIAS_NAME_3 : [ALGORITHM_NAME_1, ALGORITHM_NAME_2, ALGORITHM_NAME_3]}))
+        self.aliasProviders.append(TestProvider({ALIAS_NAME_UNAVAILABLE : [ALGORITHM_NAME_UNAVAILABLE]}))
         # Setup list with all providers
         self.registeredProviders = list()
         self.registeredProviders.extend(self.noAliasProviders)
@@ -56,9 +55,9 @@ class ProviderRegistryTest(unittest.TestCase):
         # Register providers
         mkroesti.registerProviders(self.registeredProviders)
         # Setup various dictionaries that help certain test method
-        self.algorithm2ProviderDict = dict()
-        self.alias2ProviderDict = dict()
-        self.alias2AlgorithmDict = dict()
+        self.algorithm2ProviderDict = dict()   # provided but not necessarily available
+        self.alias2ProviderDict = dict()       # provided but not necessarily available
+        self.alias2AlgorithmDict = dict()      # only available algorithms
         for provider in self.registeredProviders:
             for algorithmName in provider.getAlgorithmNames():
                 if algorithmName in self.algorithm2ProviderDict:
@@ -74,9 +73,20 @@ class ProviderRegistryTest(unittest.TestCase):
                 if aliasName not in self.alias2AlgorithmDict:
                     self.alias2AlgorithmDict[aliasName] = newAlgorithmNames
                 else:
-                    seenAlgorithmNames = self.alias2ProviderDict[aliasName]
+                    seenAlgorithmNames = self.alias2AlgorithmDict[aliasName]
                     seenAlgorithmNames.extend(newAlgorithmNames)
-                    self.alias2ProviderDict[aliasName] = set(seenAlgorithmNames)
+                    # Remove duplicates
+                    self.alias2AlgorithmDict[aliasName] = list(set(seenAlgorithmNames))
+        # Remove unavailable algorithms from alias resolution; also gather
+        # algorithm names for special "all" alias
+        self.allAvailableAlgorithmNames = list()
+        for aliasName in self.alias2AlgorithmDict:
+            algorithmNames = self.alias2AlgorithmDict[aliasName]
+            if ALGORITHM_NAME_UNAVAILABLE in algorithmNames:
+                algorithmNames.remove(ALGORITHM_NAME_UNAVAILABLE)
+            self.allAvailableAlgorithmNames.extend(algorithmNames)
+        # Remove duplicates
+        self.allAvailableAlgorithmNames = list(set(self.allAvailableAlgorithmNames))
         # Bring lists to a defined order so that they can be used in assertions
         # that compare for equality
         # Note: Algorithm provider instances are not intrinsically sortable, so
@@ -159,20 +169,41 @@ class ProviderRegistryTest(unittest.TestCase):
         actualAliasNames.sort()
         self.assertEqual(actualAliasNames, expectedAliasNames)
 
+    def testIsAliasKnown(self):
+        for aliasName in self.alias2ProviderDict:
+            self.assertEqual(self.registry.isAliasKnown(aliasName), True)
+        self.assertEqual(self.registry.isAliasKnown(ALIAS_NAME_UNKNOWN), False)
+        self.assertEqual(self.registry.isAliasKnown(None), False)
+
+    def testIsAliasAvailable(self):
+        for aliasName in self.alias2ProviderDict:
+            expectedResult = (aliasName is not ALIAS_NAME_UNAVAILABLE)
+            actualResult = self.registry.isAliasAvailable(aliasName)
+            self.assertEqual(actualResult, expectedResult)
+        self.assertRaises(UnknownAliasError, self.registry.isAliasAvailable, ALIAS_NAME_UNKNOWN)
+        self.assertRaises(UnknownAliasError, self.registry.isAliasAvailable, None)
+
     def testResolveAlias(self):
         for aliasName in self.alias2ProviderDict:
-            expectedAlgorithmNames = self.alias2AlgorithmDict[aliasName]
-            actualAlgorithmNames = self.registry.resolveAlias(aliasName)
-            actualAlgorithmNames.sort()
-            self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
+            if aliasName is not ALIAS_NAME_UNAVAILABLE:
+                expectedAlgorithmNames = self.alias2AlgorithmDict[aliasName]
+                actualAlgorithmNames = self.registry.resolveAlias(aliasName)
+                actualAlgorithmNames.sort()
+                self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
+            else:
+                self.assertRaises(UnavailableAliasError, self.registry.resolveAlias, aliasName)
 
     def testResolveAliasAll(self):
-        expectedAlgorithmNames = sorted(self.algorithm2ProviderDict.keys())
+        expectedAlgorithmNames = sorted(self.allAvailableAlgorithmNames)
         actualAlgorithmNames = sorted(self.registry.resolveAlias(ALIAS_ALL))
         self.assertEqual(actualAlgorithmNames, expectedAlgorithmNames)
 
     def testResolveUnknownAlias(self):
         self.assertRaises(UnknownAliasError, self.registry.resolveAlias, ALIAS_NAME_UNKNOWN)
+        self.assertRaises(UnknownAliasError, self.registry.resolveAlias, None)
+
+    def testResolveUnavailableAlias(self):
+        self.assertRaises(UnavailableAliasError, self.registry.resolveAlias, ALIAS_NAME_UNAVAILABLE)
 
     def testNoProviders(self):
         # Destroy the registry from setUp(), then create a new and empty one

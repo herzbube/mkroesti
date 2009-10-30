@@ -77,7 +77,7 @@ class MainTest(unittest.TestCase):
         self.hashAlgorithmName = "md5"
         self.hashInput = "foo-äöü-αβγ-⅓⅙⅞"
         self.hashExpectedOutput = {"utf-8" : "3f920874c43f9aee62346ee6543f7c2c",
-                                   "utf-16" : "eebf197417a9ace8fca4729be42ee594"}
+                                   "utf-16" : "fb9e1c607e7a2d55b51759a80ac801ce"}
 
     def tearDown(self):
         ProviderRegistry.deleteInstance()

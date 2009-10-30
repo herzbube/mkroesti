@@ -53,8 +53,10 @@ class ProviderRegistry:
     inherit from AlgorithmInterface).
 
     ProviderRegistry also supports the handling of aliases. Clients may inspect
-    which aliases exist (getAliasNames()) and resolve aliases to real algorithm
-    names (resolveAlias()). 
+    which aliases exist (getAliasNames(), isAliasKnown()), which aliases are
+    actually available (getAvailableAliasNames(), isAliasAvailable()), and
+    resolve aliases to real algorithm names (resolveAlias()). Note that alias
+    resolution ignores algorithms that are not available.
 
     ProviderRegistry is a singleton. The singleton accessor (and creator)
     is ProviderRegistry.getInstance().
@@ -152,11 +154,37 @@ class ProviderRegistry:
         # a list object.
         return list(unifyingDict.keys())
 
-    def resolveAlias(self, aliasName):
-        """Returns a list of algorithm names that the given alias resolves to.
+    def getAvailableAliasNames(self):
+        """Returns a list of all aliases that are available from registered providers."""
+        unifyingDict = dict()
+        for provider in self.providers:
+            unifyingDict.update(dict.fromkeys(provider.getAvailableAliasNames()))
+        # Python 3 returns a "view" object for dict.keys(), but our interface
+        # says we must return a list object. Use list() to explicitly return
+        # a list object.
+        return list(unifyingDict.keys())
+
+    def isAliasKnown(self, aliasName):
+        """Returns True if the given alias is known to any registered provider."""
+        return (aliasName in self.getAliasNames())
+
+    def isAliasAvailable(self, aliasName):
+        """Returns True if the given alias is available from any registered provider.
 
         Raises UnknownAliasError if the given alias is not known to any
         registered provider.
+        """
+        if not self.isAliasKnown(aliasName):
+            raise UnknownAliasError(aliasName)
+        return (aliasName in self.getAvailableAliasNames())
+
+    def resolveAlias(self, aliasName):
+        """Returns a list of available algorithm names that the given alias
+        resolves to.
+
+        Raises UnknownAliasError if the given alias is not known to any
+        registered provider. Raises UnavailableAliasError if the given alias
+        is known to one or more providers, but available from none.
         """
         unifyingDict = dict()
         if aliasName == ALIAS_ALL:
@@ -164,7 +192,7 @@ class ProviderRegistry:
             # handling this (see class docs of
             # mkroesti.provider.ProviderInterface for details)
             for provider in self.providers:
-                unifyingDict.update(dict.fromkeys(provider.getAlgorithmNames()))
+                unifyingDict.update(dict.fromkeys(provider.getAvailableAlgorithmNames()))
         else:
             if aliasName not in self.getAliasNames():
                 raise UnknownAliasError(aliasName)

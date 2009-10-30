@@ -20,29 +20,6 @@
 
 """Stub classes that can be used by mkroesti unit tests. Currently unused."""
 
-# mkroesti
-from mkroesti.provider import AliasAbstractProvider
-
-
-# Define constants used by the stubs in this module
-ALIAS_NAME_1 = "alias-name-1"
-ALIAS_NAME_2 = "alias-name-2"
-ALIAS_NAME_3 = "alias-name-3"
-ALGORITHM_NAME_1 = "algorithm-name-1"
-ALGORITHM_NAME_2 = "algorithm-name-2"
-ALGORITHM_NAME_3 = "algorithm-name-3"
-ALGORITHM_RESULT_1 = "algorithm-result-1"
-ALGORITHM_RESULT_2 = "algorithm-result-2"
-ALGORITHM_RESULT_3 = "algorithm-result-3"
-ALGORITHM_SOURCE_1 = "algorithm-source-1"
-ALGORITHM_SOURCE_2 = "algorithm-source-2"
-ALGORITHM_SOURCE_3 = "algorithm-source-3"
-ALGORITHM_NAME_UNAVAILABLE = "algorithm-name-unavailable"
-ALGORITHM_REASON_UNAVAILABLE = "algorithm-reason-unavailable"
-ALGORITHM_SOURCE_UNAVAILABLE = "algorithm-source-unavailable"
-ALGORITHM_NAME_UNKNOWN = "algorithm-name-unknown"
-ALIAS_NAME_UNKNOWN = "alias-name-unknown"
-
 
 class Stub():
     def __init__(self):
@@ -86,6 +63,10 @@ class AlgorithmStub(Stub):
         return self.getReturnValue(methodName)
     def getProvider(self):
         methodName = "getProvider"
+        self.incrementNumberOfCalls(methodName)
+        return self.getReturnValue(methodName)
+    def needBytesInput(self):
+        methodName = "needBytesInput"
         self.incrementNumberOfCalls(methodName)
         return self.getReturnValue(methodName)
     def getHash(self, input):
@@ -133,63 +114,28 @@ class ProviderStub(Stub):
         methodName = "getAliasNames"
         self.incrementNumberOfCalls(methodName)
         return self.getReturnValue(methodName)
+    def isAliasAliasKnown(self, aliasName):
+        methodName = "isAliasAliasKnown"
+        self.incrementNumberOfCalls(methodName)
+        parameterName = "aliasName"
+        self.setParameterValue(methodName, parameterName, aliasName)
+        return self.getReturnValue(methodName)
+    def getAvailableAliasNames(self):
+        methodName = "getAvailableAliasNames"
+        self.incrementNumberOfCalls(methodName)
+        return self.getReturnValue(methodName)
+    def isAliasAvailable(self, aliasName):
+        methodName = "isAliasAvailable"
+        self.incrementNumberOfCalls(methodName)
+        parameterName = "aliasName"
+        self.setParameterValue(methodName, parameterName, aliasName)
+        return self.getReturnValue(methodName)
     def resolveAlias(self, aliasName):
         methodName = "resolveAlias"
         self.incrementNumberOfCalls(methodName)
         parameterName = "aliasName"
         self.setParameterValue(methodName, parameterName, aliasName)
         return self.getReturnValue(methodName)
-
-
-
-class TestAlgorithm():
-    """Implements an algorithm with pre-determined test data."""
-
-    def __init__(self, algorithmName = None, provider = None):
-        self.name = algorithmName
-        self.provider = provider
-    def getName(self):
-        return self.name
-    def getProvider(self):
-        return self.provider
-    def getHash(self, input):
-        algorithmName = self.getName()
-        if ALGORITHM_NAME_1 == algorithmName:
-            return ALGORITHM_RESULT_1
-        elif ALGORITHM_NAME_2 == algorithmName:
-            return ALGORITHM_RESULT_2
-        elif ALGORITHM_NAME_3 == algorithmName:
-            return ALGORITHM_RESULT_3
-        else:
-            raise ValueError("Unsupported algorithm name " + algorithmName)
-
-
-class TestProvider(AliasAbstractProvider):
-    """Implements an algorithm provider with pre-determined test data."""
-
-    def __init__(self, namesDictionary):
-        AliasAbstractProvider.__init__(self, namesDictionary)
-
-    def getAlgorithmSource(self, algorithmName):
-        if ALGORITHM_NAME_1 == algorithmName:
-            ALGORITHM_SOURCE_1
-        elif ALGORITHM_NAME_2 == algorithmName:
-            ALGORITHM_SOURCE_2
-        elif ALGORITHM_NAME_3 == algorithmName:
-            ALGORITHM_SOURCE_3
-        elif ALGORITHM_NAME_UNAVAILABLE == algorithmName:
-            ALGORITHM_SOURCE_UNAVAILABLE
-        else:
-            raise ValueError("Unsupported algorithm name " + algorithmName)
-
-    def isAlgorithmAvailable(self, algorithmName):
-        if ALGORITHM_NAME_UNAVAILABLE == algorithmName:
-            return (False, ALGORITHM_REASON_UNAVAILABLE)
-        else:
-            return AliasAbstractProvider.isAlgorithmAvailable(self, algorithmName)
-
-    def createAlgorithm(self, algorithmName):
-        return TestAlgorithm(algorithmName, self)
 
 
 def setUpProviderStub(algorithmNames = list(), aliasName = None):

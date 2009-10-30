@@ -1,4 +1,7 @@
 Thu Oct 29 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [feature] aliases can now be unavailable, similar to algorithms
+- [feature] improved error handling in mkroesti.cgi
+- [feature] mkroesti.cgi can now be renamed
 - [project] added "#@" comments to suppress unnecessary PyDev warnings
 - [test] mkroesti-test now supports testing of explicitly requested algorithms
 - [bugfix] end-to-end test suite data for windows-nt is now ASCII-only (bug 84)

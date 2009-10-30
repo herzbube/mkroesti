@@ -29,10 +29,10 @@ from mkroesti.registry import ProviderRegistry
 from mkroesti.errorhandling import UnknownAlgorithmError, UnavailableAlgorithmError
 from mkroesti.names import ALIAS_ALL
 import mkroesti
-from tests.stubs import (TestProvider, ALGORITHM_NAME_1, ALGORITHM_NAME_2,
-                         ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE,
-                         ALGORITHM_NAME_UNKNOWN, ALIAS_NAME_1, ALIAS_NAME_2,
-                         ALIAS_NAME_3, ALIAS_NAME_UNKNOWN)
+from tests.helpers import (TestProvider, ALGORITHM_NAME_1, ALGORITHM_NAME_2,
+                           ALGORITHM_NAME_3, ALGORITHM_NAME_UNAVAILABLE,
+                           ALGORITHM_NAME_UNKNOWN, ALIAS_NAME_1, ALIAS_NAME_2,
+                           ALIAS_NAME_3, ALIAS_NAME_UNKNOWN)
 
 
 class AlgorithmFactoryTest(unittest.TestCase):
