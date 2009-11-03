@@ -125,67 +125,12 @@ else:
     defaultHashInputPassword = 'value = "%s"' % hashInputPassword
 
 # ------------------------------------------------------------
-# Output phase
+# Hash generation phase
 # ------------------------------------------------------------
 
-# Replace normal stdout with an UTF-8 enabled version. If we don't do this and
-# then try to output non-ASCII characters (e.g. the user's input from a previous
-# invocation of this CGI script), a UnicodeEncodeError will be raised.
-# Note: I have seen this error being raised only under Python 3, but many
-# people seem to have encountered the problem also under 2.6
-# Credits: Solution found here:
-# http://stackoverflow.com/questions/984014/python-3-is-using-sys-stdout-buffer-write-good-style
-if not mkroesti.python2:
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
-
-# Print HTTP headers
-# Note: By specifying the UTF-8 encoding, we try to neatly circumvent all
-# encoding problems.
-print('Content-Type: text/html;charset=utf-8')
-print('')
-
-# Print beginning-of-document (including beginning-of-form)
-print('<html>')
-print('<head><title>mkroesti %s</title></head>' % str(mkroesti.version))
-print('<body>')
-print('<form name="%s" action="%s" method="post">' % (formName, scriptName))
-
-# Print available algorithms and aliases
-print('<p>Select one or more algorithms:</p>')
-printTable(sorted(availableAlgorithmNames), nrOfColumnsInAlgorithmAndAliasTables, form)
-print('<hr/>')
-print('<p>Select one or more aliases:</p>')
-printTable(sorted(availableAliasNames), nrOfColumnsInAlgorithmAndAliasTables, form)
-print('<hr/>')
-
-# Print data entry part (including end-of-form)
-print('<p>Enter the string to hash:</p>')
-print('<table cellspacing="5">')
-print('<tr>')
-print('<td>Hash input:</td> <td><input type="text" name="%s" size="40" %s/></td>' % (fieldNameHashInput, defaultHashInput))
-print('</tr>')
-print('<tr>')
-print('<td>Hash input (password):</td> <td><input type="password" name="%s" size="40" %s/></td>' % (fieldNameHashInputPassword, defaultHashInputPassword))
-print('</tr>')
-print('<tr>')
-print('<td></td> <td><input type="submit"/><input type="reset"/></td>')
-print('</tr>')
-print('</table>')
-print('<p>Notes:<ul>')
-print('<li>Use either of the two text entry fields, but not both (if you do, the password field will be ignored).</li>')
-print('<li>The password field can be used to prevent the input from being displayed in clear text on your monitor.</li>')
-print('<li><em>Even if you use the password field, the text you type will be transmitted over the network in clear text! Transmission can be made safe by using a secure/encrypted connection (i.e. https), but even then the text will still be visible in clear text on the server side and might show up somewhere in a logfile. <strong>Please do not type in a valuable password!</strong></em></li>')
-print('<li>The hash input is expected to be in UTF-8 character encoding. If you change the encoding the resulting hash might be incorrect.</li>')
-print('</ul></p>')
-print('</form>')
-
-# Set the focus to the first form field (the "hashInput" text field) and select
-# its content
-print('<script type="text/javascript">field=document.%s.%s;field.focus();field.select();</script>' % (formName, fieldNameHashInput));
-
-# If hashing is requested, generate and print hashes
+sortedResults = None
+errorResults = None
 if mkroestiInput is not None:
-    print('<hr/>')
     try:
         # Fill nameLists with lists of requested algorithm names; names may appear
         # multiple names because of aliases; also because of aliases, algorithms
@@ -223,24 +168,144 @@ if mkroestiInput is not None:
                 hashValue = ('<span style="color:red">%s: %s</span>' % (str(exc_type.__name__), str(exc_value)))
             hashDict[algorithmName] = hashValue
         sortedResults = [(name, hashDict[name]) for name in sorted(hashAlgorithmNames)]
-        print('<p>Hash results:</p>')
-        print('<table cellspacing="5">')
-        for algorithmName, hashValue in sortedResults:
-            print('<tr>')
-            print('<td>%s:</td> <td>%s</td>' % (algorithmName, str(hashValue)))
-            print('</tr>')
-        print('</table>')
     except:
-        (exc_type, exc_value, exc_traceback) = sys.exc_info()
-        print('<div style="color:red; font-weight:bold">')
-        print('<p>Encountered unexpected error!</p>')
-        print('<dl>')
-        print('<dt>Error type</dt><dd>%s</dd>' % str(exc_type.__name__))
-        print('<dt>Error details</dt><dd>%s</dd>' % str(exc_value))
-        print('</dl>')
-        print('</div>')
+        errorResults = sys.exc_info()
 
+# ------------------------------------------------------------
+# Output phase
+#
+# Page layout:
+#
+#   +-column-1-------------+     +-column-2-------------+
+#   |  +-input----------+  |     |  +-algorithms-----+  |
+#   |  |                |  |     |  |                |  |
+#   |  +-----------------  |     |  +-----------------  |
+#   +----------------------+     |                      |
+#                                |  +-aliases--------+  |
+#                                |  |                |  |
+#                                |  +-----------------  |
+#                                |                      |
+#                                +----------------------+
+#
+#   +-footer--------------------------------------------+
+#   |  +-output / output-error-----------------------+  |
+#   |  |                                             |  |
+#   |  +---------------------------------------------+  |
+#   +---------------------------------------------------+
+#
+# ------------------------------------------------------------
+
+# Replace normal stdout with an UTF-8 enabled version. If we don't do this and
+# then try to output non-ASCII characters (e.g. the user's input from a previous
+# invocation of this CGI script), a UnicodeEncodeError will be raised.
+# Note: I have seen this error being raised only under Python 3, but many
+# people seem to have encountered the problem also under 2.6
+# Credits: Solution found here:
+# http://stackoverflow.com/questions/984014/python-3-is-using-sys-stdout-buffer-write-good-style
+if not mkroesti.python2:
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
+
+# Print HTTP headers
+# Note: By specifying the UTF-8 encoding, we try to neatly circumvent all
+# encoding problems.
+print('Content-Type: text/html;charset=utf-8')
+print('')
+
+# Print beginning-of-document (including CSS and beginning-of-form)
+print('<html>')
+print('<head>')
+print('<title>mkroesti %s</title>' % str(mkroesti.version))
+print('<style type="text/css">')
+print('body {background-color:#dddddd}')
+print('#column-1 {float:left; width:50%;}')  # 50% works because the column
+print('#column-2 {float:left; width:50%;}')  # containers don't have margins
+print('#footer {clear:both;}')
+print('#input        {background-color:#cceeff;}')  # light cyan
+print('#algorithms   {background-color:#eeccff;}')  # light purple
+print('#aliases      {background-color:#ccffee;}')  # light green
+print('#output       {background-color:#ffffaa; clear:both;}')  # light yellow
+print('#output-error {background-color:#ffcccc; clear:both;}')  # light red
+print('#powered-by   {text-align:center;}')
+print('div.section {')
+print('  padding-left: 5px;')
+print('  padding-right: 5px;')
+print('  margin-bottom: 10px;')
+print('  margin-right: 10px;')
+print('  border-style: solid;')
+print('  border-width: thin;')
+print('  border-color: black;')
+print('}')
+print('p.sectiontitle {font-weight:bold}')
+print('</style>')
+print('</head>')
+print('<body>')
+print('<form name="%s" action="%s" method="post">' % (formName, scriptName))
+
+# Print data entry part (including end-of-form)
+print('<div id="column-1">')
+print('<div class="section" id="input">')
+print('<p class="sectiontitle">Enter the string to hash:</p>')
+print('<table cellspacing="5">')
+print('<tr>')
+print('<td>Hash input:</td> <td><input type="text" name="%s" size="40" %s/></td>' % (fieldNameHashInput, defaultHashInput))
+print('</tr>')
+print('<tr>')
+print('<td>Hash input (password):</td> <td><input type="password" name="%s" size="40" %s/></td>' % (fieldNameHashInputPassword, defaultHashInputPassword))
+print('</tr>')
+print('<tr>')
+print('<td></td> <td><input type="submit"/><input type="reset"/></td>')
+print('</tr>')
+print('</table>')
+print('<p>Please note:<ul>')
+print('<li>Use either of the two text entry fields, but not both (if you do, the password field will be ignored).</li>')
+print('<li>The password field can be used to prevent the input from being displayed in clear text on your monitor.</li>')
+print('<li><em>Even if you use the password field, the text you type will be transmitted over the network in clear text! Transmission can be made safe by using a secure/encrypted connection (i.e. https), but even then the text will still be visible in clear text on the server side and might show up somewhere in a logfile. <strong>Please do not type in a valuable password!</strong></em></li>')
+print('<li>The input is expected to be in UTF-8 character encoding. If you change the encoding the resulting hash might be incorrect.</li>')
+print('</ul></p>')
+print('</div>')  # section, input
+print('</div>')  # column-1
+
+# Print available algorithms and aliases
+print('<div id="column-2">')
+print('<div class="section" id="algorithms">')
+print('<p class="sectiontitle">Select one or more algorithms:</p>')
+printTable(sorted(availableAlgorithmNames), nrOfColumnsInAlgorithmAndAliasTables, form)
+print('</div>')  # section, algorithms
+print('<div class="section" id="aliases">')
+print('<p class="sectiontitle">Select one or more aliases:</p>')
+printTable(sorted(availableAliasNames), nrOfColumnsInAlgorithmAndAliasTables, form)
+print('</div>')  # section, aliases
+print('</div>')  # column-2
+
+# Print generated hashes
+if sortedResults is not None:
+    print('<div id="footer">')
+    print('<div class="section" id="output">')
+    print('<p class="sectiontitle">Hash results:</p>')
+    print('<table cellspacing="5">')
+    for algorithmName, hashValue in sortedResults:
+        print('<tr>')
+        print('<td>%s:</td> <td>%s</td>' % (algorithmName, str(hashValue)))
+        print('</tr>')
+    print('</table>')
+    print('</div>')
+elif errorResults is not None:
+    (exc_type, exc_value, exc_traceback) = errorResults
+    print('<div class="section" id="output-error">')
+    print('<p class="sectiontitle">Encountered unexpected error!</p>')
+    print('<dl>')
+    print('<dt>Error type</dt><dd>%s</dd>' % str(exc_type.__name__))
+    print('<dt>Error details</dt><dd>%s</dd>' % str(exc_value))
+    print('</dl>')
+    print('</div>')  # section, output
+    print('</div>')  # footer
+
+# Set the focus to the first form field (the "hashInput" text field) and select
+# its content
+print('<script type="text/javascript">field=document.%s.%s;field.focus();field.select();</script>' % (formName, fieldNameHashInput));
 
 # Print end-of-document
+print('</form>')
+print('<div id="powered-by">Powered by <a href="%s">mkroesti %s</a></div>' % (mkroesti.url, str(mkroesti.version)))
 print('</body>')
 print('</html>')

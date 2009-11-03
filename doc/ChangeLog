@@ -1,3 +1,7 @@
+Tue Nov 03 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [feature] mkroesti.cgi now uses CSS for layouting and colors
+- [feature] mkroesti.__init__.py defines a constant with the project website URL
+
 Mon Nov 02 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [bugfix] handling of non-ASCII character output
 - [feature] mkroesti.cgi reprints previous input values
