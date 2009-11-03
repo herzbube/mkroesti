@@ -1,4 +1,5 @@
 Mon Nov 02 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [bugfix] handling of non-ASCII character output
 - [feature] mkroesti.cgi reprints previous input values
 
 Thu Oct 29 2009   "Patrick Näf" <herzbube@herzbube.ch>

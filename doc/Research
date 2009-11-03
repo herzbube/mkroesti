@@ -172,3 +172,78 @@ TODO for Debian'ifyng:
   I can specify the version of Python that the module runs with (see chapter 2.3
   in the Python policy document)
 - 
+
+
+Research on encoding chosen for sys.stdout
+------------------------------------------
+The problem: In mkroesti.cgi under Python 3 when I say
+  print('<p>foo-äöü-αβγ-⅓⅙⅞</p>')
+I get the following error:
+
+Error type
+    UnicodeEncodeError
+Error details
+    'ascii' codec can't encode character '\xe4' in position 3: ordinal not in range(128) 
+
+The reason for this becomes obvious when we look at the result for the next
+statement:
+  print("stdout encoding = %s" % sys.stdout.encoding)
+
+Depending on the system:
+- "US-ASCII" on my Mac OS X 10.5 box
+- "ANSI_X3.4-1968" on my Debian lenny box
+- "UTF-8" when run from the command line
+
+This problem seems to be well-known in the Python community, but I had an
+incredibly hard time finding a solution that works for me. This is what I tried:
+
+
+1) Replace sys.stdout at the very beginning of the script, before any other
+output is written. This solution comes from [1]. The solution does not work,
+I get an "Internal server error" from the web server as soon as the first
+print() statement is encountered. The log file contains the following error
+message:
+  AttributeError: 'str' object has no attribute 'decode'
+
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+print('Content-Type: text/html;charset=utf-8')
+
+
+2) Similar to 1: Replace sys.stdout at the very beginning of the script, before
+any other output is written. This solution comes from [2]. The solution works.
+
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
+[...]
+print('<p>foo-äöü-αβγ-⅓⅙⅞</p>')
+[...]
+
+
+3) Write individual encoded strings to sys.stdout.buffer. This solution comes
+from [3]. The solution works, but is not elegant because one must know exactly
+when a string is not ASCII. In addition, if this is mixed with regular output
+to sys.stdout, sys.stdout.flush() must be called to ensure that the output to
+the buffer is correctly sequenced. In one test without flush() I was able to
+crash the web server.
+
+sys.stdout.flush()
+sys.stdout.buffer.write('<p>foo-äöü-αβγ-⅓⅙⅞</p>'.encode('utf-8'))
+
+
+4) Similar to 3: Write to the raw buffer sys.stdout.buffer.raw. This solution
+comes from [4]. The solution is a bit unwieldy, and it also requires
+sys.stdout.flush() if mixed with regular output to sys.stdout. The best part
+about the post in [4] though (if the poster can be believed) is the following
+statement:
+  In a CGI application, you shouldn't be using sys.stdin or print().
+  Instead, you should be using sys.stdin.buffer (or sys.stdin.buffer.raw),
+  and sys.stdout.buffer.raw. A CGI script essentially does binary IO;
+
+sys.stdout.flush()
+out = sys.stdout.buffer.raw
+out.write('<p>foo-äöü-αβγ-⅓⅙⅞</p>'.encode("utf-8"))
+
+
+[1] http://drj11.wordpress.com/2007/05/14/python-how-is-sysstdoutencoding-chosen/
+[2] http://stackoverflow.com/questions/984014/python-3-is-using-sys-stdout-buffer-write-good-style
+[3] http://bugs.python.org/issue6852
+[4] http://mail.python.org/pipermail/python-dev/2009-April/088727.html

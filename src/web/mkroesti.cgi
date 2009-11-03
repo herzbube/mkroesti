@@ -27,6 +27,7 @@ import cgi
 import math
 import os
 import sys
+import codecs
 # Enable this line only for debugging purposes
 import cgitb; cgitb.enable()
 
@@ -126,6 +127,16 @@ else:
 # ------------------------------------------------------------
 # Output phase
 # ------------------------------------------------------------
+
+# Replace normal stdout with an UTF-8 enabled version. If we don't do this and
+# then try to output non-ASCII characters (e.g. the user's input from a previous
+# invocation of this CGI script), a UnicodeEncodeError will be raised.
+# Note: I have seen this error being raised only under Python 3, but many
+# people seem to have encountered the problem also under 2.6
+# Credits: Solution found here:
+# http://stackoverflow.com/questions/984014/python-3-is-using-sys-stdout-buffer-write-good-style
+if not mkroesti.python2:
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
 # Print HTTP headers
 # Note: By specifying the UTF-8 encoding, we try to neatly circumvent all
