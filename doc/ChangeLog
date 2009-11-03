@@ -1,3 +1,6 @@
+Mon Nov 02 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [feature] mkroesti.cgi reprints previous input values
+
 Thu Oct 29 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [feature] mkroesti.cgi prints only those aliases that are available
 - [bugfix] mkroesti.cgi no longer "forgets" to print some algorithms or aliases 

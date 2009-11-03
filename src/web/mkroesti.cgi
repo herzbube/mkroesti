@@ -76,6 +76,12 @@ def printTable(tableData, columnCount, form):
 # Setup phase
 # ------------------------------------------------------------
 
+# Define constants
+nrOfColumnsInAlgorithmAndAliasTables = 5
+formName = "theForm"
+fieldNameHashInput = "hashInput"
+fieldNameHashInputPassword = "hashInputPassword"
+
 # Get the name that this CGI script has been executed as
 scriptName = os.path.basename(os.environ["SCRIPT_NAME"])
 
@@ -89,15 +95,16 @@ form = cgi.FieldStorage()
 # the entered text is obscured. The input may come from either of the two
 # fields; if for some strange reason both fields contain something, the input
 # is taken from the regular text entry field.
-hashInput = form.getfirst("hashInput", None)
+hashInput = form.getfirst(fieldNameHashInput, None)
+hashInputPassword = form.getfirst(fieldNameHashInputPassword, None)
+mkroestiInput = None
 if hashInput is None or hashInput == "":
-    hashInput = form.getfirst("hashInputPassword", None)
-    if hashInput is None or hashInput == "":
-        hashMode = False
+    if hashInputPassword is None or hashInputPassword == "":
+        pass
     else:
-        hashMode = True
+        mkroestiInput = hashInputPassword
 else:
-    hashMode = True
+    mkroestiInput = hashInput
 
 # Set up mkroesti
 providerModuleNames = ["mkroesti.provider"]
@@ -105,8 +112,16 @@ main.registerProviders(providerModuleNames)
 availableAlgorithmNames = registry.ProviderRegistry.getInstance().getAvailableAlgorithmNames()
 availableAliasNames = registry.ProviderRegistry.getInstance().getAvailableAliasNames()
 
-# Define constants
-nrOfColumnsInAlgorithmAndAliasTables = 5
+# If we got input values we are going to provide them as default values for the
+# next invocation of the script
+if hashInput is None:
+    defaultHashInput = ''
+else:
+    defaultHashInput = 'value = "%s"' % hashInput
+if hashInputPassword is None:
+    defaultHashInputPassword = ''
+else:
+    defaultHashInputPassword = 'value = "%s"' % hashInputPassword
 
 # ------------------------------------------------------------
 # Output phase
@@ -120,9 +135,9 @@ print('')
 
 # Print beginning-of-document (including beginning-of-form)
 print('<html>')
-print('<head><title>mkroesti ' + str(mkroesti.version) + '</title></head>')
+print('<head><title>mkroesti %s</title></head>' % str(mkroesti.version))
 print('<body>')
-print('<form action="' + scriptName + '" method="post">')
+print('<form name="%s" action="%s" method="post">' % (formName, scriptName))
 
 # Print available algorithms and aliases
 print('<p>Select one or more algorithms:</p>')
@@ -136,10 +151,10 @@ print('<hr/>')
 print('<p>Enter the string to hash:</p>')
 print('<table cellspacing="5">')
 print('<tr>')
-print('<td>Hash input:</td> <td><input type="text" name="hashInput" size="40"/></td>')
+print('<td>Hash input:</td> <td><input type="text" name="%s" size="40" %s/></td>' % (fieldNameHashInput, defaultHashInput))
 print('</tr>')
 print('<tr>')
-print('<td>Hash input (password):</td> <td><input type="password" name="hashInputPassword" size="40"/></td>')
+print('<td>Hash input (password):</td> <td><input type="password" name="%s" size="40" %s/></td>' % (fieldNameHashInputPassword, defaultHashInputPassword))
 print('</tr>')
 print('<tr>')
 print('<td></td> <td><input type="submit"/><input type="reset"/></td>')
@@ -153,8 +168,12 @@ print('<li>The hash input is expected to be in UTF-8 character encoding. If you 
 print('</ul></p>')
 print('</form>')
 
+# Set the focus to the first form field (the "hashInput" text field) and select
+# its content
+print('<script type="text/javascript">field=document.%s.%s;field.focus();field.select();</script>' % (formName, fieldNameHashInput));
+
 # If hashing is requested, generate and print hashes
-if hashMode:
+if mkroestiInput is not None:
     print('<hr/>')
     try:
         # Fill nameLists with lists of requested algorithm names; names may appear
@@ -185,23 +204,19 @@ if hashMode:
                     # In the HTTP headers we said that the document is UTF-8 encoded,
                     # therefore it should be OK if we use that encoding here for
                     # converting to bytes
-                    hashValue = algorithm.getHash(bytes(hashInput, "utf-8"))
+                    hashValue = algorithm.getHash(bytes(mkroestiInput, "utf-8"))
                 else:
-                    hashValue = algorithm.getHash(hashInput)
+                    hashValue = algorithm.getHash(mkroestiInput)
             except:
                 (exc_type, exc_value, exc_traceback) = sys.exc_info()
-                hashValue = ('<span style="color:red">' +
-                             str(exc_type.__name__) +
-                             ': ' +
-                             str(exc_value) +
-                             '</span>')
+                hashValue = ('<span style="color:red">%s: %s</span>' % (str(exc_type.__name__), str(exc_value)))
             hashDict[algorithmName] = hashValue
         sortedResults = [(name, hashDict[name]) for name in sorted(hashAlgorithmNames)]
         print('<p>Hash results:</p>')
         print('<table cellspacing="5">')
-        for name, hash in sortedResults:
+        for algorithmName, hashValue in sortedResults:
             print('<tr>')
-            print('<td>' + name + ':</td> <td>' + str(hash) + '</td>')
+            print('<td>%s:</td> <td>%s</td>' % (algorithmName, str(hashValue)))
             print('</tr>')
         print('</table>')
     except:
@@ -209,8 +224,8 @@ if hashMode:
         print('<div style="color:red; font-weight:bold">')
         print('<p>Encountered unexpected error!</p>')
         print('<dl>')
-        print('<dt>Error type</dt><dd>' + str(exc_type.__name__) + '</dd>')
-        print('<dt>Error details</dt><dd>' + str(exc_value) + '</dd>')
+        print('<dt>Error type</dt><dd>%s</dd>' % str(exc_type.__name__))
+        print('<dt>Error details</dt><dd>%s</dd>' % str(exc_value))
         print('</dl>')
         print('</div>')
 
