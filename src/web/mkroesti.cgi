@@ -29,7 +29,7 @@ import os
 import sys
 import codecs
 # Enable this line only for debugging purposes
-import cgitb; cgitb.enable()
+#import cgitb; cgitb.enable()
 
 # mkroesti
 import mkroesti   # import stuff from __init__.py (e.g. mkroesti.version)
@@ -191,6 +191,10 @@ if mkroestiInput is not None:
 #   |  +-output / output-error-----------------------+  |
 #   |  |                                             |  |
 #   |  +---------------------------------------------+  |
+#   |                                                   |
+#   |  +-powered-by----------------------------------+  |
+#   |  |                                             |  |
+#   |  +---------------------------------------------+  |
 #   +---------------------------------------------------+
 #
 # ------------------------------------------------------------
@@ -241,7 +245,7 @@ print('</head>')
 print('<body>')
 print('<form name="%s" action="%s" method="post">' % (formName, scriptName))
 
-# Print data entry part (including end-of-form)
+# Print data entry part
 print('<div id="column-1">')
 print('<div class="section" id="input">')
 print('<p class="sectiontitle">Enter the string to hash:</p>')
@@ -277,9 +281,11 @@ printTable(sorted(availableAliasNames), nrOfColumnsInAlgorithmAndAliasTables, fo
 print('</div>')  # section, aliases
 print('</div>')  # column-2
 
-# Print generated hashes
+# Print beginning-of-footer
+print('<div id="footer">')
+
+# Optionally print generated hashes
 if sortedResults is not None:
-    print('<div id="footer">')
     print('<div class="section" id="output">')
     print('<p class="sectiontitle">Hash results:</p>')
     print('<table cellspacing="5">')
@@ -298,14 +304,18 @@ elif errorResults is not None:
     print('<dt>Error details</dt><dd>%s</dd>' % str(exc_value))
     print('</dl>')
     print('</div>')  # section, output
-    print('</div>')  # footer
+
+# Print "Powered by..." section 
+print('<div id="powered-by">Powered by <a href="%s">mkroesti %s</a></div>' % (mkroesti.url, str(mkroesti.version)))
+
+# Print end-of-footer
+print('</div>')  # footer
 
 # Set the focus to the first form field (the "hashInput" text field) and select
 # its content
 print('<script type="text/javascript">field=document.%s.%s;field.focus();field.select();</script>' % (formName, fieldNameHashInput));
 
-# Print end-of-document
+# Print end-of-document (including end-of-form)
 print('</form>')
-print('<div id="powered-by">Powered by <a href="%s">mkroesti %s</a></div>' % (mkroesti.url, str(mkroesti.version)))
 print('</body>')
 print('</html>')

@@ -1,3 +1,6 @@
+Sat Nov 07 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [bugfix] "powered by" line printed by mkroesti.cgi is now part of the footer
+
 Tue Nov 03 2009   "Patrick Näf" <herzbube@herzbube.ch>
 - [feature] mkroesti.cgi now uses CSS for layouting and colors
 - [feature] mkroesti.__init__.py defines a constant with the project website URL
