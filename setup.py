@@ -90,7 +90,7 @@ setup(
       name="mkroesti",
       version="0.4",
       url="http://www.herzbube.ch/mkroesti",
-      author="Patrick Näf",
+      author="Patrick Naef",
       author_email="herzbube@herzbube.ch",
       description="A hash generator",
       long_description=

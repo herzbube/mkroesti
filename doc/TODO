@@ -35,6 +35,9 @@ Priority 1 (important)
   unreliable test suite does not inspire very much confidence; remove comment
   in TESTING document if this is fixed
 - write a script that performs pre-release tests (see ReleaseSteps for ideas)
+- To work around issue 95, I have replaced the umlaut character "ä" in setup.py
+  and src/scripts/mkroesti. Find a better solution for the problem (i.e. fix
+  issue 95), then revert the workaround
 
 
 Priority 2 (nice to have)
