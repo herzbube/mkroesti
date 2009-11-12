@@ -1,4 +1,5 @@
 Thu Nov 12 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [bugfix] fixed unit test case that failed on big endian platforms
 - [bugfix] workaround for bug 95: temporarily removed umlaut "ä" from some files
 
 Sat Nov 07 2009   "Patrick Näf" <herzbube@herzbube.ch>

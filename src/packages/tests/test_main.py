@@ -77,7 +77,7 @@ class MainTest(unittest.TestCase):
         self.hashAlgorithmName = "md5"
         self.hashInput = "foo-äöü-αβγ-⅓⅙⅞"
         self.hashExpectedOutput = {"utf-8" : "3f920874c43f9aee62346ee6543f7c2c",
-                                   "utf-16" : "fb9e1c607e7a2d55b51759a80ac801ce"}
+                                   "utf-16-le" : "60bf59a72ae393873019c634782e320c"}
 
     def tearDown(self):
         ProviderRegistry.deleteInstance()
@@ -218,7 +218,10 @@ class MainTest(unittest.TestCase):
         # This test is not relevant for Python 2.6 because there the --codec
         # argument is ignored
         if not mkroesti.python2:
-            encoding = "utf-16"
+            # Explicitly specify endianness, otherwise the test will fail on
+            # those platforms whose natural endianness is different from that
+            # of the platform where the expected result was generated
+            encoding = "utf-16-le"
             args = ["-a", self.hashAlgorithmName, "-b", self.hashInput, "-c", encoding]
             returnValue = main(args)
             self.assertEqual(returnValue, None)
