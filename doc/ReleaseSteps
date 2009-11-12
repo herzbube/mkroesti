@@ -24,8 +24,8 @@ Before the release
 - run automated tests, both for Python 2.6 and Python 3, either in the IDE or
   on the command line, by issuing the following commands:
     cd <projectdir>
-    for VER in 2.6 3.0; do
-      PYTHON_BIN=/Library/Frameworks/Python.framework/Versions/$VER/bin/python
+    for VER in 2.6 3.1; do
+      PYTHON_BIN=/Library/Frameworks/Python.framework/Versions/$VER/bin/python$VER
       $PYTHON_BIN ./setup.py test
       cd src/scripts
       PYTHONPATH=../packages ./mkroesti-test --python-bin $PYTHON_BIN
@@ -41,14 +41,15 @@ Before the release
     cd ~
     tar xfvzo mkroesti-x.y.tar.gz
     cd mkroesti-x.y
-    ./setup.py install --home=~
     for VER in 2.6 3.0; do
       PYTHON_BIN=/usr/bin/python$VER
+      $PYTHON_BIN setup.py install --home=$HOME/mkroesti-test
       $PYTHON_BIN setup.py test
       cd src/scripts
       PYTHONPATH=../packages ./mkroesti-test --python-bin $PYTHON_BIN
       cd ../..
-      PYTHONPATH=~/lib/python $PYTHON_BIN ~/bin/mkroesti -ba all foo
+      PYTHONPATH=$HOME/mkroesti-test/lib/python $PYTHON_BIN $HOME/mkroesti-test/bin/mkroesti -ba all foo
+      rm -r $HOME/mkroesti-test
     done
 - commit final changes (check with "git status" that nothing was forgotten)
 

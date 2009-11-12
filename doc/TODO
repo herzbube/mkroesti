@@ -59,3 +59,5 @@ Priority 3 (not important)
 -------------------------
 - register with PyPI
 - mkroesti.cgi: use xml.dom to construct the HTML document
+- for a possible source of the HAVAL algorithm, see
+  http://www.theserverpages.com/php/manual/en/ref.mhash.php

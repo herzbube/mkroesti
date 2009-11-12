@@ -100,16 +100,16 @@ mkroesti is a hash generator written in Python.
 mkroesti can be used both as a command line utility and as a web tool. It takes
 an input (e.g. a file, or a password) and generates different kinds of hashes
 from that input. The hashes to generate are selected by naming them on the
-command line.
+command line, or ticking the corresponding checkboxes in the web GUI.
 
-The vanilla mkroesti package provides no hash algorithm implementations of its
-own, it is merely a front-end to hash algorithms available through modules in
-the Python Standard Library, or through third-party modules. The README file
-gives details about the dependencies of mkroesti.
+mkroesti provides no hash algorithm implementations of its own. Instead it
+consists of a collection of front-ends to hash algorithms available in the
+Python Standard Library, and from a number of third-party modules. The README
+file gives details about the dependencies of mkroesti.
 
-mkroesti can be extended with new hash algorithms, or new implementations of
-hash algorithms that are already known to mkroesti. See the README file for
-details.
+mkroesti also defines a couple of interfaces that allow third parties to inject
+new front-ends to previously unavailable hash algorithms. The README file has
+more information on how this extension mechanism works.
 """,
       # Listing packages/modules
       package_dir = {"": PACKAGES_BASEDIR},

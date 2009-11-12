@@ -25,13 +25,12 @@ Version 0.7
 - implement missing hash tiger2
 
 Version 0.6
-- implement missing hash haval-*-[45] (for a possible source, see
-  http://www.theserverpages.com/php/manual/en/ref.mhash.php)
+- implement missing hash haval-*-[45]
 
 Version 0.5
 - implement a Mac OS X GUI front-end
 
-Version 0.4
+Version 0.4 (Nov 12 2009)
 - implement web front-end
 
 Version 0.3 (Jun 14 2009)

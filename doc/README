@@ -20,16 +20,17 @@ mkroesti is a hash generator written in Python.
 mkroesti can be used both as a command line utility and as a web tool. It takes
 an input (e.g. a file, or a password) and generates different kinds of hashes
 from that input. The hashes to generate are selected by naming them on the
-command line.
+command line, or ticking the corresponding checkboxes in the web GUI.
 
-The vanilla mkroesti package provides no hash algorithm implementations of its
-own, it is merely a front-end to hash algorithms available through modules in
-the Python Standard Library, or through third-party modules. See the section
-"Dependencies" for details.
+mkroesti provides no hash algorithm implementations of its own. Instead it
+consists of a collection of front-ends to hash algorithms available in the
+Python Standard Library, and from a number of third-party modules. See the
+section "Dependencies" for details.
 
-mkroesti can be extended with new hash algorithms, or new implementations of
-hash algorithms that are already known to mkroesti. For more details, please
-read the section "How to extend mkroesti".
+mkroesti also defines a couple of interfaces that allow third parties to inject
+new front-ends to previously unavailable hash algorithms. For more information
+on how this extension mechanism works, please read the section
+"How to extend mkroesti".
 
 
 Release notes
@@ -37,7 +38,11 @@ Release notes
 This is mkroesti 0.4.
 
 Changes in this release:
-- TODO
+- mkroesti now has a web front-end; a demo installation is located here:
+  http://www.herzbube.ch/cgi-bin/mkroesti.cgi
+- Internally, aliases now have an available/not available state; this is used
+  by the web front-end, but has not yet had any effect on the command line
+  utility
 
 For more details see the ChangeLog document.
 
@@ -109,34 +114,38 @@ For the gritty details:
 
 Dependencies
 ------------
-This section documents which modules provide hash algorithms for mkroesti. An
-abbreviated list of dependencies can be found in the MANUAL document.
+mkroesti depends on other modules to provide actual hash algorithms. This
+section documents these dependencies. Note that most dependencies are "soft",
+meaning that mkroesti will continue to work if a "soft-dependant" module is
+missing. In such a case, mkroesti simply flags the hash algorithms provided
+by the absent module as "unavailable", but will happily continue producing
+hashes for the remaining algorithms.
 
 The Python Standard Library
-- provides a couple of modules under the heading "Cryptographic Services" [1]
-  - from these mkroesti uses only the "hashlib" module because it provides all
-    the algorithms of the other modules, and more
-    - always present in hashlib: md5, sha-1, sha-224, sha-256, sha-384, sha-512
-    - presence of the following depends on the version of the underlying
+- Provides a couple of modules under the heading "Cryptographic Services" [1]
+  - From these mkroesti uses only the "hashlib" module because it provides all
+    the algorithms of the other modules, and more:
+    - Always present in hashlib: md5, sha-1, sha-224, sha-256, sha-384, sha-512
+    - Presence of the following depends on the version of the underlying
       OpenSSL: ripemd-160, sha-0, md2, md4
-- provides a couple of encoding (i.e. not cryptographic) modules 
+- Provides a couple of encoding (i.e. not cryptographic) modules
   - "base64" module: provides base16, base32, base64
-- provides the "crypt" module with access to the system's crypt(3) function
+- Provides the "crypt" module with access to the system's crypt(3) function
 
 The module "smbpasswd" [2]
 - Debian package "python-smbpasswd"
-- the module provides these algorithms: windows-lm, windows-nt
+- The module provides these algorithms: windows-lm, windows-nt
 
 The module "mhash" [3]
-- there is no Debian package, the package needs to be built manually
-- the module is a wrapper for the mhash library
-- how to get/build the package
+- There is no Debian package, the package needs to be built manually
+- The module is a wrapper for the mhash library
+- How to get/build the package
   - download
   - unpack tar ball
   - install dependencies (Debian packages python-dev, libmhash-dev)
   - ./setup.py build
   - ./setup.py install
-- the library/python module provides the following algorithms:
+- The library/python module provides the following algorithms:
   - haval-128, haval-160, haval-192, haval-224, haval-256 (3 rounds variant)
   - ripemd-128, ripemd-256, ripemd-320
   - tiger-128, tiger-160, tiger-192
@@ -146,19 +155,22 @@ The module "mhash" [3]
 
 The module "bcrypt" [4]
 - Debian package "python-bcrypt"
-- the module provides this algorithm: crypt-blowfish
+- The module provides this algorithm: crypt-blowfish
 
 The module "aprmd5" [5]
 - Debian package "python-aprmd5"
-- the module is a wrapper around the MD5 routines that are part of the aprutil
+- The module is a wrapper around the MD5 routines that are part of the aprutil
   library
-- the module provides this algorithm: crypt-apr1
+- The module provides this algorithm: crypt-apr1
 
 [1] http://www.python.org/doc/current/library/crypto.html
 [2] http://barryp.org/software/py-smbpasswd/
 [3] http://labix.org/python-mhash
 [4] http://www.mindrot.org/projects/py-bcrypt/
 [5] http://www.herzbube.ch/python-aprmd5
+
+Note: An abbreviated list of dependencies can also be found in the MANUAL
+document.
 
 
 Python versions

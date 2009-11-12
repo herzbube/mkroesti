@@ -1,4 +1,5 @@
 Thu Nov 12 2009   "Patrick Näf" <herzbube@herzbube.ch>
+- [doc] final doc changes for release of version 0.4
 - [bugfix] fixed unit test case that failed on big endian platforms
 - [bugfix] workaround for bug 95: temporarily removed umlaut "ä" from some files
 
